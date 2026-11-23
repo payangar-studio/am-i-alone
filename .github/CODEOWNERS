@@ -1,0 +1,4 @@
+# The workflows run with the repository's permissions and reach the vault:
+# a pull request that changes them requests the review of their owner.
+/.github/workflows/ @hvn-p
+/.github/CODEOWNERS @hvn-p
