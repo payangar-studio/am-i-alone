@@ -9,6 +9,7 @@ public final class FabricEntrypoint implements ModInitializer {
     @Override
     public void onInitialize() {
         FabricNetwork.register(CommonEntrypoint.NETWORK);
+        FabricCompanions.register();
         CommonEntrypoint.init();
     }
 }

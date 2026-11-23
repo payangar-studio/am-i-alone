@@ -5,8 +5,14 @@
   "name": "am_i_alone gametests",
   "environment": "*",
   "entrypoints": {
-    "fabric-gametest": ["com.payangar.amialone.gametest.ExampleServerGameTest"],
-    "fabric-client-gametest": ["com.payangar.amialone.gametest.ExampleClientGameTest"]
+    "fabric-gametest": [
+      "com.payangar.amialone.gametest.ExampleServerGameTest",
+      "com.payangar.amialone.gametest.CompanionServerGameTest"
+    ],
+    "fabric-client-gametest": [
+      "com.payangar.amialone.gametest.ExampleClientGameTest",
+      "com.payangar.amialone.gametest.CompanionClientGameTest"
+    ]
   },
   "depends": {
     "fabric-api": "*"

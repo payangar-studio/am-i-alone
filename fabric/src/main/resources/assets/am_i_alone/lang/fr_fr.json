@@ -1,0 +1,7 @@
+{
+  "am_i_alone.companion.invalid_name": "%s n'est pas un nom valide : 1 à 16 lettres, chiffres ou _",
+  "am_i_alone.companion.name_taken": "Le nom %s est déjà pris par un joueur ou un compagnon",
+  "am_i_alone.companion.spawned": "Compagnon %s créé",
+  "am_i_alone.companion.unknown": "Aucun compagnon ne s'appelle %s",
+  "am_i_alone.companion.dismissed": "Compagnon %s renvoyé"
+}

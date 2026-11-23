@@ -1,0 +1,7 @@
+{
+  "am_i_alone.companion.invalid_name": "%s is not a valid name: 1 to 16 letters, digits or _",
+  "am_i_alone.companion.name_taken": "The name %s is already taken by a player or a companion",
+  "am_i_alone.companion.spawned": "Spawned companion %s",
+  "am_i_alone.companion.unknown": "No companion is named %s",
+  "am_i_alone.companion.dismissed": "Dismissed companion %s"
+}
