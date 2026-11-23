@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "am_i_alone_gametest",
+  "version": "0.0.0",
+  "name": "am_i_alone gametests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": ["com.payangar.amialone.gametest.ExampleServerGameTest"],
+    "fabric-client-gametest": ["com.payangar.amialone.gametest.ExampleClientGameTest"]
+  },
+  "depends": {
+    "fabric-api": "*"
+  }
+}
