@@ -15,6 +15,9 @@ freezes when its area unloads. When it must keep the world alive around it (an
 owner taking it along, later), it does so exactly like a player. Whatever
 happens, it keeps everything it has, and it never changes visibly.
 
+Decision: its skin is one of the skins the mod ships; players' own skins are
+not used.
+
 Requirements:
 
 1. **Animated like a player, owned or not**, by the player animation mods.
@@ -55,9 +58,6 @@ form (`03-switch.md`).
 Until the other features exist, test commands stand in for them: one creates
 a companion (where the places will), one switches its form (where the modes
 will). Their syntax is decided with the issue of the first brick.
-
-Open question: where a companion's skin comes from (a player's skin, a skin of
-the mod, chosen at creation).
 
 Sub-pages:
 

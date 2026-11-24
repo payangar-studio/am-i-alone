@@ -31,6 +31,11 @@ companion comes into view:
    (`EntityRenderDispatcher`): the companion gets the same renderer as real
    players, with the animation mods' hooks on it.
 
+Decision: `ClientCompanion` overrides `getSkin()`, which vanilla answers from
+the player's profile (`AbstractClientPlayer.getSkin`, with the default skin
+when there is none), and returns a `PlayerSkin` built from the mod's texture
+named by the identity, with its model (`PlayerSkin.insecure`).
+
 Decision: no profile is ever sent for a companion. A client lists a player in
 Tab only from its profile (`ClientboundPlayerInfoUpdatePacket`), which vanilla
 sends for connected players; the anchor form is not one, and the spawn packet

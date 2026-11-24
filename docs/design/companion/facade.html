@@ -120,6 +120,7 @@
 <li>The server sends the player's synced data (health, pose, equipment) and the identity, as a synced attachment: see <a href="identity.html">Shared identity</a>.</li>
 <li>Vanilla draws any <code>AbstractClientPlayer</code> with the player renderer (<code>EntityRenderDispatcher</code>): the companion gets the same renderer as real players, with the animation mods' hooks on it.</li>
 </ol>
+<div class="stmt is-decision"><span class="tag decision">Decision</span><code>ClientCompanion</code> overrides <code>getSkin()</code>, which vanilla answers from the player's profile (<code>AbstractClientPlayer.getSkin</code>, with the default skin when there is none), and returns a <code>PlayerSkin</code> built from the mod's texture named by the identity, with its model (<code>PlayerSkin.insecure</code>).</div>
 <h3>Out of Tab</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>No profile is ever sent for a companion. A client lists a player in Tab only from its profile (<code>ClientboundPlayerInfoUpdatePacket</code>), which vanilla sends for connected players; the anchor form is not one, and the spawn packet of the companion type needs no profile.</div>
 <h3>Checked in game</h3>

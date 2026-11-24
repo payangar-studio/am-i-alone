@@ -146,6 +146,7 @@
 </ol>
 <h3>One identity, defined once</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The identity (UUID, name, skin) is one piece of data, defined once in the core, carried by the current form and synced to the clients as a Fabric synced attachment. Not a synced entity data declared in both forms and in the client class, where any offset between the three breaks the sync.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The skin is the id of one of the mod's skin textures (<code>assets/am_i_alone/textures/entity/companion/&lt;id&gt;.png</code>) and its model, wide or slim; a profile carries no skin for a companion. Ruled out: a player's skin, which comes from Mojang's servers with a signed profile, needs the network and ties a companion to an account.</div>
 <figure><svg viewBox="0 0 680 150" role="img"><title>One identity, from the core to the facade</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
 <rect class="box-core" x="10" y="30" width="200" height="74" rx="8"/>
 <text x="110" y="56" text-anchor="middle" class="title">Core</text>
