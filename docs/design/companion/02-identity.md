@@ -20,9 +20,18 @@ carries.
 
 Decision: the identity (UUID, name, skin) is one piece of data, defined once in
 the core, carried by the current form and synced to the clients as a Fabric
-synced attachment. The skin is the id of one of the mod's skin textures
-(`assets/am_i_alone/textures/entity/companion/<id>.png`) and its model, wide
-or slim; a profile carries no skin for a companion. Not a synced entity data declared in both forms and in the
+synced attachment. The skin is a variant, chosen once when the companion is created and never
+changed: the core holds a reference to one entry of the mod's skins, each entry
+a texture (`assets/am_i_alone/textures/entity/companion/<id>.png`) and a
+model, wide or slim. A profile carries no skin for a companion.
+
+Fact, read in the 26.3 code: vanilla's entity variants (`pig_variant`,
+`wolf_variant`...) are registries of entries, chosen at spawn
+(`VariantUtils.selectVariantToSpawn`) and saved with the entity.
+
+Open question: the mod's skins as a registry filled by data, like vanilla's
+variants (a datapack or another mod can add skins, and the server sends the
+list to the clients), or as a list fixed in the mod's code. Not a synced entity data declared in both forms and in the
 client class, where any offset between the three breaks the sync.
 
 Fact, read in the 26.3 code: `Player` takes its UUID back from its profile on

@@ -15,8 +15,9 @@ freezes when its area unloads. When it must keep the world alive around it (an
 owner taking it along, later), it does so exactly like a player. Whatever
 happens, it keeps everything it has, and it never changes visibly.
 
-Decision: its skin is one of the skins the mod ships; players' own skins are
-not used.
+Decision: its skin is one of the skins the mod ships, like an entity's
+variant: chosen when the companion is created, it never changes after.
+Players' own skins are not used.
 
 Requirements:
 
