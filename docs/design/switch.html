@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Switching forms</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header.top { border-bottom: 1px solid var(--rule); background: var(--panel); }
+  header.top nav { max-width: 54rem; margin: 0 auto; padding: 0.6rem 16px;
+    display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-size: 0.95rem; }
+  header.top a { color: var(--accent); text-decoration: none; }
+  header.top a.here { color: var(--fg); font-weight: 700; }
+  header.top .mod { font-weight: 700; color: var(--fg); margin-right: 0.6rem; }
+  main { max-width: 54rem; margin: 0 auto; padding: 1.8rem 16px 4rem; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.6rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.4rem; }
+  h3 { margin: 1.8rem 0 0.5rem; font-size: 1.1rem; }
+  p { margin: 0.6rem 0; }
+  a { color: var(--accent); }
+  .lede { font-size: 1.1rem; color: var(--fg); }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  svg .dot-q { fill: var(--question); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<header class="top"><nav><span class="mod">Am I Alone?</span><a href="index.html">Home</a><a href="forms.html">The two forms</a><a href="identity.html">Shared identity</a><a href="switch.html" class="here">Switching forms</a><a href="sides.html">Sides</a><a href="saving.html">Saving</a></nav></header>
+<main>
+<h1>Switching forms</h1>
+<p class="lede">A companion changes form on the server, in one tick, handing everything over to the new form; the client never sees it.</p>
+<h2>What triggers a switch</h2>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The core decides. Its rule (anchor form in follow mode with an owner, anchored form otherwise) is evaluated again whenever what it reads changes: the mode, the owner. When the result differs from the current form, the core switches.</div>
+<h2>One living form, handed over whole</h2>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A companion has one living form at any time. The switch runs in one server tick, in the world and at the place where the companion is: save the current form, remove it, create the other from the save with the same UUID and the same entity id, add it. No copy stays elsewhere, so there is nothing to keep in sync.</div>
+<div class="table"><table><tr><th>Step</th><th>Anchored to anchor</th><th>Anchor to anchored</th></tr><tr><td>1. Save</td><td>Vanilla's entity save (<code>saveWithoutId</code>): the same contents for both forms, since both are <code>Player</code>s: inventory, equipment, ender chest, experience, abilities, health, food, effects, position, rotation, Brain memories, the core</td><td>The same</td></tr><tr><td>2. Remove</td><td>Discarded (<code>RemovalReason.DISCARDED</code>, which vanilla does not save): its chunk forgets it</td><td>Out of the world's list of players (<code>removePlayerImmediately</code>)</td></tr><tr><td>3. Create</td><td>The core restores the profile, the anchor form loads the save and takes the old entity id (<code>setId</code>)</td><td>The same, for the anchored form</td></tr><tr><td>4. Add</td><td>A fake connection, then <code>level.addNewPlayer</code></td><td><code>addFreshEntity</code></td></tr></table></div>
+<p>The entity id is reused as vanilla does when a player respawns: <code>PlayerList.respawn</code> gives the new player the old one's id. The anchored form is discarded rather than unloaded so that its chunk cannot save it and bring it back next to the new form.</p>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A test checks that a round trip between the forms keeps the inventory and the equipment exactly, with nothing lost or duplicated.</div>
+<h2>The client keeps its entity</h2>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The client entity is the companion's facade; the forms change behind it, on the server only.</div>
+<figure><svg viewBox="0 0 680 540" role="img"><title>A form switch, seen from the server and from the client</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs><rect class="box-core" x="85" y="10" width="170" height="34" rx="6"/><text x="170" y="32" text-anchor="middle" class="lane">Server</text><line class="lifeline" x1="170" y1="44" x2="170" y2="530"/><rect class="box-client" x="425" y="10" width="170" height="34" rx="6"/><text x="510" y="32" text-anchor="middle" class="lane">Client</text><line class="lifeline" x1="510" y1="44" x2="510" y2="530"/><path class="line" d="M182,110 L498,110" marker-end="url(#a)"/><text x="340.0" y="102" text-anchor="middle">switch notice: entity N</text><circle class="dot" cx="154" cy="110" r="10"/><text x="154" y="114" text-anchor="middle" class="mark">1</text><rect class="box-plain" x="413.2" y="143" width="193.6" height="28" rx="5"/><text x="510.0" y="162" text-anchor="middle">marks N (if it shows N)</text><rect class="box-plain" x="48.0" y="193" width="244.0" height="28" rx="5"/><text x="170.0" y="212" text-anchor="middle">saves the old form, removes it</text><circle class="dot" cx="34.0" cy="207" r="10"/><text x="34.0" y="211" text-anchor="middle" class="mark">2</text><path class="ignored" d="M182,260 L498,260" marker-end="url(#aq)"/><text x="340.0" y="252" text-anchor="middle">removal of N: ignored</text><rect class="box-plain" x="30.0" y="293" width="280.0" height="28" rx="5"/><text x="170.0" y="312" text-anchor="middle">creates the new form, id N, adds it</text><circle class="dot" cx="16.0" cy="307" r="10"/><text x="16.0" y="311" text-anchor="middle" class="mark">3</text><path class="ignored" d="M182,360 L498,360" marker-end="url(#aq)"/><text x="340.0" y="352" text-anchor="middle">arrival of N: ignored</text><rect class="box-plain" x="373.6" y="393" width="272.8" height="28" rx="5"/><text x="510.0" y="412" text-anchor="middle">same ClientCompanion; mark cleared</text><path class="line" d="M182,460 L498,460" marker-end="url(#a)"/><text x="340.0" y="452" text-anchor="middle">data of N: health, equipment...</text><circle class="dot" cx="154" cy="460" r="10"/><text x="154" y="464" text-anchor="middle" class="mark">4</text><rect class="box-plain" x="402.4" y="493" width="215.20000000000002" height="28" rx="5"/><text x="510.0" y="512" text-anchor="middle">applied to the same object</text></svg><figcaption>The forms change behind the facade: the client keeps the same object.</figcaption></figure>
+<ol class="legend">
+<li>The server first sends a mod packet to the clients that see the companion: "the companion of entity id N changes form". A client that has an entity N marks it; one that has none ignores the packet.</li>
+<li>The server saves the old form and removes it: vanilla sends the removal of N, which a client that marked N ignores.</li>
+<li>The server creates the new form with entity id N and adds it: vanilla sends its arrival, which the client ignores too. The <code>ClientCompanion</code> stays the same object, and the mark is cleared.</li>
+<li>The server sends the new form's data, as for any entity: the client applies it to the same object.</li>
+</ol>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The ignoring is done by a client mixin on the two handlers of <code>ClientPacketListener</code> that receive these packets, <code>handleRemoveEntities</code> and <code>handleAddEntity</code>, for marked entities only. No vanilla or Fabric API keeps an entity on the client across a removal.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: without it, the client removes its entity and builds a new one (<code>ClientLevel.addEntity</code> discards an entity with the same id first), and what the client and the animation mods keep on the entity starts over (interpolation, walk animation, the state Not Enough Animations and the Player Animation Library add to it): a Better Combat attack would be cut.</div>
+<h2 id="check">Open questions</h2>
+<div class="stmt is-question"><span class="tag question">Question</span><strong>Checking it in game.</strong> Once built: a switch in the middle of a Better Combat attack, and while walking, must not show.</div>
+<div class="stmt is-question"><span class="tag question">Question</span><strong>A companion riding, dead or dying.</strong> A switch while it rides a vehicle or carries a passenger, or while it is dying: dismount first, wait, or refuse.</div>
+<div class="stmt is-question"><span class="tag question">Question</span><strong>A client that starts seeing the companion during the switch.</strong> Whether it can receive the arrival without the notice, and what it then shows, is to check against how vanilla tracks entities.</div>
+<h2>Ruled out</h2>
+<div class="table"><table><tr><th>Option</th><th>Why it is ruled out</th></tr><tr><td>A separate central inventory</td><td>One living form handed over whole already rules out loss and duplication; a second copy would add the desync it was meant to prevent</td></tr><tr><td>Handing the client state over to a new client entity</td><td>What the animation mods add to the entity is lost, unless every field is copied by reflection</td></tr><tr><td>Reviving the removed client entity</td><td>Vanilla never does it, and mods that clean up an entity's data on removal will have dropped it already</td></tr></table></div>
+</main>
+</body>
+</html>

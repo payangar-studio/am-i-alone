@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Shared identity</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header.top { border-bottom: 1px solid var(--rule); background: var(--panel); }
+  header.top nav { max-width: 54rem; margin: 0 auto; padding: 0.6rem 16px;
+    display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-size: 0.95rem; }
+  header.top a { color: var(--accent); text-decoration: none; }
+  header.top a.here { color: var(--fg); font-weight: 700; }
+  header.top .mod { font-weight: 700; color: var(--fg); margin-right: 0.6rem; }
+  main { max-width: 54rem; margin: 0 auto; padding: 1.8rem 16px 4rem; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.6rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.4rem; }
+  h3 { margin: 1.8rem 0 0.5rem; font-size: 1.1rem; }
+  p { margin: 0.6rem 0; }
+  a { color: var(--accent); }
+  .lede { font-size: 1.1rem; color: var(--fg); }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  svg .dot-q { fill: var(--question); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<header class="top"><nav><span class="mod">Am I Alone?</span><a href="index.html">Home</a><a href="forms.html">The two forms</a><a href="identity.html" class="here">Shared identity</a><a href="switch.html">Switching forms</a><a href="sides.html">Sides</a><a href="saving.html">Saving</a></nav></header>
+<main>
+<h1>Shared identity</h1>
+<p class="lede">A companion is one identity, its <strong>core</strong>, carried by whichever form it has. The forms only hold what vanilla requires.</p>
+<h2>Why a core</h2>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The two forms extend different vanilla classes (<code>Player</code> and <code>ServerPlayer</code>), so the logic cannot live in a shared parent class: Java has one parent per class. It lives in an object, the companion's core, that the current form carries.</div>
+<figure><svg viewBox="0 0 680 350" role="img"><title>The core carried by either form, the Brain and the motor</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
+<rect class="box-core" x="190" y="10" width="300" height="86" rx="8"/>
+<circle class="dot" cx="208" cy="28" r="10"/><text x="208" y="32" text-anchor="middle" class="mark">1</text>
+<text x="340" y="34" text-anchor="middle" class="title">Core</text>
+<text x="340" y="56" text-anchor="middle">identity (UUID, name, skin), owner,</text>
+<text x="340" y="74" text-anchor="middle">mode, home, rule that picks the form</text>
+<rect class="box-anchored" x="10" y="140" width="220" height="74" rx="8"/>
+<circle class="dot" cx="28" cy="158" r="10"/><text x="28" y="162" text-anchor="middle" class="mark">2</text>
+<text x="125" y="164" text-anchor="middle" class="title">Anchored form</text>
+<text x="125" y="184" text-anchor="middle" class="small">extends Player</text>
+<text x="125" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
+<rect class="box-anchor" x="450" y="140" width="220" height="74" rx="8"/>
+<circle class="dot" cx="468" cy="158" r="10"/><text x="468" y="162" text-anchor="middle" class="mark">2</text>
+<text x="565" y="164" text-anchor="middle" class="title">Anchor form</text>
+<text x="565" y="184" text-anchor="middle" class="small">extends ServerPlayer</text>
+<text x="565" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
+<path class="line" d="M125,140 L240,98" marker-end="url(#a)"/>
+<path class="line" d="M565,140 L440,98" marker-end="url(#a)"/>
+<text x="150" y="112" class="small">carries</text>
+<text x="505" y="112" class="small">carries</text>
+<rect class="box-plain" x="262" y="140" width="156" height="74" rx="8"/>
+<circle class="dot" cx="280" cy="158" r="10"/><text x="280" y="162" text-anchor="middle" class="mark">3</text>
+<text x="345" y="164" text-anchor="middle" class="title">Brain</text>
+<text x="340" y="184" text-anchor="middle" class="small">inside the form;</text>
+<text x="340" y="200" text-anchor="middle" class="small">behaviours written once</text>
+<line x1="230" y1="177" x2="262" y2="177" style="stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3"/>
+<line x1="418" y1="177" x2="450" y2="177" style="stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3"/>
+<rect class="box-todo" x="262" y="262" width="156" height="74" rx="8"/>
+<circle class="dot" cx="280" cy="280" r="10"/><text x="280" y="284" text-anchor="middle" class="mark">4</text>
+<text x="345" y="286" text-anchor="middle" class="title">Motor</text>
+<text x="340" y="306" text-anchor="middle" class="small">intentions to inputs</text>
+<text x="340" y="322" text-anchor="middle" class="small">not designed yet</text>
+<path class="line" d="M340,214 L340,260" marker-end="url(#a)"/>
+<text x="348" y="242" class="small">go, look</text>
+<path class="line" d="M262,300 C190,300 125,280 125,216" marker-end="url(#a)"/>
+<path class="line" d="M418,300 C490,300 565,280 565,216" marker-end="url(#a)"/>
+<text x="150" y="318" class="small">move, jump, turn</text>
+<text x="470" y="318" class="small">move, jump, turn</text>
+</svg><figcaption>The core is the companion; a form is only how it is present in the world.</figcaption></figure>
+<ol class="legend">
+<li><strong>The core</strong> holds the companion's identity and state. It is saved in the form's data and moves from one form to the other with it.</li>
+<li><strong>The forms</strong> only do what vanilla requires (their type, saving, the spawn packet, the tick) and hand the rest to the core through an interface both forms implement.</li>
+<li><strong>The Brain</strong> lives inside the form, as in any vanilla creature, and its memories are saved with it. It accepts any living entity, so a behaviour such as "follow the owner" is written once for both forms.</li>
+<li><strong>The motor</strong> turns the Brain's intentions into player inputs: vanilla's pathfinding requires a <code>Mob</code>, and neither form is one.</li>
+</ol>
+<h2>One identity, defined once</h2>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The identity (UUID, name, skin) is one piece of data, defined once in the core, carried by the current form and synced to the clients as a Fabric synced attachment. Not a synced entity data declared in both forms and in the client class, where any offset between the three breaks the sync.</div>
+<figure><svg viewBox="0 0 680 150" role="img"><title>One identity, from the core to the facade</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
+<rect class="box-core" x="10" y="30" width="200" height="74" rx="8"/>
+<text x="110" y="56" text-anchor="middle" class="title">Core</text>
+<text x="110" y="78" text-anchor="middle" class="small">identity: UUID, name, skin</text>
+<circle class="dot" cx="26" cy="46" r="10"/><text x="26" y="50" text-anchor="middle" class="mark">1</text>
+<rect class="box-plain" x="250" y="30" width="180" height="74" rx="8"/>
+<text x="340" y="56" text-anchor="middle" class="title">Current form</text>
+<text x="340" y="78" text-anchor="middle" class="small">carries it as a synced</text>
+<text x="340" y="93" text-anchor="middle" class="small">attachment</text>
+<circle class="dot" cx="266" cy="46" r="10"/><text x="266" y="50" text-anchor="middle" class="mark">2</text>
+<rect class="box-client" x="470" y="30" width="200" height="74" rx="8"/>
+<text x="570" y="56" text-anchor="middle" class="title">Facade</text>
+<text x="570" y="78" text-anchor="middle" class="small">shows the name and the skin</text>
+<circle class="dot" cx="486" cy="46" r="10"/><text x="486" y="50" text-anchor="middle" class="mark">3</text>
+<path class="line" d="M210,67 L248,67" marker-end="url(#a)"/>
+<path class="line" d="M430,67 L468,67" marker-end="url(#a)"/>
+<text x="449" y="125" text-anchor="middle" class="small">sent to the clients that see the entity</text>
+</svg><figcaption>Defined once, so nothing can drift between the forms and the client.</figcaption></figure>
+<ol class="legend">
+<li>The identity is defined once, in the core.</li>
+<li>Whichever form the companion has carries it, as a Fabric synced attachment of the entity.</li>
+<li>Fabric sends it to every client that sees the entity; the facade takes its name and skin from it.</li>
+</ol>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: <code>Player</code> takes its UUID back from its profile on every load (<code>readAdditionalSaveData</code>). A form rebuilt from saved data would change identity: the core restores the profile (UUID, name, skin) before the form uses it.</div>
+<h2>The companion type</h2>
+<div class="stmt is-fact"><span class="tag fact">Fact</span><code>Player</code> sets its type to <code>minecraft:player</code> in its constructor. Both forms override <code>getType()</code> and <code>typeHolder()</code> to carry <code>am_i_alone:companion</code>, which is what saving and the network read. A private field of <code>Entity</code> still holds <code>minecraft:player</code>, and a few methods read it directly (default name, loot table, size, network update interval). These values are a player's today, so they match; a test covers this coupling.</div>
+<h2 id="motor">The motor</h2>
+<div class="stmt is-question"><span class="tag question">Question</span>How the Brain's intentions become player inputs (a path, then moving, jumping and turning along it) is not designed yet. It is the next brick after the forms.</div>
+</main>
+</body>
+</html>
