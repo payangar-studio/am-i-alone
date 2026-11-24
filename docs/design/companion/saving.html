@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Saving</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    --game: #8a5a12; --build: #4b5563;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+      --game: #e0b064; --build: #b7bec8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); max-width: 76rem; margin: 0 auto; }
+  aside.tree { border-right: 1px solid var(--rule); padding: 1.6rem 1rem 2rem 16px; font-size: 0.93rem; }
+  aside.tree .inner { position: sticky; top: 1rem; }
+  .tree-title { font-weight: 700; margin-bottom: 0.6rem; }
+  .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree ul ul { padding-left: 0.9rem; border-left: 1px solid var(--rule); margin: 0.2rem 0 0.3rem 0.35rem; }
+  .tree li { margin: 0.22rem 0; }
+  .tree a { text-decoration: none; }
+  .tree a.here { color: var(--fg); font-weight: 700; }
+  details.tree-mobile { display: none; margin: 0 0 1rem; border: 1px solid var(--rule); border-radius: 6px; padding: 0.4rem 0.8rem; background: var(--panel); }
+  details.tree-mobile summary { cursor: pointer; font-weight: 600; }
+  main { padding: 1.6rem 16px 4rem 2rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .layout { display: block; }
+    aside.tree { display: none; }
+    details.tree-mobile { display: block; }
+    main { padding: 1.2rem 16px 3rem; }
+  }
+  .crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .crumbs a { text-decoration: none; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.4rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.35rem; }
+  h3 { margin: 1.7rem 0 0.5rem; font-size: 1.1rem; }
+  h2.part { display: flex; align-items: center; gap: 0.6rem; }
+  .ptag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 4px; color: var(--bg); }
+  .ptag.game { background: var(--game); }
+  .ptag.build { background: var(--build); }
+  .kind { display: inline-block; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 0.05rem 0.5rem; margin: 0.2rem 0 0.4rem; }
+  p { margin: 0.6rem 0; }
+  .lede { font-size: 1.08rem; }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/forms.html">The two forms</a></li><li><a href="../companion/identity.html">Shared identity</a></li><li><a href="../companion/switch.html">Switching forms</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/saving.html" class="here">Saving</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<main>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/forms.html">The two forms</a></li><li><a href="../companion/identity.html">Shared identity</a></li><li><a href="../companion/switch.html">Switching forms</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/saving.html" class="here">Saving</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › Saving</div>
+<h1>Saving</h1>
+<p class="lede">The anchored form goes with its chunk; the anchor form, which no chunk holds, goes in the mod's data.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2><p>A companion survives everything a player's world goes through: a restart, a crash, its owner leaving. At rest, it is saved with its area; keeping the world alive, it leaves with its owner when they disconnect and comes back with them, where it was.</p>
+<h2 class="part"><span class="ptag build">How it is built</span></h2><div class="stmt is-decision"><span class="tag decision">Decision</span>Each form is saved where vanilla keeps that kind of thing, never in the players' files. In both cases, what is saved is the form's entity save, which holds the core with the rest.</div>
+<div class="table"><table><tr><th></th><th>Anchored form</th><th>Anchor form</th></tr><tr><td>Where</td><td>With its chunk, in the world's entity files</td><td>In the mod's data, saved with the world (a Fabric global attachment): one entry per companion, keyed by its UUID, holding its entity save, which includes its dimension and position</td></tr><tr><td>When</td><td>When vanilla saves or unloads the chunk</td><td>When its owner disconnects, before each world save, and when the server stops</td></tr><tr><td>Back in the world</td><td>With its chunk</td><td>When its owner connects, where it was</td></tr><tr><td>Entry removed</td><td>Never: it has none</td><td>When the companion switches back to the anchored form, or is removed for good</td></tr></table></div>
+<p>Why the mod saves the anchor form: a player is never stored in a chunk, and vanilla only writes the files of connected players. Why its entry goes when the companion switches back: an entry left behind would bring a second companion back when its owner connects.</p>
+<h3>Step by step</h3>
+<figure><svg viewBox="0 0 680 440" role="img"><title>An anchor form across disconnection, world saves and reconnection</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs><rect class="box-plain" x="28" y="10" width="170" height="34" rx="6"/><text x="113" y="32" text-anchor="middle" class="lane">Owner</text><line class="lifeline" x1="113" y1="44" x2="113" y2="430"/><rect class="box-core" x="255" y="10" width="170" height="34" rx="6"/><text x="340" y="32" text-anchor="middle" class="lane">Mod data</text><line class="lifeline" x1="340" y1="44" x2="340" y2="430"/><rect class="box-anchor" x="481" y="10" width="170" height="34" rx="6"/><text x="566" y="32" text-anchor="middle" class="lane">Anchor form</text><line class="lifeline" x1="566" y1="44" x2="566" y2="430"/><path class="line" d="M125,110 L554,110" marker-end="url(#a)"/><text x="127" y="102" text-anchor="start">disconnects</text><circle class="dot" cx="97" cy="110" r="10"/><text x="97" y="114" text-anchor="middle" class="mark">1</text><path class="line" d="M554,160 L352,160" marker-end="url(#a)"/><text x="453.0" y="152" text-anchor="middle">writes its entry</text><rect class="box-plain" x="472.8" y="193" width="186.4" height="28" rx="5"/><text x="566.0" y="212" text-anchor="middle">leaves the world: away</text><rect class="box-plain" x="192.79999999999998" y="243" width="294.40000000000003" height="28" rx="5"/><text x="340.0" y="262" text-anchor="middle">world save: update present, keep away</text><circle class="dot" cx="178.79999999999998" cy="257" r="10"/><text x="178.79999999999998" y="261" text-anchor="middle" class="mark">2</text><path class="line" d="M125,310 L328,310" marker-end="url(#a)"/><text x="226.5" y="302" text-anchor="middle">connects</text><circle class="dot" cx="97" cy="310" r="10"/><text x="97" y="314" text-anchor="middle" class="mark">3</text><path class="line" d="M352,360 L554,360" marker-end="url(#a)"/><text x="453.0" y="352" text-anchor="middle">recreated from its entry</text><rect class="box-plain" x="490.8" y="393" width="150.4" height="28" rx="5"/><text x="566.0" y="412" text-anchor="middle">back where it was</text></svg><figcaption>The anchor form is saved by the mod, never in the players' files.</figcaption></figure>
+<ol class="legend">
+<li>The owner disconnects (<code>ServerPlayConnectionEvents.DISCONNECT</code>): the anchor form's entity save is written to its entry, then the form leaves the world.</li>
+<li>A world save (autosave, <code>/save-all</code>, server stop): before vanilla writes anything (<code>ServerLifecycleEvents.BEFORE_SAVE</code>), the mod updates the entries of the anchor forms in the world and keeps those of the companions that are away. Vanilla then writes the chunks and the mod's data, in the same save.</li>
+<li>The owner connects (<code>ServerPlayConnectionEvents.JOIN</code>): for each entry of a companion they own, the mod reads the dimension and position, loads that chunk with a ticket as vanilla does for a joining player (<code>TicketType.PLAYER_SPAWN</code>), creates the anchor form and adds it.</li>
+</ol>
+<h3>Edge cases</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Met in the prototype: at startup, vanilla saves the world before any player has joined. A save must only update the companions present in the world and keep the others; replacing the whole list would erase every companion whose owner is away.</div>
+<p>A crash between two saves brings the chunks and the mod's data back to the same moment, since they are written in the same save. A crash while the save is being written is not covered; vanilla has the same window between the players' files and the chunks.</p>
+<div class="stmt is-question"><span class="tag question">Question</span><strong>An owner who never comes back.</strong> Their anchor form stays in the mod's data, out of the world, for good; whether it should come back after a while, as an anchored form without owner, is not decided.</div>
+</main>
+</div>
+</body>
+</html>
