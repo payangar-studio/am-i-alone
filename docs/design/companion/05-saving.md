@@ -2,52 +2,48 @@
 
 ## In game
 
-A companion survives everything a player's world goes through: a restart, a
-crash, its owner leaving. At rest, it is saved with its area; keeping the world
-alive, it leaves with its owner when they disconnect and comes back with them,
-where it was.
+A companion survives everything a world goes through: a restart, a crash, its
+owner leaving. A following companion leaves with its owner when they
+disconnect, and comes back with them, where it was.
 
 ## How it is built
 
-Decision: each form is saved where vanilla keeps that kind of thing, never in
-the players' files. In both cases, what is saved is the form's entity save,
-which holds the core with the rest.
+Decision: a companion in the world is an ordinary entity, saved with its chunk
+by vanilla. Its anchor is never saved: it is created again when needed
+(`03-anchor.md`).
 
-| | Anchored form | Anchor form |
-|---|---|---|
-| Where | With its chunk, in the world's entity files | In the mod's data, saved with the world (a Fabric global attachment): one entry per companion, keyed by its UUID, holding its entity save, which includes its dimension and position |
-| When | When vanilla saves or unloads the chunk | When its owner disconnects, before each world save, and when the server stops |
-| Back in the world | With its chunk | When its owner connects, where it was |
-| Entry removed | Never: it has none | When the companion switches back to the anchored form, when it dies (`06-death.md`), or when it is removed for good |
-
-Why the mod saves the anchor form: a player is never stored in a chunk, and
-vanilla only writes the files of connected players. Why its entry goes when the
-companion switches back: an entry left behind would bring a second companion
-back when its owner connects.
+Decision: the mod's data (a Fabric global attachment, saved with the world)
+keeps, for each owner, their following companion: its UUID, dimension and
+position while it is in the world, and its whole entity save while it is away
+with its owner. Never in the players' files.
 
 Step by step:
 
-1. Owner disconnects (`ServerPlayConnectionEvents.DISCONNECT`): the anchor
-   form's entity save is written to its entry, then the form leaves the world.
-2. World save (autosave, `/save-all`, server stop): before vanilla writes
-   anything (`ServerLifecycleEvents.BEFORE_SAVE`), the mod updates the entries
-   of the anchor forms in the world and keeps those of the companions that are
-   away. Vanilla then writes the chunks and the mod's data, in the same save.
-3. Owner connects (`ServerPlayConnectionEvents.JOIN`): for each entry of a
-   companion they own, the mod reads the dimension and position, loads that
-   chunk with a ticket as vanilla does for a joining player
-   (`TicketType.PLAYER_SPAWN`), creates the anchor form and adds it.
+1. Owner disconnects (`ServerPlayConnectionEvents.DISCONNECT`): the companion's
+   entity save is written to its owner's entry, the anchor is removed, and the
+   companion is removed from the world (discarded, so its chunk forgets it).
+   It is away with its owner.
+2. World save: vanilla writes the chunks (with the companions in the world) and
+   the mod's data, in the same save.
+3. Owner connects (`ServerPlayConnectionEvents.JOIN`): the mod reads their
+   entry, loads that chunk with a ticket as vanilla does for a joining player
+   (`TicketType.PLAYER_SPAWN`), recreates the companion from its save if it was
+   away (or finds it in its chunk), and attaches a new anchor.
 
-Fact, met in the prototype: at startup, vanilla saves the world before any
-player has joined. A save must only update the companions present in the world
-and keep the others; replacing the whole list would erase every companion whose
-owner is away.
+Decision: an entry's saved entity is removed when the companion comes back; the
+whole entry when it stops following, dies (`06-death.md`) or is removed for
+good. An entry left behind would bring a second companion back.
 
 A crash between two saves brings the chunks and the mod's data back to the same
 moment, since they are written in the same save. A crash while the save is
 being written is not covered; vanilla has the same window between the players'
 files and the chunks.
 
-Open question: an owner who never comes back. Their anchor form stays in the
+Open question: whether vanilla runs the disconnection of every player when the
+server stops, to check. If it does not, the companion stays saved with its
+chunk where it was, and the owner's next connection finds it there through
+the position kept in the entry.
+
+Open question: an owner who never comes back. Their companion stays in the
 mod's data, out of the world, for good; whether it should come back after a
-while, as an anchored form without owner, is not decided.
+while, without owner, is not decided.

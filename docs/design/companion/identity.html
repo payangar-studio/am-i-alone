@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Am I Alone? · Shared identity</title>
+<title>Am I Alone? · Identity and skins</title>
 <style>
   :root {
     --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
@@ -103,61 +103,22 @@
 </head>
 <body>
 <div class="layout">
-<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/forms.html">The two forms</a></li><li><a href="../companion/identity.html" class="here">Shared identity</a></li><li><a href="../companion/switch.html">Switching forms</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/anchor.html">The anchor</a></li><li><a href="../companion/identity.html" class="here">Identity and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
 <main>
-<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/forms.html">The two forms</a></li><li><a href="../companion/identity.html" class="here">Shared identity</a></li><li><a href="../companion/switch.html">Switching forms</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
-<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › Shared identity</div>
-<h1>Shared identity</h1>
-<p class="lede">One identity, the core, carried by whichever form the companion has.</p>
-<h2 class="part"><span class="ptag game">In game</span></h2><p>A companion is the same character whatever its form: same name, same skin, same inventory, same memory.</p>
-<h2 class="part"><span class="ptag build">How it is built</span></h2><div class="stmt is-decision"><span class="tag decision">Decision</span>The two forms extend different vanilla classes (<code>Player</code> and <code>ServerPlayer</code>), so the logic cannot live in a shared parent class: Java has one parent per class. It lives in <code>Companion</code>, the core, that the current form carries.</div>
-<figure><svg viewBox="0 0 680 240" role="img"><title>The core carried by either form, with the Brain</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
-<rect class="box-core" x="190" y="10" width="300" height="86" rx="8"/>
-<circle class="dot" cx="208" cy="28" r="10"/><text x="208" y="32" text-anchor="middle" class="mark">1</text>
-<text x="340" y="34" text-anchor="middle" class="title">Core: Companion</text>
-<text x="340" y="56" text-anchor="middle">identity (UUID, name, skin), owner,</text>
-<text x="340" y="74" text-anchor="middle">mode, home, rule that picks the form</text>
-<rect class="box-anchored" x="10" y="140" width="220" height="74" rx="8"/>
-<circle class="dot" cx="28" cy="158" r="10"/><text x="28" y="162" text-anchor="middle" class="mark">2</text>
-<text x="125" y="164" text-anchor="middle" class="title">AnchoredCompanion</text>
-<text x="125" y="184" text-anchor="middle" class="small">extends Player</text>
-<text x="125" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
-<rect class="box-anchor" x="450" y="140" width="220" height="74" rx="8"/>
-<circle class="dot" cx="468" cy="158" r="10"/><text x="468" y="162" text-anchor="middle" class="mark">2</text>
-<text x="565" y="164" text-anchor="middle" class="title">AnchorCompanion</text>
-<text x="565" y="184" text-anchor="middle" class="small">extends ServerPlayer</text>
-<text x="565" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
-<path class="line" d="M125,140 L240,98" marker-end="url(#a)"/>
-<path class="line" d="M565,140 L440,98" marker-end="url(#a)"/>
-<text x="150" y="112" class="small">carries</text>
-<text x="505" y="112" class="small">carries</text>
-<rect class="box-plain" x="262" y="140" width="156" height="74" rx="8"/>
-<circle class="dot" cx="280" cy="158" r="10"/><text x="280" y="162" text-anchor="middle" class="mark">3</text>
-<text x="345" y="164" text-anchor="middle" class="title">Brain</text>
-<text x="340" y="184" text-anchor="middle" class="small">inside the form;</text>
-<text x="340" y="200" text-anchor="middle" class="small">written once for both</text>
-<line x1="230" y1="177" x2="262" y2="177" style="stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3"/>
-<line x1="418" y1="177" x2="450" y2="177" style="stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3"/>
-</svg><figcaption>The core is the companion; a form is only how it is present in the world.</figcaption></figure>
-<ol class="legend">
-<li><strong>The core</strong>, <code>Companion</code>, holds the identity and state. It is saved in the form's data and moves from one form to the other with it.</li>
-<li><strong>The forms</strong> only do what vanilla requires (their type, saving, the spawn packet, the tick) and hand the rest to the core through <code>CompanionForm</code>, the interface both implement.</li>
-<li><strong>The Brain</strong> lives inside the form, as in any vanilla creature, and its memories are saved with it. Its behaviours are written once for both forms: see <a href="../behaviour/index.html">Behaviour</a>.</li>
-</ol>
-<h3>One identity, defined once</h3>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The identity (UUID, name, skin) is one piece of data, defined once in the core, carried by the current form and synced to the clients as a Fabric synced attachment. Not a synced entity data declared in both forms and in the client class, where any offset between the three breaks the sync.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The skin is a variant, chosen once when the companion is created and never changed: the core holds a reference to one entry of the mod's skins, each entry a texture (<code>assets/am_i_alone/textures/entity/companion/&lt;id&gt;.png</code>) and a model, wide or slim. A profile carries no skin for a companion. Ruled out: a player's skin, which comes from Mojang's servers with a signed profile, needs the network and ties a companion to an account.</div>
-<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: vanilla's entity variants (<code>pig_variant</code>, <code>wolf_variant</code>...) are registries of entries, chosen at spawn (<code>VariantUtils.selectVariantToSpawn</code>) and saved with the entity.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The mod's skins behave as vanilla's variants: a registry filled by data (<code>am_i_alone:companion_skin</code>), so a datapack or another mod can add skins, and the server sends the list to the clients.</div>
-<figure><svg viewBox="0 0 680 150" role="img"><title>One identity, from the core to the facade</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/anchor.html">The anchor</a></li><li><a href="../companion/identity.html" class="here">Identity and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › Identity and skins</div>
+<h1>Identity and skins</h1>
+<p class="lede">A companion's name and skin, decided once and shown on every client.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2><p>A companion has a name and a skin. Its skin is one of the skins the mod ships, chosen when it is created, and it never changes after, like a wolf's variant.</p>
+<h2 class="part"><span class="ptag build">How it is built</span></h2><div class="stmt is-decision"><span class="tag decision">Decision</span>The identity is the companion's UUID (its entity UUID), its name and its skin variant, saved with the entity. The name and the skin variant reach the clients as a Fabric synced attachment of the entity.</div>
+<figure><svg viewBox="0 0 680 150" role="img"><title>The identity, from the companion to the facade</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
 <rect class="box-core" x="10" y="30" width="200" height="74" rx="8"/>
-<text x="110" y="56" text-anchor="middle" class="title">Core</text>
-<text x="110" y="78" text-anchor="middle" class="small">identity: UUID, name, skin</text>
+<text x="110" y="56" text-anchor="middle" class="title">Companion</text>
+<text x="110" y="78" text-anchor="middle" class="small">name, skin variant</text>
 <circle class="dot" cx="26" cy="46" r="10"/><text x="26" y="50" text-anchor="middle" class="mark">1</text>
 <rect class="box-plain" x="250" y="30" width="180" height="74" rx="8"/>
-<text x="340" y="56" text-anchor="middle" class="title">Current form</text>
-<text x="340" y="78" text-anchor="middle" class="small">carries it as a synced</text>
-<text x="340" y="93" text-anchor="middle" class="small">attachment</text>
+<text x="340" y="56" text-anchor="middle" class="title">Synced attachment</text>
+<text x="340" y="78" text-anchor="middle" class="small">sent with the entity</text>
 <circle class="dot" cx="266" cy="46" r="10"/><text x="266" y="50" text-anchor="middle" class="mark">2</text>
 <rect class="box-client" x="470" y="30" width="200" height="74" rx="8"/>
 <text x="570" y="56" text-anchor="middle" class="title">Facade</text>
@@ -165,17 +126,19 @@
 <circle class="dot" cx="486" cy="46" r="10"/><text x="486" y="50" text-anchor="middle" class="mark">3</text>
 <path class="line" d="M210,67 L248,67" marker-end="url(#a)"/>
 <path class="line" d="M430,67 L468,67" marker-end="url(#a)"/>
-<text x="449" y="125" text-anchor="middle" class="small">sent to the clients that see the entity</text>
-</svg><figcaption>Defined once, so nothing can drift between the forms and the client.</figcaption></figure>
+<text x="449" y="125" text-anchor="middle" class="small">to every client that sees the entity</text>
+</svg><figcaption>The identity is saved with the entity and reaches the clients with it.</figcaption></figure>
 <ol class="legend">
-<li>The identity is defined once, in the core.</li>
-<li>Whichever form the companion has carries it, as a Fabric synced attachment of the entity.</li>
+<li>The companion holds its name and its skin variant, saved with it.</li>
+<li>They travel as a Fabric synced attachment of the entity.</li>
 <li>Fabric sends it to every client that sees the entity; the facade takes its name and skin from it.</li>
 </ol>
-<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: <code>Player</code> takes its UUID back from its profile on every load (<code>readAdditionalSaveData</code>), and its profile is a final field set by its constructor. A form rebuilt from saved data would change identity.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>Each form reads its core from the save right after vanilla's own reading, puts the saved UUID back, and answers <code>getGameProfile()</code> (public, overridable) with the core's profile rather than the one its constructor received. It holds for an anchored form a chunk loads too, which vanilla builds from the entity type's factory before reading its save.</div>
-<h3>The companion type</h3>
-<div class="stmt is-fact"><span class="tag fact">Fact</span><code>Player</code> sets its type to <code>minecraft:player</code> in its constructor. Both forms override <code>getType()</code> and <code>typeHolder()</code> to carry <code>am_i_alone:companion</code>, which is what saving and the network read. A private field of <code>Entity</code> still holds <code>minecraft:player</code>, and a few methods read it directly (default name, loot table, size, network update interval). These values are a player's today, so they match; a test covers this coupling.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>They cannot be synched data of the companion: any data it declared would take id 17 or more (<code>ClassTreeIdRegistry.java:32</code>), which the client's <code>ClientCompanion</code> uses for <code>Player</code>'s own data (<code>Player.java:135-140</code>); a serializer that does not match makes the client fail (<code>SynchedEntityData.java:119</code>).</div>
+<h3>Skins as variants</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The skin is a variant, chosen once when the companion is created and never changed: the companion holds a reference to one entry of the mod&#39;s skins, each entry a texture (<code>assets/am_i_alone/textures/entity/companion/&lt;id&gt;.png</code>) and a model, wide or slim. The client builds its skin from it (<code>ClientCompanion.getSkin</code>, <a href="facade.html">Client facade</a>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: vanilla's entity variants (<code>pig_variant</code>, <code>wolf_variant</code>...) are registries of entries, chosen at spawn (<code>VariantUtils.selectVariantToSpawn</code>) and saved with the entity.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The mod's skins behave as vanilla's variants: a registry filled by data (<code>am_i_alone:companion_skin</code>), so a datapack or another mod can add skins, and the server sends the list to the clients.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Ruled out: a player's skin, which comes from Mojang's servers with a signed profile, needs the network and ties a companion to an account.</div>
 </main>
 </div>
 </body>

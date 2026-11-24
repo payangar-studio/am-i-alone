@@ -12,7 +12,7 @@ Decisions so far:
 
 - **Follow**: the companion goes with its owner, into another dimension too.
   It is the only mode decided. Whether a companion follows its owner through a
-  portal depends on its mode, not on its form.
+  portal depends on its mode.
 - **One companion in follow mode per player** at a time.
 - **It leaves with its owner**: when the owner disconnects, a following
   companion leaves the world with them, and comes back where it was when they
@@ -25,6 +25,7 @@ Open questions: how a player makes a companion their own; the other modes
 
 ## How it is built
 
-The mode is part of the core. Follow mode is what makes a companion take the
-anchor form (`../companion/01-forms.md`); leaving and coming back with the owner
-is how the anchor form is saved (`../companion/05-saving.md`).
+The owner and the mode are saved with the companion. Follow mode is what
+attaches an anchor to the companion (`../companion/03-anchor.md`); leaving and
+coming back with the owner is how a following companion is saved
+(`../companion/05-saving.md`).

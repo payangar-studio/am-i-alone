@@ -35,12 +35,9 @@ server, and what crosses between them).
 
 | Word | Meaning |
 |---|---|
-| Companion | A character of the mod, owned or not. Its identity (name, skin), owner, mode, home and memory outlive its changes of form. |
-| Form | How a companion exists in the world on the server. It always has exactly one. |
-| Anchored form | The form of a companion that lives as an ordinary entity, held by its chunk: saved with it, frozen when it unloads. |
-| Anchor form | The form of a companion that is a player of the world: it holds the world loaded around it, like a player ("anchor" is the usual name of a chunk loader in mods). |
-| Core | What the companion is, carried by its current form: identity, owner, mode, home, and the rule that picks the form. |
-| Facade | What a client sees of a companion: one remote player, the same object whatever the form behind it. |
+| Companion | A character of the mod, owned or not: one ordinary entity on the server, with a name, a skin, an owner, a mode, a home and a memory. |
+| Anchor | A hidden player of the world attached to a companion that follows its owner: it keeps the world alive around the companion like a player, and nothing else ("anchor" is the usual name of a chunk loader in mods). |
+| Facade | What a client sees of a companion: a remote player, which the player animation mods animate. |
 | Owner | The player a companion belongs to. A companion may have none. |
 | Mode | The order an owner gives their companion. Only follow is decided so far. |
 | Home | The place a companion stays around when its mode says so. |
@@ -53,8 +50,7 @@ server, and what crosses between them).
 |---|---|
 | `Player`, `ServerPlayer` | Vanilla's class of every player, and its server version for a connected player. |
 | `RemotePlayer` | The class a client uses for the other players it sees. |
-| Mannequin, `Avatar` | Vanilla's player-shaped decoration entity, and the class it shares with players. |
-| `makeMockPlayer` | Vanilla's helper that creates a player without a connection, for its own tests. |
+| Mannequin, `Avatar` | Vanilla's player-shaped decoration entity, and `Avatar`, the class it shares with players: a player-shaped entity that is not a player. |
 | Brain | Vanilla's AI system (villagers, piglins, warden): memories, sensors, activities. |
 | Global attachment | Data that Fabric API keeps for the whole server and saves with the world. |
 | Synced attachment | Data that Fabric API attaches to an entity and sends to the clients that see it. |
@@ -62,9 +58,10 @@ server, and what crosses between them).
 
 ## Open questions
 
-- Switching forms: checking it in game (`companion/03-switch.md`).
+- Experience orbs drawn to the anchor (`companion/03-anchor.md`).
 - An issue to open on Ragdoll Deaths (`companion/06-death.md`).
-- An owner who never comes back (`companion/05-saving.md`).
+- Disconnection at server stop, and an owner who never comes back
+  (`companion/05-saving.md`).
 - Taming, the other modes (`ownership/00-overview.md`).
 - The motor (`behaviour/00-overview.md`).
 - Where companions live (`places/00-overview.md`).

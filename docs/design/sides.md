@@ -10,17 +10,18 @@ client.
 
 | Side | What runs there |
 |---|---|
-| Server | The companions' forms, their core and Brain, the switch between forms, saving |
-| Client | The facade of each companion (`ClientCompanion`), drawn by the player renderer; the mixin that keeps it across a switch |
+| Server | The companions (`Companion`), their Brain, the anchors of following companions (`CompanionAnchor`), never sent to clients, saving |
+| Client | The facade of each companion (`ClientCompanion`), drawn by the player renderer |
 
 What crosses from the server to the client:
 
 | What | When | What for | Detail |
 |---|---|---|---|
-| Spawn packet, type `am_i_alone:companion` | A companion comes into view | The client builds a `ClientCompanion` | `companion/04-facade.md` |
-| A player's synced data | Then, and on every change | Health, pose, equipment | `companion/04-facade.md` |
-| Identity (synced attachment) | Then, and on every change | Name and skin on the facade | `companion/02-identity.md` |
-| Switch begins (mod packet) | Just before a switch | The client marks the entity and ignores its removal and arrival | `companion/03-switch.md` |
-| Switch ends (mod packet) | Right after a switch | The client applies a removal still pending, then clears the mark | `companion/03-switch.md` |
+| Spawn packet, type `am_i_alone:companion` | A companion comes into view | The client builds a `ClientCompanion` | `companion/02-facade.md` |
+| Synched data, ids 0 to 16 (`Entity`, `LivingEntity`, `Avatar`) | Then, and on every change | Health, pose, equipment, main hand, skin layers | `companion/02-facade.md` |
+| Identity (synced attachment) | Then, and on every change | Name and skin variant on the facade | `companion/04-identity.md` |
+| Skin variants (registry) | When a client joins | The textures a skin variant names | `companion/04-identity.md` |
+
+The anchor is never sent to any client (`companion/03-anchor.md`).
 
 Nothing goes from the client to the server yet.

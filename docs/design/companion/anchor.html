@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · The anchor</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    --game: #8a5a12; --build: #4b5563;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+      --game: #e0b064; --build: #b7bec8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); max-width: 76rem; margin: 0 auto; }
+  aside.tree { border-right: 1px solid var(--rule); padding: 1.6rem 1rem 2rem 16px; font-size: 0.93rem; }
+  aside.tree .inner { position: sticky; top: 1rem; }
+  .tree-title { font-weight: 700; margin-bottom: 0.6rem; }
+  .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree ul ul { padding-left: 0.9rem; border-left: 1px solid var(--rule); margin: 0.2rem 0 0.3rem 0.35rem; }
+  .tree li { margin: 0.22rem 0; }
+  .tree a { text-decoration: none; }
+  .tree a.here { color: var(--fg); font-weight: 700; }
+  details.tree-mobile { display: none; margin: 0 0 1rem; border: 1px solid var(--rule); border-radius: 6px; padding: 0.4rem 0.8rem; background: var(--panel); }
+  details.tree-mobile summary { cursor: pointer; font-weight: 600; }
+  main { padding: 1.6rem 16px 4rem 2rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .layout { display: block; }
+    aside.tree { display: none; }
+    details.tree-mobile { display: block; }
+    main { padding: 1.2rem 16px 3rem; }
+  }
+  .crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .crumbs a { text-decoration: none; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.4rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.35rem; }
+  h3 { margin: 1.7rem 0 0.5rem; font-size: 1.1rem; }
+  h2.part { display: flex; align-items: center; gap: 0.6rem; }
+  .ptag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 4px; color: var(--bg); }
+  .ptag.game { background: var(--game); }
+  .ptag.build { background: var(--build); }
+  .kind { display: inline-block; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 0.05rem 0.5rem; margin: 0.2rem 0 0.4rem; }
+  p { margin: 0.6rem 0; }
+  .lede { font-size: 1.08rem; }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/anchor.html" class="here">The anchor</a></li><li><a href="../companion/identity.html">Identity and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<main>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/anchor.html" class="here">The anchor</a></li><li><a href="../companion/identity.html">Identity and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › The anchor</div>
+<h1>The anchor</h1>
+<p class="lede">What keeps the world alive around a companion that follows its owner, without anything else showing.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2><p>When a companion follows its owner, the world stays alive around it exactly as around a player: the area around it stays loaded, monsters spawn there and mobs do not despawn, and it counts for sleeping, so its owner places a bed for it too to skip the night.</p>
+<p>Nothing else shows: nobody sees, touches, pushes or attacks what does it.</p>
+<h2 class="part"><span class="ptag build">How it is built</span></h2><div class="stmt is-decision"><span class="tag decision">Decision</span>A following companion has an anchor, <code>CompanionAnchor</code>, a hidden <code>ServerPlayer</code> that stands at the companion's position, moved there every tick, and does only what a player does to the world around it. It has no identity, no inventory and no rendering of its own.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The anchor is added to the world (<code>level.addNewPlayer</code>) but never to the server's list of connected players: a player of the world, not a connected player. Its fake connection drops everything sent to it: a disconnected connection would queue packets without limit (<code>Connection.java:283</code>).</div>
+<h3>Lifecycle</h3>
+<figure><svg viewBox="0 0 680 390" role="img"><title>The life of an anchor</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs><rect class="box-plain" x="28" y="10" width="170" height="34" rx="6"/><text x="113" y="32" text-anchor="middle" class="lane">Owner</text><line class="lifeline" x1="113" y1="44" x2="113" y2="380"/><rect class="box-core" x="255" y="10" width="170" height="34" rx="6"/><text x="340" y="32" text-anchor="middle" class="lane">Companion</text><line class="lifeline" x1="340" y1="44" x2="340" y2="380"/><rect class="box-anchor" x="481" y="10" width="170" height="34" rx="6"/><text x="566" y="32" text-anchor="middle" class="lane">Anchor</text><line class="lifeline" x1="566" y1="44" x2="566" y2="380"/><path class="line" d="M125,110 L328,110" marker-end="url(#a)"/><text x="226.5" y="102" text-anchor="middle">puts it in follow mode</text><circle class="dot" cx="97" cy="110" r="10"/><text x="97" y="114" text-anchor="middle" class="mark">1</text><path class="line" d="M352,160 L554,160" marker-end="url(#a)"/><text x="453.0" y="152" text-anchor="middle">creates its anchor</text><rect class="box-plain" x="401.2" y="193" width="272.8" height="28" rx="5"/><text x="537.6" y="212" text-anchor="middle">every tick: moved to the companion</text><circle class="dot" cx="387.2" cy="207" r="10"/><text x="387.2" y="211" text-anchor="middle" class="mark">2</text><path class="line" d="M125,260 L328,260" marker-end="url(#a)"/><text x="226.5" y="252" text-anchor="middle">disconnects, or ends follow</text><circle class="dot" cx="97" cy="260" r="10"/><text x="97" y="264" text-anchor="middle" class="mark">3</text><path class="line" d="M352,310 L554,310" marker-end="url(#a)"/><text x="453.0" y="302" text-anchor="middle">removes its anchor</text><rect class="box-plain" x="386.8" y="343" width="287.2" height="28" rx="5"/><text x="530.4" y="362" text-anchor="middle">killed (/kill @e): recreated at once</text><circle class="dot" cx="372.8" cy="357" r="10"/><text x="372.8" y="361" text-anchor="middle" class="mark">4</text></svg><figcaption>An anchor exists only while its companion follows its owner.</figcaption></figure>
+<ol class="legend">
+<li>The companion starts following (or its owner connects while it follows): it creates its anchor.</li>
+<li>Every tick, the anchor is moved to the companion's position.</li>
+<li>The companion stops following, its owner disconnects, or it dies: the anchor is removed.</li>
+<li>Something kills the anchor (<code>/kill @e</code> reaches it): it is recreated at once.</li>
+</ol>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Until ownership is built, a test command attaches or detaches the anchor, and records the player who runs it as the companion&#39;s owner, so that leaving and coming back with the owner work as designed (<a href="saving.html">Saving</a>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A stable UUID per anchor, different from its companion's. Two entities sharing a UUID would crash <code>addNewPlayer</code>, which casts the existing entity to a <code>ServerPlayer</code> (<code>ServerLevel.java:987-991</code>).</div>
+<h3>What it does and does not do</h3>
+<div class="table"><table><tr><th>Effect</th><th>How</th><th>Source</th></tr><tr><td>Loads the world</td><td>Its player ticket, like any player of the world</td><td><code>ChunkMap.java:1033</code>, <code>DistanceManager.java:109-115</code></td></tr><tr><td>Natural monster spawning</td><td>Counts as a player nearby</td><td><code>ChunkMap.java:997</code></td></tr><tr><td>Mob despawning</td><td>Counts as a player nearby</td><td><code>Mob.java:686</code></td></tr><tr><td>Sleeping</td><td>Counts as an active player (below)</td><td><code>SleepStatus.java:39-45</code></td></tr><tr><td>Seen by clients</td><td>Never: <code>broadcastToPlayer</code> answers false</td><td><code>ChunkMap.java:1379</code></td></tr><tr><td>Chunks sent to it</td><td>Never: chunks go only to connected players, so no entity is paired with it and it gets no block updates</td><td><code>MinecraftServer.java:1129</code>, <code>ChunkMap.java:227</code></td></tr><tr><td>Attacked by mobs</td><td>Never: survival with <code>abilities.invulnerable</code>, so <code>canBeSeenAsEnemy</code> is false, and <code>canBeSeenByAnyone</code> false</td><td><code>Player.java:716</code>, <code>LivingEntity.java:940</code>, <code>TargetingConditions.java:64</code></td></tr><tr><td>Collisions, projectiles</td><td>None: <code>isPickable</code>, <code>isPushable</code>, <code>canBeHitByProjectile</code> false</td><td></td></tr><tr><td>Locator bar</td><td>Absent: <code>isTransmittingWaypoint</code> and <code>isReceivingWaypoints</code> false</td><td><code>Player.java:219</code>, <code>ServerLevel.java:2022-2030</code></td></tr><tr><td>Phantoms</td><td>Never: the time since rest only grows in the body tick, which the anchor never runs</td><td><code>ServerPlayer.java:672</code>, <code>PhantomSpawner.java:40-42</code></td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Survival with invulnerable abilities, not another game mode: spectator would be left out of natural spawning and of sleeping; creative still collides.</div>
+<h3>Sleeping</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>A non-spectator anchor counts as an active player for sleeping (<code>SleepStatus.java:39-45</code>): with one real player and a 100% threshold, two sleepers are needed. Vanilla's sleeping needs a real bed (<code>LivingEntity.java:3773</code>) and the body tick the anchor never runs (<code>ServerPlayer.java:581-620</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>When its companion sleeps in a bed, the anchor is marked asleep (<code>setSleepingPos</code>, <code>isSleepingLongEnough</code> answering true) and the world&#39;s sleeping count is updated (<code>updateSleepingPlayerList</code>). How a companion goes to bed is designed with its behaviour (<a href="../behaviour/index.html">Behaviour</a>).</div>
+<h3>Known side effects</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Stats and advancements: a <code>ServerPlayer</code> registers both in the player list's maps when it is built (<code>ServerPlayer.java:378-379</code>); they are not saved for a player outside the list (<code>PlayerList.java:622</code>), but they stay in the maps, hence a stable UUID per anchor. Advancement announcements go through the player list (<code>PlayerAdvancements.java:179</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Accepted as player-like: the wandering trader and patrols may pick the anchor as the player they spawn near (<code>WanderingTraderSpawner.java:76</code>, <code>PatrolSpawner.java:31</code>); monster spawners count it (<code>EntityGetter.java:100</code>).</div>
+<div class="stmt is-question"><span class="tag question">Question</span>Experience orbs fly toward the anchor and are never collected (<code>ExperienceOrb.java:157</code>). To solve without a mixin if possible.</div>
+<h3>Ruled out</h3>
+<div class="table"><table><tr><th>Option</th><th>Why it is ruled out</th></tr><tr><td>Loading chunks with a ticket alone (like ender pearls)</td><td>A ticket keeps chunks active, but what vanilla does around a player (monster spawning, despawning, sleeping) goes through the world's list of players</td></tr><tr><td>A spectator anchor</td><td>Left out of natural spawning (<code>ChunkMap.java:997</code>) and of sleeping (<code>SleepStatus.java:40</code>)</td></tr><tr><td>A creative anchor</td><td>Still collides</td></tr></table></div>
+</main>
+</div>
+</body>
+</html>
