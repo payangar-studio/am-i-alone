@@ -25,8 +25,8 @@ The companion's design is in `01-companion.md`.
 | Mode | The order an owner gives their companion. Only follow is designed so far; others (stay, wander, stay around the home...) will come. |
 | Home | The place a companion stays around when its mode says so. |
 | Form | How a companion exists in the world on the server. It always has exactly one. |
-| ??? (stored form) | The form of a companion that lives as an ordinary entity, stored and saved with its chunk. Name to choose. |
-| ??? (world-player form) | The form of a companion that is a player of the world and loads the world around it like a player. Name to choose. The stored form also extends `Player`; what differs is being a player *of the world*. |
+| Anchored form | The form of a companion that lives as an ordinary entity, stored and saved with its chunk. |
+| Anchor form | The form of a companion that is a player of the world and loads the world around it like a player. The anchored form also extends `Player`; what differs is being a player *of the world*. |
 | Connected player | A player of the server's list (`PlayerList`): counted in the player count, subject to the connection limit, shown in Tab. A companion never is one. |
 | Player of the world | A player of a world's list (`ServerLevel.players`): loads chunks around it, makes monsters spawn, counts for sleeping. |
 

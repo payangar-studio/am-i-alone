@@ -43,7 +43,7 @@ code of ours.
 
 Decision: on the server, a companion always has exactly one of two forms.
 
-| | ??? (stored form) | ??? (world-player form) |
+| | Anchored form | Anchor form |
 |---|---|---|
 | What it is | An entity extending `Player`, without a connection, like the mock player of vanilla's gametests (`makeMockPlayer`) | A `ServerPlayer` added to the world (`level.addNewPlayer`) without going through the list of connected players, with a fake connection that drops what is sent to it |
 | Loads the world | No: freezes when its chunk unloads | Yes, exactly like a player |
@@ -51,11 +51,11 @@ Decision: on the server, a companion always has exactly one of two forms.
 | Player of the world | No | Yes |
 | Cost | An entity's | A player's |
 
-Decision: a companion takes the world-player form when its owner puts it in
-follow mode, and the stored form otherwise. The other modes are not designed
+Decision: a companion takes the anchor form when its owner puts it in
+follow mode, and the anchored form otherwise. The other modes are not designed
 yet. A player has at most one companion in follow mode at a time.
 
-Decision: the world-player form keeps every effect of a player, on purpose. It
+Decision: the anchor form keeps every effect of a player, on purpose. It
 counts for sleeping, so an owner who wants to skip the night places a bed for
 their companion too; it makes monsters spawn around it.
 
@@ -80,14 +80,12 @@ arrival of another with the same UUID: the client builds a new
 (interpolation, animation state) starts over. Making it invisible is a
 requirement; how is still to be found and measured in game.
 
-### Open question: the names of the two forms
+### The names of the two forms
 
-The names describe what the form is to the world, not what it does for its
-owner: another mode than follow may take the world-player form later. Rejected
-so far: passive and active (reads like a mode), `CompanionEntity` and
-`CompanionPlayer`, `ChunkBody` and `PlayerBody`, `Settled` and `Escort`,
-`Grounded` and `Bound`, `Local` and `Present`, `Hosted` and `Host`, `Loaded`
-and `Loading`, `Rooted` and `Roaming` (the last three came closest).
+Decision: **anchored** and **anchor**. The anchored form is held by its chunk;
+the anchor form holds the world loaded around it ("anchor" is the usual name of
+a chunk loader in mods). The names say what the form is to the world, not what
+it does for its owner: another mode than follow may take the anchor form later.
 
 ## The core and the forms
 
@@ -109,7 +107,7 @@ an object, the companion's core, that the form carries:
   one. The motor turns the Brain's intentions (go there, look at that) into
   player inputs (move, jump, turn). Its design is still to come.
 
-Fact: the world-player form announces the companion type by overriding
+Fact: the anchor form announces the companion type by overriding
 `getAddEntityPacket`, and both forms override `getType()` and `typeHolder()` to
 carry the type `am_i_alone:companion` instead of `minecraft:player`. A private
 field of `Entity` still holds `minecraft:player`, and a few methods read it
@@ -117,7 +115,7 @@ directly (default name, loot table, size, network update interval). For a
 companion these values are a player's today, so they match; a test has to cover
 this coupling.
 
-Fact: `Player` takes its UUID back from its profile on every load. A stored form
+Fact: `Player` takes its UUID back from its profile on every load. A anchored form
 reloaded with its chunk would change identity; the companion's profile (UUID,
 name, skin) has to be saved and restored by the core.
 
@@ -132,7 +130,7 @@ the sync.
 Decision: each form is saved where vanilla keeps that kind of thing, never in
 the players' files.
 
-| | Stored form | World-player form |
+| | Anchored form | Anchor form |
 |---|---|---|
 | Where | With its chunk, in the world's entity files | In the mod's data, saved with the world (a Fabric global attachment) |
 | When | When vanilla saves or unloads the chunk | When its owner disconnects, before each world save (`BEFORE_SAVE`), and when the server stops |

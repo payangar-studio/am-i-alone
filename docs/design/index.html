@@ -167,8 +167,8 @@
       <tr><td>Mode</td><td>The order an owner gives their companion. Only follow is designed so far; others (stay, wander, stay around the home...) will come.</td></tr>
       <tr><td>Home</td><td>The place a companion stays around when its mode says so.</td></tr>
       <tr><td>Form</td><td>How a companion exists in the world on the server. It always has exactly one.</td></tr>
-      <tr><td><span class="missing">???</span> (stored form)</td><td>Lives as an ordinary entity, stored and saved with its chunk. Name to choose.</td></tr>
-      <tr><td><span class="missing">???</span> (world-player form)</td><td>A player of the world: loads the world around it like a player. Name to choose. The stored form also extends <code>Player</code>; what differs is being a player <em>of the world</em>.</td></tr>
+      <tr><td>Anchored form</td><td>Lives as an ordinary entity, stored and saved with its chunk.</td></tr>
+      <tr><td>Anchor form</td><td>A player of the world: loads the world around it like a player. The anchored form also extends <code>Player</code>; what differs is being a player <em>of the world</em>.</td></tr>
       <tr><td>Connected player</td><td>A player of the server's list (<code>PlayerList</code>): counted, subject to the connection limit, shown in Tab. A companion never is one.</td></tr>
       <tr><td>Player of the world</td><td>A player of a world's list (<code>ServerLevel.players</code>): loads chunks around it, makes monsters spawn, counts for sleeping.</td></tr>
     </table>
@@ -211,8 +211,8 @@
   <div class="stmt is-decision">
     <span class="tag decision">Decision</span>
     On the server, a companion always has exactly one of two forms. It takes the
-    world-player form when its owner puts it in <strong>follow</strong> mode, and the
-    stored form otherwise. The other modes are not designed yet. A player has at most
+    anchor form when its owner puts it in <strong>follow</strong> mode, and the
+    anchored form otherwise. The other modes are not designed yet. A player has at most
     one companion in follow mode at a time.
   </div>
 
@@ -232,13 +232,13 @@
       <line class="line" x1="85" y1="82" x2="85" y2="118" marker-end="url(#arrow)"/>
 
       <rect class="box-stored" x="10" y="122" width="250" height="110" rx="8"/>
-      <text x="135" y="146" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> stored form</text>
+      <text x="135" y="146" text-anchor="middle" class="title">Anchored form</text>
       <text x="135" y="168" text-anchor="middle">an entity extending Player</text>
       <text x="135" y="186" text-anchor="middle">freezes with its chunk</text>
       <text x="135" y="204" text-anchor="middle">cost of an entity</text>
 
       <rect class="box-player" x="420" y="122" width="250" height="110" rx="8"/>
-      <text x="545" y="146" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> world-player form</text>
+      <text x="545" y="146" text-anchor="middle" class="title">Anchor form</text>
       <text x="545" y="168" text-anchor="middle">a ServerPlayer of the world</text>
       <text x="545" y="186" text-anchor="middle">loads chunks like a player</text>
       <text x="545" y="204" text-anchor="middle">cost of a player</text>
@@ -273,13 +273,13 @@
   <ol class="legend">
     <li>Its owner puts it in follow mode: it becomes a player of the world, and loads the world as it goes.</li>
     <li>Another mode, or it loses its owner: it goes back to being an ordinary entity, in the chunk where it stands.</li>
-    <li>The stored form is saved with its chunk, like a villager: see <a href="#saving">Saving</a>.</li>
+    <li>The anchored form is saved with its chunk, like a villager: see <a href="#saving">Saving</a>.</li>
     <li>When its owner disconnects, the companion leaves the world with them, saved by the mod, and comes back where it was when they reconnect.</li>
   </ol>
 
   <div class="table">
     <table>
-      <tr><th></th><th><span class="missing">???</span> stored form</th><th><span class="missing">???</span> world-player form</th></tr>
+      <tr><th></th><th>Anchored form</th><th>Anchor form</th></tr>
       <tr><td>What it is</td><td>An entity extending <code>Player</code>, without a connection, like vanilla's gametest mock player (<code>makeMockPlayer</code>)</td><td>A <code>ServerPlayer</code> added to the world (<code>level.addNewPlayer</code>), outside the list of connected players, with a fake connection that drops what is sent to it</td></tr>
       <tr><td>Loads the world</td><td>No: freezes when its chunk unloads</td><td>Yes, exactly like a player</td></tr>
       <tr><td>Connected player</td><td>No</td><td>No</td></tr>
@@ -290,7 +290,7 @@
 
   <div class="stmt is-decision">
     <span class="tag decision">Decision</span>
-    The world-player form keeps every effect of a player, on purpose. It counts for
+    The anchor form keeps every effect of a player, on purpose. It counts for
     sleeping, so an owner who wants to skip the night places a bed for their companion
     too; it makes monsters spawn around it.
   </div>
@@ -314,17 +314,12 @@
     entity (interpolation, animation state) starts over. How to hide it is still to be
     found and measured in game.
   </div>
-  <div class="stmt is-question">
-    <span class="tag question">Question</span>
-    <strong>The names of the two forms.</strong> They describe what the form is to the
-    world, not what it does for its owner: another mode than follow may take the
-    world-player form later. Rejected so far: passive and active (reads like a mode),
-    <code>CompanionEntity</code> and <code>CompanionPlayer</code>, <code>ChunkBody</code>
-    and <code>PlayerBody</code>, <code>Settled</code> and <code>Escort</code>,
-    <code>Grounded</code> and <code>Bound</code>, <code>Local</code> and
-    <code>Present</code>, <code>Hosted</code> and <code>Host</code>, <code>Loaded</code>
-    and <code>Loading</code>, <code>Rooted</code> and <code>Roaming</code> (the last three
-    came closest).
+  <div class="stmt is-decision">
+    <span class="tag decision">Decision</span>
+    <strong>The names: anchored and anchor.</strong> The anchored form is held by its
+    chunk; the anchor form holds the world loaded around it ("anchor" is the usual name of
+    a chunk loader in mods). They say what the form is to the world, not what it does for
+    its owner: another mode than follow may take the anchor form later.
   </div>
 
   <h2 id="core">The core and the forms</h2>
@@ -350,13 +345,13 @@
 
       <rect class="box-stored" x="10" y="140" width="220" height="74" rx="8"/>
       <circle class="dot" cx="28" cy="158" r="10"/><text x="28" y="162" text-anchor="middle" class="mark">2</text>
-      <text x="125" y="164" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> stored form</text>
+      <text x="125" y="164" text-anchor="middle" class="title">Anchored form</text>
       <text x="125" y="184" text-anchor="middle" class="small">extends Player</text>
       <text x="125" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
 
       <rect class="box-player" x="450" y="140" width="220" height="74" rx="8"/>
       <circle class="dot" cx="468" cy="158" r="10"/><text x="468" y="162" text-anchor="middle" class="mark">2</text>
-      <text x="565" y="164" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> world-player form</text>
+      <text x="565" y="164" text-anchor="middle" class="title">Anchor form</text>
       <text x="565" y="184" text-anchor="middle" class="small">extends ServerPlayer</text>
       <text x="565" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
 
@@ -404,7 +399,7 @@
   </div>
   <div class="stmt is-fact">
     <span class="tag fact">Fact</span>
-    <code>Player</code> takes its UUID back from its profile on every load: a stored form
+    <code>Player</code> takes its UUID back from its profile on every load: a anchored form
     reloaded with its chunk would change identity. The core saves and restores the
     companion's profile (UUID, name, skin).
   </div>
@@ -424,7 +419,7 @@
   </div>
   <div class="table">
     <table>
-      <tr><th></th><th>Stored form</th><th>World-player form</th></tr>
+      <tr><th></th><th>Anchored form</th><th>Anchor form</th></tr>
       <tr><td>Where</td><td>With its chunk, in the world's entity files</td><td>In the mod's data, saved with the world (a Fabric global attachment)</td></tr>
       <tr><td>When</td><td>When vanilla saves or unloads the chunk</td><td>When its owner disconnects, before each world save (<code>BEFORE_SAVE</code>), and when the server stops</td></tr>
       <tr><td>Back in the world</td><td>With its chunk</td><td>When its owner connects, where it was</td></tr>
@@ -458,10 +453,10 @@
       <line x1="418" y1="10" x2="418" y2="290" style="stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 3 5"/>
 
       <rect class="box-stored" x="10" y="40" width="230" height="58" rx="8"/>
-      <text x="125" y="64" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> stored form</text>
+      <text x="125" y="64" text-anchor="middle" class="title">Anchored form</text>
       <text x="125" y="84" text-anchor="middle" class="small">core, Brain</text>
       <rect class="box-player" x="10" y="112" width="230" height="58" rx="8"/>
-      <text x="125" y="136" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> world-player form</text>
+      <text x="125" y="136" text-anchor="middle" class="title">Anchor form</text>
       <text x="125" y="156" text-anchor="middle" class="small">core, Brain</text>
 
       <path class="line" d="M240,69 C270,69 275,105 295,105"/>
