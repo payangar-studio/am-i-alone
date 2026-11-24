@@ -62,8 +62,9 @@ server, and what crosses between them).
 
 ## Open questions
 
-- Switching forms: checking it in game; what a companion's death is
-  (`companion/03-switch.md`).
+- Switching forms: checking it in game (`companion/03-switch.md`).
+- How a companion's death is built so that death mods apply to it
+  (`companion/00-overview.md`).
 - An owner who never comes back (`companion/05-saving.md`).
 - Taming, the other modes (`ownership/00-overview.md`).
 - The motor (`behaviour/00-overview.md`).

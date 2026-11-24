@@ -20,6 +20,7 @@ What crosses from the server to the client:
 | Spawn packet, type `am_i_alone:companion` | A companion comes into view | The client builds a `ClientCompanion` | `companion/04-facade.md` |
 | A player's synced data | Then, and on every change | Health, pose, equipment | `companion/04-facade.md` |
 | Identity (synced attachment) | Then, and on every change | Name and skin on the facade | `companion/02-identity.md` |
-| Form switch notice (mod packet) | Just before a switch | The client keeps its entity | `companion/03-switch.md` |
+| Switch begins (mod packet) | Just before a switch | The client marks the entity and ignores its removal and arrival | `companion/03-switch.md` |
+| Switch ends (mod packet) | Right after a switch | The client applies a removal still pending, then clears the mark | `companion/03-switch.md` |
 
 Nothing goes from the client to the server yet.

@@ -37,18 +37,30 @@ and the equipment exactly, with nothing lost or duplicated.
 ### The client keeps its entity
 
 Decision: the client entity is the companion's facade; the forms change behind
-it, on the server only. The sequence:
+it, on the server only. The switch is framed by two mod packets, "switch
+begins" and "switch ends", sent to the clients that see the companion. The
+sequence:
 
-1. The server sends a mod packet to the clients that see the companion: "the
-   companion of entity id N changes form". A client that has an entity N marks
-   it; one that has none ignores the packet.
+1. The server sends "switch begins: entity N". A client that has an entity N
+   marks it; one that has none ignores the packet.
 2. The server saves the old form and removes it: vanilla sends the removal of
-   N, which a client that marked N ignores.
+   N. A client that marked N ignores it, and keeps it pending.
 3. The server creates and adds the new form with entity id N: vanilla sends its
-   arrival, which the client ignores too. The `ClientCompanion` stays the same
-   object, and the mark is cleared.
+   arrival. A client that marked N ignores it too, which clears the pending
+   removal: the `ClientCompanion` stays the same object.
 4. The server sends the new form's data, as for any entity: the client applies
    it to the same object.
+5. The server sends "switch ends: entity N". A removal still pending is applied
+   now, then the mark is cleared: a client that saw the old form but does not
+   see the new one never keeps a ghost.
+
+Fact, read in the 26.3 code (`ChunkMap.addEntity`, `removeEntity`): the removal
+is sent at once to the clients that tracked the old form, and the new form is
+paired at once, in the same tick, with the players in range (`updatePlayers`).
+Both forms carry the same entity type, so the same tracking range, at the same
+place: the clients that see the new form are those that saw the old one.
+Removing the old form before adding the new one is required: the chunk map
+refuses an entity id already tracked ("Entity is already tracked!").
 
 Decision: the ignoring is done by a client mixin on `handleRemoveEntities` and
 `handleAddEntity` of `ClientPacketListener`, for marked entities only. No
@@ -67,18 +79,13 @@ that changes death applies to it; a riding or ridden companion stays under
 vanilla's riding. The switch waits until vanilla is done, and never stands in
 for it.
 
-### Open questions
+What a companion's death leads to is decided on the feature page
+(`00-overview.md`): dead for good.
 
-- **What a companion's death is.** Vanilla's player death ends on a respawn
-  that a client asks for; a companion has no client. What follows its death
-  (it stays dead, it comes back, its items) is to decide, with vanilla's death
-  left untouched.
+### Open question
 
 - **Checking it in game**: a switch in the middle of a Better Combat attack,
   and while walking, must not show.
-- **A client that starts seeing the companion during the switch**: whether it
-  can receive the arrival without the notice, to check against how vanilla
-  tracks entities.
 
 ### Ruled out
 

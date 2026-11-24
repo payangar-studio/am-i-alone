@@ -15,6 +15,9 @@ freezes when its area unloads. When it must keep the world alive around it (an
 owner taking it along, later), it does so exactly like a player. Whatever
 happens, it keeps everything it has, and it never changes visibly.
 
+Decision: a companion that dies is dead for good, like a creature, not like a
+player: it does not respawn. Kept simple for now.
+
 Decision: its skin is one of the skins the mod ships, like an entity's
 variant: chosen when the companion is created, it never changes after.
 Players' own skins are not used.
@@ -59,6 +62,9 @@ form (`03-switch.md`).
 Until the other features exist, test commands stand in for them: one creates
 a companion (where the places will), one switches its form (where the modes
 will). Their syntax is decided with the issue of the first brick.
+
+Open question: how a companion's death is built so that death mods (Ragdoll
+Deaths, Simple Blood) apply to it: being checked.
 
 Sub-pages:
 
