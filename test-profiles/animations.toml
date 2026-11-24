@@ -1,0 +1,18 @@
+# The mods of the grimoire-et-sortileges modpack that change how players are
+# animated or die, with the versions the pack uses: companions must look like
+# players under them. Touch'n Motion is part of that set too, but it is not on
+# Modrinth: add its jar to runs/animations/mods/ by hand for a live test.
+mods = [
+    "player-animation-library@lQIjpkZc",
+    "cloth-config@fg2uyxOW",
+    "better-combat@8Vyq1h9a",
+    "not-enough-animations@bznXVEiI",
+    "entitytexturefeatures@svwZ2o4d",
+    "entity-model-features@vF6qLXsA",
+    "emf-compat-core@p3tzyILe",
+    "emf-compat-better-combat@2tSBug0a",
+    "not-enough-animations-emf-compat@Xs6WnTQm",
+    "ragdoll-deaths@YUh3fAXa",
+    "simple-blood@7ZHuAi6H",
+]
+packs = ["fresh-animations@xfE3qfr5", "fa-player-extension@Wj7NeGjP"]
