@@ -29,9 +29,9 @@ Fact, read in the 26.3 code: vanilla's entity variants (`pig_variant`,
 `wolf_variant`...) are registries of entries, chosen at spawn
 (`VariantUtils.selectVariantToSpawn`) and saved with the entity.
 
-Open question: the mod's skins as a registry filled by data, like vanilla's
-variants (a datapack or another mod can add skins, and the server sends the
-list to the clients), or as a list fixed in the mod's code. Not a synced entity data declared in both forms and in the
+Decision: the mod's skins behave as vanilla's variants: a registry filled by
+data (`am_i_alone:companion_skin`), so a datapack or another mod can add skins,
+and the server sends the list to the clients. Not a synced entity data declared in both forms and in the
 client class, where any offset between the three breaks the sync.
 
 Fact, read in the 26.3 code: `Player` takes its UUID back from its profile on
