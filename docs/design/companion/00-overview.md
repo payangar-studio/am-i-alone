@@ -69,7 +69,7 @@ Sub-pages:
 | `01-entity.md` The entity | What the companion is on the server, and why `Avatar` |
 | `02-facade.md` Client facade | What a client builds for a companion, why the mods animate it, why it is not in Tab |
 | `03-loading.md` World loading | How a following companion keeps the world alive like a player, and what a player brings that it does not |
-| `04-identity.md` Identity and skins | Its name, its UUID, its skin variant, and how the client learns them |
+| `04-identity.md` Identity, names and skins | Its name, its UUID, its skin variant, and how the client learns them |
 | `05-saving.md` Saving | Where a companion is saved, when its owner leaves, at restart and crash |
 | `06-death.md` Death | What happens when a companion dies, its death message, the death mods |
 
