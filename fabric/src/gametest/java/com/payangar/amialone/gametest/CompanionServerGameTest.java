@@ -101,25 +101,34 @@ public class CompanionServerGameTest {
         level.getScoreboard().addPlayerToTeam(announced.getScoreboardName(), team);
         String name = announced.getName().getString();
         announced.kill(level);
-        helper.assertTrue(
-                received.stream().anyMatch(message -> message.getString().contains(name)),
-                "no death message naming " + name + " reached the player: " + received);
+        List<Component> announcedMessages = List.copyOf(received);
 
-        level.getGameRules().set(GameRules.SHOW_DEATH_MESSAGES, false, server);
         received.clear();
-        Companion silent = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
-        silent.kill(level);
-        level.getGameRules().set(GameRules.SHOW_DEATH_MESSAGES, true, server);
-        helper.assertTrue(received.isEmpty(), "a death message was sent with show_death_messages off: " + received);
+        Companion silent;
+        level.getGameRules().set(GameRules.SHOW_DEATH_MESSAGES, false, server);
+        try {
+            silent = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+            silent.kill(level);
+        } finally {
+            level.getGameRules().set(GameRules.SHOW_DEATH_MESSAGES, true, server);
+        }
+        List<Component> silentMessages = List.copyOf(received);
 
-        // LivingEntity.tickDeath removes a dead entity after 20 ticks.
+        // LivingEntity.tickDeath removes a dead entity after 20 ticks. The witness and the team
+        // are cleaned up before any assertion, so a failure leaves nothing behind.
         helper.runAfterDelay(30, () -> {
-            helper.assertTrue(announced.isRemoved() && silent.isRemoved(), "a dead companion was not removed");
-            helper.assertTrue(
-                    level.getScoreboard().getPlayersTeam(announced.getScoreboardName()) == null,
-                    "a dead companion stayed in its team");
+            boolean removed = announced.isRemoved() && silent.isRemoved();
+            boolean leftTeam = level.getScoreboard().getPlayersTeam(announced.getScoreboardName()) == null;
             server.getPlayerList().remove(witness);
             level.getScoreboard().removePlayerTeam(team);
+            helper.assertTrue(
+                    announcedMessages.stream().anyMatch(message -> message.getString().contains(name)),
+                    "no death message naming " + name + " reached the player: " + announcedMessages);
+            helper.assertTrue(
+                    silentMessages.isEmpty(),
+                    "a death message was sent with show_death_messages off: " + silentMessages);
+            helper.assertTrue(removed, "a dead companion was not removed");
+            helper.assertTrue(leftTeam, "a dead companion stayed in its team");
             helper.succeed();
         });
     }

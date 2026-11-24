@@ -1,6 +1,7 @@
 package com.payangar.amialone.client.companion;
 
 import com.mojang.authlib.GameProfile;
+import com.payangar.amialone.companion.Companion;
 import com.payangar.amialone.companion.CompanionIdentity;
 import com.payangar.amialone.companion.CompanionSkin;
 import com.payangar.amialone.companion.Companions;
@@ -30,7 +31,8 @@ public class ClientCompanion extends RemotePlayer {
 
     /** Makes every client level build companions as client companions. */
     public static void register() {
-        Companions.clientFactory = (type, level) -> new ClientCompanion((ClientLevel) level);
+        Companions.clientFactory = (type, level) ->
+                level instanceof ClientLevel clientLevel ? new ClientCompanion(clientLevel) : new Companion(type, level);
     }
 
     private @Nullable CompanionIdentity identity() {
@@ -64,6 +66,12 @@ public class ClientCompanion extends RemotePlayer {
         return identity == null || identity.fullName().isEmpty()
                 ? super.getName()
                 : Component.literal(identity.fullName());
+    }
+
+    /** Its name as plain text, rather than the placeholder profile's name. */
+    @Override
+    public String getPlainTextName() {
+        return getName().getString();
     }
 
     /** Its UUID, as on the server, so the client finds its team. */

@@ -66,7 +66,9 @@ public final class Companions {
     }
 
     private static Avatar create(EntityType<Avatar> type, Level level) {
-        return level.isClientSide() ? clientFactory.create(type, level) : new Companion(type, level);
+        return level.isClientSide() && clientFactory != null
+                ? clientFactory.create(type, level)
+                : new Companion(type, level);
     }
 
     private static Identifier id(String path) {
