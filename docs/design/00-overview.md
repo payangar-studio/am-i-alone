@@ -36,7 +36,7 @@ server, and what crosses between them).
 | Word | Meaning |
 |---|---|
 | Companion | A character of the mod, owned or not: one ordinary entity on the server, with a name, a skin, an owner, a mode, a home and a memory. |
-| Anchor | A hidden player of the world attached to a companion that follows its owner: it keeps the world alive around the companion like a player, and nothing else ("anchor" is the usual name of a chunk loader in mods). |
+| Companion ticket | A chunk ticket of the mod's own type, which a companion places where it stands while it follows its owner: the world around it lives as around a player. |
 | Facade | What a client sees of a companion: a remote player, which the player animation mods animate. |
 | Owner | The player a companion belongs to. A companion may have none. |
 | Mode | The order an owner gives their companion. Only follow is decided so far. |
@@ -58,7 +58,8 @@ server, and what crosses between them).
 
 ## Open questions
 
-- Experience orbs drawn to the anchor (`companion/03-anchor.md`).
+- Despawning around a companion far from any player, for a future mode
+  (`companion/03-loading.md`).
 - An issue to open on Ragdoll Deaths (`companion/06-death.md`).
 - Disconnection at server stop, and an owner who never comes back
   (`companion/05-saving.md`).

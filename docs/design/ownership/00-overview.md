@@ -17,8 +17,10 @@ Decisions so far:
 - **It leaves with its owner**: when the owner disconnects, a following
   companion leaves the world with them, and comes back where it was when they
   connect again.
-- **Every effect of a player**: a following companion counts for sleeping, so
-  the owner places a bed for it too to skip the night.
+- **Not counted for sleeping**: a following companion keeps the world alive
+  around it, but it is not a player, so it does not count among the sleepers
+  needed to skip the night. (An earlier decision, that it counted and needed
+  its own bed, is withdrawn.)
 
 Open questions: how a player makes a companion their own; the other modes
 (stay, wander, stay around its home), which will come later.
@@ -26,6 +28,6 @@ Open questions: how a player makes a companion their own; the other modes
 ## How it is built
 
 The owner and the mode are saved with the companion. Follow mode is what
-attaches an anchor to the companion (`../companion/03-anchor.md`); leaving and
+makes the companion place its ticket (`../companion/03-loading.md`); leaving and
 coming back with the owner is how a following companion is saved
 (`../companion/05-saving.md`).

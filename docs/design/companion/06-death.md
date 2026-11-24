@@ -15,7 +15,7 @@ a mod that adds death messages adds them for companions too.
 
 Decision: death stays vanilla's. The companion, an ordinary living entity, dies
 like one: `LivingEntity.die`, then `LivingEntity.tickDeath` sends the death
-event 60 and removes it (`RemovalReason.KILLED`) after 20 ticks. Its anchor is
+event 60 and removes it (`RemovalReason.KILLED`) after 20 ticks. Its ticket is
 removed with it, and its entry in the mod's data too (`05-saving.md`).
 
 Fact, read in the 26.3 code: a player's death message comes from the combat

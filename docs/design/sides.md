@@ -10,7 +10,7 @@ client.
 
 | Side | What runs there |
 |---|---|
-| Server | The companions (`Companion`), their Brain, the anchors of following companions (`CompanionAnchor`), never sent to clients, saving |
+| Server | The companions (`Companion`), their Brain, the tickets of following companions, saving |
 | Client | The facade of each companion (`ClientCompanion`), drawn by the player renderer |
 
 What crosses from the server to the client:
@@ -21,7 +21,5 @@ What crosses from the server to the client:
 | Synched data, ids 0 to 16 (`Entity`, `LivingEntity`, `Avatar`) | Then, and on every change | Health, pose, equipment, main hand, skin layers | `companion/02-facade.md` |
 | Identity (synced attachment) | Then, and on every change | Name and skin variant on the facade | `companion/04-identity.md` |
 | Skin variants (registry) | When a client joins | The textures a skin variant names | `companion/04-identity.md` |
-
-The anchor is never sent to any client (`companion/03-anchor.md`).
 
 Nothing goes from the client to the server yet.

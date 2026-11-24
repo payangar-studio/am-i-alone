@@ -9,8 +9,8 @@ disconnect, and comes back with them, where it was.
 ## How it is built
 
 Decision: a companion in the world is an ordinary entity, saved with its chunk
-by vanilla. Its anchor is never saved: it is created again when needed
-(`03-anchor.md`).
+by vanilla. Its ticket is never saved: it is placed again when needed
+(`03-loading.md`).
 
 Decision: the mod's data (a Fabric global attachment, saved with the world)
 keeps, for each owner, their following companion: its UUID, dimension and
@@ -20,7 +20,7 @@ with its owner. Never in the players' files.
 Step by step:
 
 1. Owner disconnects (`ServerPlayConnectionEvents.DISCONNECT`): the companion's
-   entity save is written to its owner's entry, the anchor is removed, and the
+   entity save is written to its owner's entry, its ticket is removed, and the
    companion is removed from the world (discarded, so its chunk forgets it).
    It is away with its owner.
 2. World save: vanilla writes the chunks (with the companions in the world) and
@@ -28,7 +28,7 @@ Step by step:
 3. Owner connects (`ServerPlayConnectionEvents.JOIN`): the mod reads their
    entry, loads that chunk with a ticket as vanilla does for a joining player
    (`TicketType.PLAYER_SPAWN`), recreates the companion from its save if it was
-   away (or finds it in its chunk), and attaches a new anchor.
+   away (or finds it in its chunk), and places its ticket again.
 
 Decision: an entry's saved entity is removed when the companion comes back; the
 whole entry when it stops following, dies (`06-death.md`) or is removed for

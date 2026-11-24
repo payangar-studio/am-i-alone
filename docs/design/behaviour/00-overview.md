@@ -24,8 +24,7 @@ What is known, at the macro level:
 Open questions, designed with the first behaviour that moves (follow):
 
 - the motor;
-- moving a following companion to another dimension: the companion, an
-  ordinary entity, and its anchor, a `ServerPlayer` that vanilla moves through
-  a connection it only fakes;
+- moving a following companion to another dimension: an ordinary entity,
+  with its ticket moved to the new dimension;
 - whether hostile mobs attack a companion: vanilla's hostile mobs aim at
   players, which a companion is not on the server (inferred, not checked).
