@@ -3,14 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Am I Alone?: design</title>
+<title>Am I Alone? · design</title>
 <style>
   :root {
     --bg: #f7f6f2;
     --fg: #1d1c1a;
     --muted: #5f5b53;
     --rule: #d9d5cc;
+    --panel: #efede7;
     --accent: #3f7d3a;
+    --stored: #3f7d3a;
+    --stored-bg: #e3efe0;
+    --player: #2f62a8;
+    --player-bg: #e1e9f5;
+    --core: #8a5a12;
+    --core-bg: #f4e8d3;
+    --fact: #2f62a8;
+    --decision: #3f7d3a;
+    --question: #a8452f;
     color-scheme: light dark;
   }
   @media (prefers-color-scheme: dark) {
@@ -19,9 +29,20 @@
       --fg: #ecebe6;
       --muted: #a39f96;
       --rule: #34322e;
+      --panel: #201f1c;
       --accent: #7cc36f;
+      --stored: #7cc36f;
+      --stored-bg: #1f2e1c;
+      --player: #7aa7ea;
+      --player-bg: #1b2433;
+      --core: #e0b064;
+      --core-bg: #2e2516;
+      --fact: #7aa7ea;
+      --decision: #7cc36f;
+      --question: #ee8a70;
     }
   }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--bg);
@@ -29,39 +50,472 @@
     font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
   }
   main {
-    max-width: 46rem;
+    max-width: 52rem;
     margin: 0 auto;
-    padding: 3rem 16px;
+    padding: 2.5rem 16px 4rem;
   }
-  h1 {
-    margin: 0 0 0.25rem;
-    font-size: 2rem;
+  h1 { margin: 0 0 0.25rem; font-size: 2rem; }
+  h2 {
+    margin: 3rem 0 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-size: 1.45rem;
   }
-  .id {
-    color: var(--muted);
-    font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
-  }
-  .empty {
-    margin-top: 2rem;
-    padding: 1rem 1.25rem;
-    border-left: 4px solid var(--accent);
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-  }
-  code {
+  h3 { margin: 2rem 0 0.5rem; font-size: 1.1rem; }
+  p { margin: 0.6rem 0; }
+  .id, code {
     font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
     font-size: 0.92em;
   }
+  .id { color: var(--muted); }
+  .lede { font-size: 1.1rem; margin-top: 1rem; }
+  nav { margin: 1.25rem 0 0; font-size: 0.95rem; }
+  nav a { color: var(--accent); margin-right: 0.9rem; white-space: nowrap; }
+  .table {
+    overflow-x: auto;
+    margin: 0.75rem 0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .missing { color: var(--question); font-weight: 700; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.05rem 0.4rem;
+    border-radius: 3px;
+    margin-right: 0.35rem;
+    vertical-align: 0.1em;
+    color: var(--bg);
+  }
+  .fact { background: var(--fact); }
+  .decision { background: var(--decision); }
+  .question { background: var(--question); }
+  .stmt {
+    margin: 0.75rem 0;
+    padding: 0.6rem 0.9rem;
+    border-left: 4px solid var(--rule);
+    background: var(--panel);
+  }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-stored { fill: var(--stored-bg); stroke: var(--stored); stroke-width: 2; }
+  svg .box-player { fill: var(--player-bg); stroke: var(--player); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .line-stored { stroke: var(--stored); stroke-width: 2; fill: none; }
+  svg .line-player { stroke: var(--player); stroke-width: 2; fill: none; }
+  svg .line-none { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 4; }
+  svg .dot { fill: var(--fg); }
+  svg .dot-q { fill: var(--question); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; }
+  ol.legend li { margin: 0.35rem 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <main>
   <h1>Am I Alone?</h1>
-  <div class="id">am_i_alone</div>
-  <p class="empty">
-    The design of this mod is not written yet. It lives in
-    <code>docs/design/</code> on the <code>design</code> branch, and this page
-    is built from it.
+  <div class="id">am_i_alone · both-required · Fabric · Minecraft 26.3</div>
+  <p class="lede">
+    The mod adds <strong>companions</strong>: characters that look and animate like
+    players, but that nobody controls. Some live unowned in village taverns or
+    structures; a player can make one their own, the way one tames a wolf, and give
+    it orders (follow, stay, wander, stay around its home).
   </p>
+  <nav>
+    <a href="#glossary">Glossary</a>
+    <a href="#requirements">Requirements</a>
+    <a href="#forms">The two forms</a>
+    <a href="#core">Core and forms</a>
+    <a href="#saving">Saving</a>
+    <a href="#sides">Sides</a>
+    <a href="#ruled-out">Ruled out</a>
+    <a href="#other">Blocks, items, config</a>
+  </nav>
+
+  <h2 id="glossary">Glossary</h2>
+  <div class="table">
+    <table>
+      <tr><th>Word</th><th>Meaning</th></tr>
+      <tr><td>Companion</td><td>A character of the mod, owned or not. What defines it (identity, owner, mode, home, memory) outlives its changes of form.</td></tr>
+      <tr><td>Owner</td><td>The player a companion belongs to. A companion may have none.</td></tr>
+      <tr><td>Mode</td><td>The order an owner gives their companion: follow, stay, wander, stay around the home...</td></tr>
+      <tr><td>Home</td><td>The place a companion stays around when its mode says so.</td></tr>
+      <tr><td>Form</td><td>How a companion exists in the world on the server. It always has exactly one.</td></tr>
+      <tr><td><span class="missing">???</span> (stored form)</td><td>Lives as an ordinary entity, stored and saved with its chunk. Name to choose.</td></tr>
+      <tr><td><span class="missing">???</span> (world-player form)</td><td>A player of the world: loads the world around it like a player. Name to choose. The stored form also extends <code>Player</code>; what differs is being a player <em>of the world</em>.</td></tr>
+      <tr><td>Connected player</td><td>A player of the server's list (<code>PlayerList</code>): counted, subject to the connection limit, shown in Tab. A companion never is one.</td></tr>
+      <tr><td>Player of the world</td><td>A player of a world's list (<code>ServerLevel.players</code>): loads chunks around it, makes monsters spawn, counts for sleeping.</td></tr>
+    </table>
+  </div>
+
+  <h3>Minecraft and Fabric terms used here</h3>
+  <div class="table">
+    <table>
+      <tr><th>Term</th><th>What it is</th></tr>
+      <tr><td><code>Player</code>, <code>ServerPlayer</code></td><td>Vanilla's class of every player, and its server version for a connected player.</td></tr>
+      <tr><td><code>RemotePlayer</code></td><td>The class a client uses for the other players it sees.</td></tr>
+      <tr><td>Mannequin, <code>Avatar</code></td><td>Vanilla's player-shaped decoration entity, and the class it shares with players.</td></tr>
+      <tr><td><code>makeMockPlayer</code></td><td>Vanilla's helper that creates a player without a connection, for its own tests.</td></tr>
+      <tr><td>Brain</td><td>Vanilla's AI system (villagers, piglins, warden): memories, sensors, activities.</td></tr>
+      <tr><td>Global attachment</td><td>Data that Fabric API keeps for the whole server and saves with the world.</td></tr>
+    </table>
+  </div>
+
+  <h2 id="requirements">Requirements</h2>
+  <div class="table">
+    <table>
+      <tr><th>Requirement</th><th>What it means</th></tr>
+      <tr><td>1. Animated like a player</td><td>Owned or not, the player animation mods (EMF, ETF, Fresh Animations Player Extension, Not Enough Animations, Touch'n Motion, Better Combat, EMF Compat) animate it with no compatibility code of ours.</td></tr>
+      <tr><td>2. Cheap when unowned</td><td>A tavern may hold several: they cost like villagers and freeze with their chunk.</td></tr>
+      <tr><td>3. Like a player when its owner wants it</td><td>Owned and in a mode that asks for it, it loads the world exactly as a player does: chunks, monster spawning, everything the server does around a player.</td></tr>
+      <tr><td>4. Never a connected player</td><td>Not counted, takes no slot of the connection limit, not shown in Tab.</td></tr>
+      <tr><td>5. No mixin</td><td>No change to Minecraft's own classes while a vanilla or Fabric API does the job.</td></tr>
+    </table>
+  </div>
+  <div class="stmt is-fact">
+    <span class="tag fact">Fact</span>
+    Read in the 26.3 code of these mods: they only act on an entity that is a
+    <code>Player</code>, often an <code>AbstractClientPlayer</code>, <em>on the client</em>.
+    The server does not need a connected player: the client building a player is enough.
+  </div>
+
+  <h2 id="forms">The two forms</h2>
+  <div class="stmt is-decision">
+    <span class="tag decision">Decision</span>
+    On the server, a companion always has exactly one of two forms. It takes the
+    world-player form only when it has an owner <strong>and</strong> its mode asks it to load
+    the world; otherwise the stored form.
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 680 385" role="img" aria-labelledby="f1t">
+      <title id="f1t">The two forms of a companion and the switch between them</title>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/>
+        </marker>
+      </defs>
+
+      <rect class="box-plain" x="10" y="20" width="150" height="62" rx="6"/>
+      <text x="85" y="44" text-anchor="middle" class="title">Spawned</text>
+      <text x="85" y="62" text-anchor="middle" class="small">tavern, structure,</text>
+      <text x="85" y="75" text-anchor="middle" class="small">command</text>
+      <line class="line" x1="85" y1="82" x2="85" y2="118" marker-end="url(#arrow)"/>
+
+      <rect class="box-stored" x="10" y="122" width="250" height="110" rx="8"/>
+      <text x="135" y="146" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> stored form</text>
+      <text x="135" y="168" text-anchor="middle">an entity extending Player</text>
+      <text x="135" y="186" text-anchor="middle">freezes with its chunk</text>
+      <text x="135" y="204" text-anchor="middle">cost of an entity</text>
+
+      <rect class="box-player" x="420" y="122" width="250" height="110" rx="8"/>
+      <text x="545" y="146" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> world-player form</text>
+      <text x="545" y="168" text-anchor="middle">a ServerPlayer of the world</text>
+      <text x="545" y="186" text-anchor="middle">loads chunks like a player</text>
+      <text x="545" y="204" text-anchor="middle">cost of a player</text>
+
+      <path class="line" d="M260,150 C320,110 360,110 418,150" marker-end="url(#arrow)"/>
+      <circle class="dot" cx="340" cy="114" r="10"/><text x="340" y="118" text-anchor="middle" class="mark">1</text>
+      <text x="340" y="96" text-anchor="middle">owner + mode that loads the world</text>
+
+      <path class="line" d="M420,206 C360,246 320,246 262,206" marker-end="url(#arrow)"/>
+      <circle class="dot" cx="340" cy="241" r="10"/><text x="340" y="245" text-anchor="middle" class="mark">2</text>
+      <text x="340" y="268" text-anchor="middle">a mode that does not, or no owner</text>
+
+      <rect class="box-plain" x="10" y="292" width="250" height="56" rx="6"/>
+      <circle class="dot" cx="28" cy="320" r="10"/><text x="28" y="324" text-anchor="middle" class="mark">3</text>
+      <text x="145" y="314" text-anchor="middle">saved with its chunk</text>
+      <text x="145" y="332" text-anchor="middle" class="small">world entity files</text>
+      <line class="line-stored" x1="60" y1="232" x2="60" y2="292"/>
+
+      <rect class="box-plain" x="420" y="292" width="250" height="56" rx="6"/>
+      <circle class="dot" cx="438" cy="320" r="10"/><text x="438" y="324" text-anchor="middle" class="mark">4</text>
+      <text x="555" y="314" text-anchor="middle">saved by the mod</text>
+      <text x="555" y="332" text-anchor="middle" class="small">before each world save, at stop</text>
+      <line class="line-player" x1="620" y1="232" x2="620" y2="292"/>
+
+      <text x="340" y="376" text-anchor="middle" class="small">switch: save the data, remove the form, create the other, same UUID, same place</text>
+    </svg>
+    <figcaption>One companion, one form at a time. The switch carries all of its data across.</figcaption>
+  </figure>
+  <ol class="legend">
+    <li>Owned, and given a mode that loads the world: it becomes a player of the world.</li>
+    <li>A mode that does not load the world, or losing its owner: it goes back to being an ordinary entity, in the chunk where it stands.</li>
+    <li>The stored form is saved with its chunk, like a villager: see <a href="#saving">Saving</a>.</li>
+    <li>A player is never stored in a chunk, and this one is not a connected player whose file vanilla writes: the mod saves it. See <a href="#saving">Saving</a>.</li>
+  </ol>
+
+  <div class="table">
+    <table>
+      <tr><th></th><th><span class="missing">???</span> stored form</th><th><span class="missing">???</span> world-player form</th></tr>
+      <tr><td>What it is</td><td>An entity extending <code>Player</code>, without a connection, like vanilla's gametest mock player (<code>makeMockPlayer</code>)</td><td>A <code>ServerPlayer</code> added to the world (<code>level.addNewPlayer</code>), outside the list of connected players, with a fake connection that drops what is sent to it</td></tr>
+      <tr><td>Loads the world</td><td>No: freezes when its chunk unloads</td><td>Yes, exactly like a player</td></tr>
+      <tr><td>Connected player</td><td>No</td><td>No</td></tr>
+      <tr><td>Player of the world</td><td>No</td><td>Yes: counts for sleeping and monster spawning</td></tr>
+      <tr><td>Cost</td><td>An entity's</td><td>A player's</td></tr>
+    </table>
+  </div>
+
+  <div class="stmt is-question">
+    <span class="tag question">Question</span>
+    <strong>The names of the two forms.</strong> "Passive" and "active" are ruled out:
+    an owned companion in a "stay home" mode would be in the "passive" form, which
+    reads like a mode.
+    <div class="table">
+      <table>
+        <tr><th>Option</th><th>Stored form</th><th>World-player form</th><th>What the name says</th></tr>
+        <tr><td>Vanilla class</td><td><code>CompanionEntity</code></td><td><code>CompanionPlayer</code></td><td>What it extends; "entity" is ambiguous, both are entities</td></tr>
+        <tr><td>Link to the world</td><td><code>ChunkBody</code></td><td><code>PlayerBody</code></td><td>Where it lives: stored with its chunk, or a player of the world</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="stmt is-question">
+    <span class="tag question">Question</span>
+    <strong>Which modes take the world-player form.</strong> Following its owner, surely:
+    otherwise the companion freezes as soon as its owner walks away. For stay, wander
+    and stay around the home, it depends on what a companion left far from its owner
+    should do: live on (a player's cost) or freeze.
+  </div>
+  <div class="stmt is-question">
+    <span class="tag question">Question</span>
+    <strong>When the owner disconnects.</strong> Does their companion keep the
+    world-player form, and so its chunks loaded, while its owner is away?
+  </div>
+  <div class="stmt is-question">
+    <span class="tag question">Question</span>
+    <strong>What the world-player form keeps of a player.</strong> It counts for sleeping
+    ("1/2 players sleeping") and makes monsters spawn around it. Each effect can be
+    wanted, neutralised, or set per mode; sleeping may be neutralised without a mixin
+    if the companion goes to bed with its owner.
+  </div>
+  <div class="stmt is-question">
+    <span class="tag question">Question</span>
+    <strong>Does the switch show?</strong> On the client, the entity disappears and
+    reappears at the same place. If it shows in game, the switch needs hiding.
+  </div>
+
+  <h2 id="core">The core and the forms</h2>
+  <div class="stmt is-decision">
+    <span class="tag decision">Decision</span>
+    The two forms extend different vanilla classes (<code>Player</code> and
+    <code>ServerPlayer</code>), so the logic cannot live in a shared parent class. It
+    lives in an object, the companion's <strong>core</strong>, that the form carries.
+  </div>
+  <figure>
+    <svg viewBox="0 0 680 350" role="img" aria-labelledby="f2t">
+      <title id="f2t">The core carried by either form, the Brain and the motor</title>
+      <defs>
+        <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/>
+        </marker>
+      </defs>
+      <rect class="box-core" x="190" y="10" width="300" height="86" rx="8"/>
+      <circle class="dot" cx="208" cy="28" r="10"/><text x="208" y="32" text-anchor="middle" class="mark">1</text>
+      <text x="340" y="34" text-anchor="middle" class="title">Core</text>
+      <text x="340" y="56" text-anchor="middle">identity (name, skin, UUID), owner,</text>
+      <text x="340" y="74" text-anchor="middle">mode, home, rule that picks the form</text>
+
+      <rect class="box-stored" x="10" y="140" width="220" height="74" rx="8"/>
+      <circle class="dot" cx="28" cy="158" r="10"/><text x="28" y="162" text-anchor="middle" class="mark">2</text>
+      <text x="125" y="164" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> stored form</text>
+      <text x="125" y="184" text-anchor="middle" class="small">extends Player</text>
+      <text x="125" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
+
+      <rect class="box-player" x="450" y="140" width="220" height="74" rx="8"/>
+      <circle class="dot" cx="468" cy="158" r="10"/><text x="468" y="162" text-anchor="middle" class="mark">2</text>
+      <text x="565" y="164" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> world-player form</text>
+      <text x="565" y="184" text-anchor="middle" class="small">extends ServerPlayer</text>
+      <text x="565" y="200" text-anchor="middle" class="small">vanilla plumbing only</text>
+
+      <path class="line" d="M125,140 L240,98" marker-end="url(#arrow2)"/>
+      <path class="line" d="M565,140 L440,98" marker-end="url(#arrow2)"/>
+      <text x="150" y="112" class="small">carries</text>
+      <text x="505" y="112" class="small">carries</text>
+
+      <rect class="box-plain" x="262" y="140" width="156" height="74" rx="8"/>
+      <circle class="dot" cx="280" cy="158" r="10"/><text x="280" y="162" text-anchor="middle" class="mark">3</text>
+      <text x="345" y="164" text-anchor="middle" class="title">Brain</text>
+      <text x="340" y="184" text-anchor="middle" class="small">inside the form;</text>
+      <text x="340" y="200" text-anchor="middle" class="small">behaviours written once</text>
+      <line x1="230" y1="177" x2="262" y2="177" style="stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3"/>
+      <line x1="418" y1="177" x2="450" y2="177" style="stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3"/>
+
+      <rect class="box-todo" x="262" y="262" width="156" height="74" rx="8"/>
+      <circle class="dot" cx="280" cy="280" r="10"/><text x="280" y="284" text-anchor="middle" class="mark">4</text>
+      <text x="345" y="286" text-anchor="middle" class="title">Motor</text>
+      <text x="340" y="306" text-anchor="middle" class="small">intentions to inputs</text>
+      <text x="340" y="322" text-anchor="middle" class="small">design still to come</text>
+
+      <path class="line" d="M340,214 L340,260" marker-end="url(#arrow2)"/>
+      <text x="348" y="242" class="small">go, look</text>
+      <path class="line" d="M262,300 C190,300 125,280 125,216" marker-end="url(#arrow2)"/>
+      <path class="line" d="M418,300 C490,300 565,280 565,216" marker-end="url(#arrow2)"/>
+      <text x="150" y="318" class="small">move, jump, turn</text>
+      <text x="470" y="318" class="small">move, jump, turn</text>
+    </svg>
+    <figcaption>The core is the companion; a form is only how it is present in the world.</figcaption>
+  </figure>
+  <ol class="legend">
+    <li><strong>The core</strong> holds the companion's state and logic. It is saved in the form's data and moves from one form to the other with it.</li>
+    <li><strong>The forms</strong> only do what vanilla requires, and hand the rest to the core through an interface both forms implement.</li>
+    <li><strong>The Brain</strong> lives inside the form, as in any vanilla creature, and its memories are saved with it. It accepts any living entity, so a behaviour such as "follow the owner" is written once for both forms.</li>
+    <li><strong>The motor</strong> turns the Brain's intentions into player inputs. Vanilla's pathfinding requires a <code>Mob</code>, and neither form is one: the motor is ours to design.</li>
+  </ol>
+  <div class="stmt is-fact">
+    <span class="tag fact">Fact</span>
+    Both forms override <code>getType()</code> and <code>typeHolder()</code> to carry
+    <code>am_i_alone:companion</code>, but a private field of <code>Entity</code> still
+    holds <code>minecraft:player</code>, read directly by a few methods (default name,
+    loot table, size, network update interval). These values are a player's today, so
+    they match; a test has to cover this coupling.
+  </div>
+  <div class="stmt is-fact">
+    <span class="tag fact">Fact</span>
+    <code>Player</code> takes its UUID back from its profile on every load: a stored form
+    reloaded with its chunk would change identity. The core saves and restores the
+    companion's profile (UUID, name, skin).
+  </div>
+
+  <h2 id="saving">Saving</h2>
+  <div class="stmt is-decision">
+    <span class="tag decision">Decision</span>
+    Each form is saved where vanilla keeps that kind of thing, never in the players' files.
+  </div>
+  <div class="table">
+    <table>
+      <tr><th></th><th>Stored form</th><th>Player form</th></tr>
+      <tr><td>Where</td><td>With its chunk, in the world's entity files</td><td>In the mod's data, saved with the world (a Fabric global attachment)</td></tr>
+      <tr><td>When</td><td>When vanilla saves or unloads the chunk</td><td>Before each world save (<code>BEFORE_SAVE</code>), and when the server stops</td></tr>
+      <tr><td>On restart</td><td>Comes back with its chunk</td><td>Recreated at startup, at its position; loads its chunks again</td></tr>
+    </table>
+  </div>
+  <p>
+    Chunks and the mod's data are written during the same save: a crash between two saves
+    brings both back to the same moment, with no companion lost or duplicated. A crash
+    while the save is being written is not covered; vanilla has the same window between
+    the players' files and the chunks.
+  </p>
+  <div class="stmt is-fact">
+    <span class="tag fact">Fact</span>
+    At startup, vanilla saves the world before the server is declared started. Saving
+    the world-player forms then would overwrite the data with an empty list: it only happens
+    once they are restored.
+  </div>
+
+  <h2 id="sides">Sides</h2>
+  <p><code>mod.toml</code> sets <code>both-required</code>: the mod runs on the server and the client.</p>
+  <figure>
+    <svg viewBox="0 0 680 300" role="img" aria-labelledby="f3t">
+      <title id="f3t">What runs on the server, what reaches the client</title>
+      <defs>
+        <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/>
+        </marker>
+      </defs>
+      <text x="125" y="22" text-anchor="middle" class="title">Server</text>
+      <text x="550" y="22" text-anchor="middle" class="title">Client</text>
+      <line x1="418" y1="10" x2="418" y2="290" style="stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 3 5"/>
+
+      <rect class="box-stored" x="10" y="40" width="230" height="58" rx="8"/>
+      <text x="125" y="64" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> stored form</text>
+      <text x="125" y="84" text-anchor="middle" class="small">core, Brain</text>
+      <rect class="box-player" x="10" y="112" width="230" height="58" rx="8"/>
+      <text x="125" y="136" text-anchor="middle" class="title"><tspan style="fill: var(--question)">???</tspan> world-player form</text>
+      <text x="125" y="156" text-anchor="middle" class="small">core, Brain</text>
+
+      <path class="line" d="M240,69 C270,69 275,105 295,105"/>
+      <path class="line" d="M240,141 C270,141 275,105 295,105"/>
+      <circle class="dot" cx="295" cy="105" r="4"/>
+      <path class="line" d="M295,105 L428,105" marker-end="url(#arrow3)"/>
+      <circle class="dot" cx="330" cy="105" r="10"/><text x="330" y="109" text-anchor="middle" class="mark">1</text>
+      <circle class="dot" cx="390" cy="105" r="10"/><text x="390" y="109" text-anchor="middle" class="mark">2</text>
+      <text x="330" y="88" text-anchor="middle" class="small">spawn packet</text>
+      <text x="390" y="128" text-anchor="middle" class="small">synced data</text>
+
+      <path class="line-none" d="M295,105 C295,200 340,253 428,253"/>
+      <circle class="dot-q" cx="312" cy="200" r="10"/><text x="312" y="204" text-anchor="middle" class="mark">3</text>
+      <text x="328" y="196" class="small">no profile</text>
+
+      <rect class="box-plain" x="430" y="70" width="240" height="70" rx="8"/>
+      <text x="550" y="94" text-anchor="middle" class="title">ClientCompanion</text>
+      <text x="550" y="112" text-anchor="middle" class="small">a RemotePlayer, for both forms</text>
+      <text x="550" y="128" text-anchor="middle" class="small">drawn by the player renderer</text>
+
+      <rect class="box-plain" x="430" y="160" width="240" height="54" rx="8"/>
+      <text x="550" y="182" text-anchor="middle" class="title">Player animation mods</text>
+      <text x="550" y="200" text-anchor="middle" class="small">see a Player: they animate it</text>
+      <line class="line" x1="550" y1="140" x2="550" y2="158" marker-end="url(#arrow3)"/>
+
+      <rect class="box-plain" x="430" y="228" width="240" height="50" rx="8"/>
+      <text x="550" y="250" text-anchor="middle" class="title">Tab list</text>
+      <text x="550" y="268" text-anchor="middle" class="small">no companion: it has no profile</text>
+    </svg>
+    <figcaption>Two forms on the server, one on the client.</figcaption>
+  </figure>
+  <ol class="legend">
+    <li>Both forms announce the type <code>am_i_alone:companion</code> in their spawn packet; the factory of that type builds a <code>ClientCompanion</code> on the client, as vanilla does for the Mannequin.</li>
+    <li>Then the client receives a player's synced data (health, pose, equipment...), the same for both forms.</li>
+    <li>No profile is sent, which keeps the companion out of Tab. The client therefore knows neither its skin nor its name: see the question below.</li>
+  </ol>
+  <div class="stmt is-fact">
+    <span class="tag fact">Fact</span>
+    Checked in game (prototype on branch <code>spike/companion-forms</code>): Fresh
+    Animations Player Extension (an EMF pack), Not Enough Animations, Better Combat and
+    Touch'n Motion animate the companion in both forms. ETF and EMF Compat were loaded but
+    not checked one by one. Better Combat animates an attack, but only starts one from a
+    real client's key press: making a companion attack will take code of ours.
+  </div>
+  <div class="stmt is-question">
+    <span class="tag question">Question</span>
+    <strong>How the client learns the skin and the name.</strong>
+    <div class="table">
+      <table>
+        <tr><th>Option</th><th>What it takes</th></tr>
+        <tr><td>A synced entity data</td><td>The same declaration in both forms and in the client class, at the same rank: any offset breaks the sync</td></tr>
+        <tr><td>A Fabric attachment synced with the entity</td><td>A dedicated Fabric API; to be copied when the form switches</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h2 id="ruled-out">Ruled out</h2>
+  <div class="table">
+    <table>
+      <tr><th>Option</th><th>Why it is ruled out</th></tr>
+      <tr><td>A fake connected player (like Carpet's bots)</td><td>Counted among the players, limited by <code>max-players</code>, shown in Tab unless worked around; a player's cost for each companion, even unowned; never stored with its chunk</td></tr>
+      <tr><td>A subclass of <code>Avatar</code> (like the Mannequin), or a mob drawn with the player model</td><td>Not Enough Animations, ETF, EMF Compat and Touch'n Motion check for <code>Player</code> or <code>AbstractClientPlayer</code>: they would not animate it</td></tr>
+      <tr><td>Loading chunks with a ticket (like ender pearls)</td><td>A ticket keeps chunks active, but what vanilla does around a player (monster spawning, among others) goes through the world's list of players</td></tr>
+      <tr><td>A mixin to hide a player from Tab, or to stop it loading chunks</td><td>No longer needed: the form settles chunk loading, the absence of a profile settles Tab</td></tr>
+    </table>
+  </div>
+
+  <h2 id="other">Blocks, items, config</h2>
+  <p>None yet.</p>
 </main>
 </body>
 </html>
