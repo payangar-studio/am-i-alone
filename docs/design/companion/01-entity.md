@@ -43,3 +43,8 @@ Facts, read in the 26.3 code, that follow from not being a `Player`:
 - It is not a `Mob`: it has no goals and no pathfinding of its own. Its
   behaviour runs on vanilla's Brain, with a motor still to design
   (`../behaviour/`).
+
+Decision: its attributes are a living entity's, as the Mannequin's
+(`DefaultAttributes.java:140`), not a player's: a player's waypoint transmit
+range would put every companion on every player's locator bar. A player's
+ability to be found that way, if ever wanted, is chosen on purpose.

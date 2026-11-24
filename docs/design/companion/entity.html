@@ -150,6 +150,7 @@
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The companion sets the model customisation byte of <code>Avatar</code> (the skin layers shown: hat, jacket, sleeves, trousers), as the Mannequin does (<code>Mannequin.java:61</code>); its default, 0, would hide them (<code>AvatarRenderer.java:164-170</code>).</div>
 <h3>What follows from not being a player</h3>
 <div class="table"><table><tr><th>What</th><th>As an <code>Avatar</code> entity</th><th>Source</th></tr><tr><td>UUID</td><td>Its entity UUID, saved and loaded by vanilla like any entity</td><td></td></tr><tr><td>Scoreboard name</td><td>Its UUID: it never collides with a player's name (a <code>Player</code> would use its profile name, <code>Player.java:1672</code>)</td><td><code>Entity.java:3370</code></td></tr><tr><td>Saving</td><td>With its chunk, frozen when the chunk unloads, like any entity</td><td></td></tr><tr><td>Movement</td><td>Not a <code>Mob</code>: no goals and no pathfinding of its own; its behaviour runs on vanilla's Brain, with a motor still to design</td><td><a href="../behaviour/index.html">Behaviour</a></td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Its attributes are a living entity's, as the Mannequin's (<code>DefaultAttributes.java:140</code>), not a player's: a player's waypoint transmit range would put every companion on every player's locator bar. A player's ability to be found that way, if ever wanted, is chosen on purpose.</div>
 </main>
 </div>
 </body>

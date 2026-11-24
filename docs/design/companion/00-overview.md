@@ -58,9 +58,10 @@ Decision: no mixin. Every piece goes through a vanilla or Fabric API. One may
 come later for despawning around a companion far from any player
 (`03-loading.md`).
 
-Until the other features exist, test commands stand in for them: one creates a
-companion (where the places will), one places or removes its ticket (where
-follow mode will). Their syntax is decided with the issue of the first brick.
+Until the other features exist, commands stand in for them: vanilla's
+`/summon am_i_alone:companion` creates a companion (where the places will), and
+a test command will place or remove its ticket (where follow mode will), its
+syntax decided with the issue of the loading brick.
 
 Sub-pages:
 
