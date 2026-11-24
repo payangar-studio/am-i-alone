@@ -1,6 +1,6 @@
 # Managed by mc-cli. `mod update` rewrites the version and keeps the values.
 
-version = "0.5.0"
+version = "0.6.0"
 
 [init]
 minecraft = "26.3"
@@ -10,4 +10,6 @@ loom = "1.19.4"
 neoforge = "26.3.0.113"
 moddevgradle = "2.0.148"
 modmenu = "21.0.1"
+sponge-mixin = "0.17.4+mixin.0.8.7"
+mixinextras = "0.5.5"
 mod-publish-plugin = "2.2.1"

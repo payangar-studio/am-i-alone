@@ -32,7 +32,7 @@ kind = "file"
 
 [[files]]
 path = ".github/workflows/mod-publish.yml"
-sha256 = "21bd4abed8890a6a3e045a39a3d20616dd58fc342f3e37100633a0f71a967795"
+sha256 = "5c59c07a124930b8295fed6716bdf7201b84fe6612e94f8f8166e3d020d90a4e"
 kind = "file"
 
 [[files]]
@@ -62,7 +62,7 @@ kind = "file"
 
 [[files]]
 path = "AGENTS.md"
-sha256 = "34d3722d1b5ed2ff7ab0ea5413d98bdb570a51d33372b33cef265600a7c1e108"
+sha256 = "6d3a9d57d0cd8eaa181ce5ad2a561a802ae20406e48a2dd6a6c054efbf910005"
 kind = "block"
 
 [[files]]
@@ -86,13 +86,18 @@ sha256 = "e8fbb94ea92cd2d45f8f97ca9ef758d3d37f02c7f6f0d639db1ba2d2994a422c"
 kind = "file"
 
 [[files]]
+path = "build-logic/src/main/kotlin/Mixins.kt"
+sha256 = "d219861f3f7343499bb88cafe0ef6d7ba87c1a3684e19a1df219f13ca267d214"
+kind = "file"
+
+[[files]]
 path = "build-logic/src/main/kotlin/ModMetadata.kt"
-sha256 = "14d6cfd03efae4f0280236bf0de6a2974d32e346364cf085f71aa60dd4e4f66a"
+sha256 = "f33ddf7783834cee2bf5d314c29f56220ca12efabefa8c0c604e9a69623d6a9f"
 kind = "file"
 
 [[files]]
 path = "build-logic/src/main/kotlin/ModToml.kt"
-sha256 = "736eeb623f26c028dd9906c8f8d3b22e89d7bfb3647789104cb0d63237885b98"
+sha256 = "7f53b843722bcd70fc214a07d8f57968a7406d1f6dd38c619da26c561f8cb54e"
 kind = "file"
 
 [[files]]
@@ -117,12 +122,12 @@ kind = "file"
 
 [[files]]
 path = "build-logic/src/main/kotlin/mod.common.gradle.kts"
-sha256 = "600b7e51d88c24ce95f516cc21d960b8d058cf2c7035b73dff75ba88145d2429"
+sha256 = "95e7eb733eecc2db41bab45f9b3a905c57837ac9efb029a7577d2d00fba33d5b"
 kind = "file"
 
 [[files]]
 path = "build-logic/src/main/kotlin/mod.fabric.gradle.kts"
-sha256 = "aee455325682313d24bfb3b5b5c2720ed9e5cc640b8abe4b1815d33d748b9f99"
+sha256 = "37934d886c1ca3c0b56f6e9bd07e7b28f52a3c35ebde8e4514f7c96893eeb432"
 kind = "file"
 
 [[files]]
@@ -132,7 +137,7 @@ kind = "file"
 
 [[files]]
 path = "build-logic/src/main/kotlin/mod.neoforge.gradle.kts"
-sha256 = "18fca51cdf192fbf3b1b77d42da57e9631f39516c6866bdfbd2df482ad786f64"
+sha256 = "81c0408a2520060be6186eb64d12dbd10fdb6a9e5f40ca283642edf8c0bc90c9"
 kind = "file"
 
 [[files]]
@@ -142,12 +147,12 @@ kind = "file"
 
 [[files]]
 path = "build-logic/templates/fabric.mod.json"
-sha256 = "a087c9bb63af0911511ae30e62ed408dde7b1b09e9452d602f5ca87100915180"
+sha256 = "69954ba032942bb13a2054aa61cd8abb22e9b274e1d7ec797c84f29e4039d256"
 kind = "file"
 
 [[files]]
 path = "build-logic/templates/neoforge.mods.toml"
-sha256 = "38d5cbafd4e8c4ae0c8e53d20a8751671fdfefb88f6cd0a60b227407136c308a"
+sha256 = "f92350a2b498d86e3fe36ca3b271f081b431b102bf93fc13973c62205d7073f4"
 kind = "file"
 
 [[files]]
