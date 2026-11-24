@@ -22,7 +22,7 @@ The companion's design is in `01-companion.md`.
 |---|---|
 | Companion | A character of the mod, owned or not. What defines it (identity, owner, mode, home, memory) outlives its changes of form. |
 | Owner | The player a companion belongs to. A companion may have none. |
-| Mode | The order an owner gives their companion (follow, stay, wander, stay around the home...). |
+| Mode | The order an owner gives their companion. Only follow is designed so far; others (stay, wander, stay around the home...) will come. |
 | Home | The place a companion stays around when its mode says so. |
 | Form | How a companion exists in the world on the server. It always has exactly one. |
 | ??? (stored form) | The form of a companion that lives as an ordinary entity, stored and saved with its chunk. Name to choose. |
