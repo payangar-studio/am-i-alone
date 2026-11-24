@@ -64,8 +64,12 @@ Principles that decide between options, and why:
   brings everything else with it, and each unwanted part needs a workaround.
 - **Refuse workarounds and hidden helper entities.** When workarounds pile up,
   step back: the base is wrong, and patching it further only hides that.
-- **A mixin only when no vanilla or Fabric API does the job:** surgical, one
-  injection where possible, with its reason written in the design.
+- **Needing a mixin is a smell.** It usually means the design is working
+  around something. Before keeping one, look around: is it really the only
+  way, is it the best one, would another base or another vanilla mechanism
+  remove the need? Mixins planned to hide a player from Tab or to keep a client
+  entity across a swap all vanished once the base was right. One that survives
+  is surgical, and its reason is written in the design.
 - **Only real decisions go to the user,** with what each answer changes. A
   principle the user already gave ("like a vanilla variant") is applied, not
   asked again.
