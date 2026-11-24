@@ -197,7 +197,7 @@
       <tr><td>4. Never a connected player</td><td>Not counted, takes no slot of the connection limit, not shown in Tab.</td></tr>
       <tr><td>5. Nothing lost, nothing duplicated</td><td>Whatever happens to it (switching form, its owner leaving, the server stopping), it keeps exactly its inventory, its equipment and everything else it had.</td></tr>
       <tr><td>6. An invisible switch</td><td>Changing form does not show in game.</td></tr>
-      <tr><td>7. No mixin</td><td>No change to Minecraft's own classes while a vanilla or Fabric API does the job.</td></tr>
+      <tr><td>7. No mixin</td><td>No change to Minecraft's own classes while a vanilla or Fabric API does the job. The invisible switch needs one, on the client.</td></tr>
     </table>
   </div>
   <div class="stmt is-fact">
@@ -306,13 +306,24 @@
     that a round trip between the forms keeps the inventory and the equipment exactly,
     with nothing lost or duplicated.
   </div>
-  <div class="stmt is-question">
-    <span class="tag question">Question</span>
-    <strong>How to make the switch invisible.</strong> It must not show in game. Today,
-    the client sees an entity removed, then another arrive with the same UUID: it builds a
-    new <code>ClientCompanion</code>, and what the client and the animation mods keep per
-    entity (interpolation, animation state) starts over. How to hide it is still to be
-    found and measured in game.
+  <div class="stmt is-decision">
+    <span class="tag decision">Decision</span>
+    <strong>The client keeps its entity.</strong> The client entity is the companion's
+    facade; the forms change behind it, on the server only. The new form takes the entity
+    id of the old one, as vanilla does when a player respawns. Just before the switch,
+    the server sends a mod packet saying this companion changes form, and on the client a
+    mixin in <code>ClientPacketListener</code> ignores the removal and the addition that
+    follow, for that entity only. The <code>ClientCompanion</code> stays the same object:
+    interpolation, walk animation and the animation mods' state go on, and the data the
+    server sends next (health, equipment, position) updates it.
+  </div>
+  <div class="stmt is-fact">
+    <span class="tag fact">Fact</span>
+    Without it, the client removes its entity and builds a new one
+    (<code>ClientLevel.addEntity</code> discards an entity with the same id first), and
+    what the animation mods keep on the entity starts over: a Better Combat attack would be
+    cut. No vanilla or Fabric API keeps an entity on the client across a removal, so this is
+    the one mixin of the design. To check in game: a switch in the middle of an attack.
   </div>
   <div class="stmt is-decision">
     <span class="tag decision">Decision</span>
@@ -463,10 +474,12 @@
       <path class="line" d="M240,141 C270,141 275,105 295,105"/>
       <circle class="dot" cx="295" cy="105" r="4"/>
       <path class="line" d="M295,105 L428,105" marker-end="url(#arrow3)"/>
-      <circle class="dot" cx="330" cy="105" r="10"/><text x="330" y="109" text-anchor="middle" class="mark">1</text>
-      <circle class="dot" cx="390" cy="105" r="10"/><text x="390" y="109" text-anchor="middle" class="mark">2</text>
-      <text x="330" y="88" text-anchor="middle" class="small">spawn packet</text>
-      <text x="390" y="128" text-anchor="middle" class="small">synced data</text>
+      <circle class="dot" cx="318" cy="105" r="10"/><text x="318" y="109" text-anchor="middle" class="mark">1</text>
+      <circle class="dot" cx="356" cy="105" r="10"/><text x="356" y="109" text-anchor="middle" class="mark">2</text>
+      <circle class="dot" cx="394" cy="105" r="10"/><text x="394" y="109" text-anchor="middle" class="mark">4</text>
+      <text x="318" y="88" text-anchor="middle" class="small">spawn packet</text>
+      <text x="356" y="128" text-anchor="middle" class="small">synced data</text>
+      <text x="394" y="88" text-anchor="middle" class="small">form switch</text>
 
       <path class="line-none" d="M295,105 C295,200 340,253 428,253"/>
       <circle class="dot-q" cx="312" cy="200" r="10"/><text x="312" y="204" text-anchor="middle" class="mark">3</text>
@@ -486,12 +499,13 @@
       <text x="550" y="250" text-anchor="middle" class="title">Tab list</text>
       <text x="550" y="268" text-anchor="middle" class="small">no companion: it has no profile</text>
     </svg>
-    <figcaption>Two forms on the server, one on the client.</figcaption>
+    <figcaption>Two forms on the server, one facade on the client.</figcaption>
   </figure>
   <ol class="legend">
     <li>Both forms announce the type <code>am_i_alone:companion</code> in their spawn packet; the factory of that type builds a <code>ClientCompanion</code> on the client, as vanilla does for the Mannequin.</li>
     <li>Then the client receives a player's synced data (health, pose, equipment...), the same for both forms.</li>
     <li>No profile is sent, which keeps the companion out of Tab. Its skin and name reach the client another way: see <a href="#core">the core</a>.</li>
+    <li>When the form switches, a mod packet tells the client to keep its entity: the removal and the addition that follow are ignored. See <a href="#forms">Switching forms</a>.</li>
   </ol>
   <div class="stmt is-fact">
     <span class="tag fact">Fact</span>
@@ -510,6 +524,8 @@
       <tr><td>A subclass of <code>Avatar</code> (like the Mannequin), or a mob drawn with the player model</td><td>Not Enough Animations, ETF, EMF Compat and Touch'n Motion check for <code>Player</code> or <code>AbstractClientPlayer</code>: they would not animate it</td></tr>
       <tr><td>Loading chunks with a ticket (like ender pearls)</td><td>A ticket keeps chunks active, but what vanilla does around a player (monster spawning, among others) goes through the world's list of players</td></tr>
       <tr><td>A mixin to hide a player from Tab, or to stop it loading chunks</td><td>No longer needed: the form settles chunk loading, the absence of a profile settles Tab</td></tr>
+      <tr><td>Handing the client state over to a new client entity</td><td>What the animation mods add to the entity is lost, unless every field is copied by reflection</td></tr>
+      <tr><td>Reviving the removed client entity</td><td>Vanilla never does it, and mods that clean up an entity's data on removal will have dropped it already</td></tr>
       <tr><td>A separate central inventory</td><td>One living form at a time, handed over whole, already rules out loss and duplication; a second copy would add the desync it was meant to prevent</td></tr>
     </table>
   </div>

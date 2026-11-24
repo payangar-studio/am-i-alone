@@ -66,7 +66,9 @@ None yet.
 - **Server to client**: the entity's spawn packet carries the type
   `am_i_alone:companion` for both forms; then the synced data of a player
   (health, pose, equipment...). No profile is sent, which keeps the companion
-  out of Tab.
+  out of Tab. When the form switches, a mod packet tells the client to keep its
+  entity: the client entity is the companion's facade, and the forms change
+  behind it on the server only.
 
 ## Open questions
 

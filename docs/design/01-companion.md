@@ -18,7 +18,7 @@
    inventory, its equipment and everything else it had.
 6. **An invisible switch.** Changing form does not show in game.
 7. **No mixin**: no change to Minecraft's own classes while a vanilla or Fabric
-   API does the job.
+   API does the job. The invisible switch needs one, on the client.
 
 ## What makes the animation: the client
 
@@ -72,13 +72,29 @@ same place and with the same UUID. No copy stays elsewhere: there is no separate
 inventory to keep in sync. A test checks that a round trip between the forms
 keeps the inventory and the equipment exactly, with nothing lost or duplicated.
 
-### Open question: how to make the switch invisible
+### An invisible switch: the client keeps its entity
 
-On the client, the switch is today the removal of an entity followed by the
-arrival of another with the same UUID: the client builds a new
-`ClientCompanion`, and what the client and the animation mods keep per entity
-(interpolation, animation state) starts over. Making it invisible is a
-requirement; how is still to be found and measured in game.
+Decision: the client entity is the companion's facade, and the forms change
+behind it, on the server only. The client never sees a switch:
+
+- the new form takes the entity id of the old one, as vanilla does when a
+  player respawns (`PlayerList.respawn`);
+- just before the switch, the server sends a mod packet saying that this
+  companion changes form;
+- on the client, a mixin in `ClientPacketListener` ignores the removal and the
+  addition that follow, for that entity only. The `ClientCompanion` stays the
+  same object, so everything kept on it (interpolation, walk animation, the
+  animation mods' state) goes on; the data the server sends next (health,
+  equipment, position) updates it.
+
+Fact, read in the 26.3 code: without this, the client removes its entity and
+builds a new one (`ClientLevel.addEntity` discards an entity with the same id
+first), and what the animation mods keep on the entity starts over: an attack of
+Better Combat would be cut, for instance.
+
+This is the one mixin of the design: no vanilla or Fabric API keeps an entity
+on the client across a removal. To check in game: a switch in the middle of a
+Better Combat attack.
 
 ### The names of the two forms
 
@@ -154,4 +170,6 @@ the whole list would erase them.
 | A subclass of `Avatar` (like the Mannequin), or a mob drawn with the player model | Not Enough Animations, ETF, EMF Compat and Touch'n Motion check for `Player` or `AbstractClientPlayer`: they would not animate it |
 | Loading chunks with a ticket (like ender pearls) | A ticket keeps chunks active, but what vanilla does around a player (monster spawning, among others) goes through the world's list of players |
 | A mixin to hide a player from Tab, or to stop it loading chunks | No longer needed: the form settles chunk loading, and the absence of a profile settles Tab |
+| Handing the client state over to a new client entity | What the animation mods add to the entity is lost, unless every field is copied by reflection |
+| Reviving the removed client entity | Vanilla never does it, and mods that clean up an entity's data on removal will have dropped it already |
 | A separate central inventory | One living form at a time, handed over whole, already rules out loss and duplication; a second copy would add the desync it was meant to prevent |
