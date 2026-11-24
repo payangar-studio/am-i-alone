@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Death</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    --game: #8a5a12; --build: #4b5563;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+      --game: #e0b064; --build: #b7bec8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); max-width: 76rem; margin: 0 auto; }
+  aside.tree { border-right: 1px solid var(--rule); padding: 1.6rem 1rem 2rem 16px; font-size: 0.93rem; }
+  aside.tree .inner { position: sticky; top: 1rem; }
+  .tree-title { font-weight: 700; margin-bottom: 0.6rem; }
+  .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree ul ul { padding-left: 0.9rem; border-left: 1px solid var(--rule); margin: 0.2rem 0 0.3rem 0.35rem; }
+  .tree li { margin: 0.22rem 0; }
+  .tree a { text-decoration: none; }
+  .tree a.here { color: var(--fg); font-weight: 700; }
+  details.tree-mobile { display: none; margin: 0 0 1rem; border: 1px solid var(--rule); border-radius: 6px; padding: 0.4rem 0.8rem; background: var(--panel); }
+  details.tree-mobile summary { cursor: pointer; font-weight: 600; }
+  main { padding: 1.6rem 16px 4rem 2rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .layout { display: block; }
+    aside.tree { display: none; }
+    details.tree-mobile { display: block; }
+    main { padding: 1.2rem 16px 3rem; }
+  }
+  .crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .crumbs a { text-decoration: none; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.4rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.35rem; }
+  h3 { margin: 1.7rem 0 0.5rem; font-size: 1.1rem; }
+  h2.part { display: flex; align-items: center; gap: 0.6rem; }
+  .ptag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 4px; color: var(--bg); }
+  .ptag.game { background: var(--game); }
+  .ptag.build { background: var(--build); }
+  .kind { display: inline-block; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 0.05rem 0.5rem; margin: 0.2rem 0 0.4rem; }
+  p { margin: 0.6rem 0; }
+  .lede { font-size: 1.08rem; }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/forms.html">The two forms</a></li><li><a href="../companion/identity.html">Shared identity</a></li><li><a href="../companion/switch.html">Switching forms</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html" class="here">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<main>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/forms.html">The two forms</a></li><li><a href="../companion/identity.html">Shared identity</a></li><li><a href="../companion/switch.html">Switching forms</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html" class="here">Death</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › Death</div>
+<h1>Death</h1>
+<p class="lede">A companion dies once, like a creature, through vanilla's death, so that the death mods apply to it.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2><p>A companion that dies is dead for good, like a creature: it does not respawn. The mods that change how death looks (Ragdoll Deaths, Simple Blood) apply to it as they apply to a player.</p>
+<h2 class="part"><span class="ptag build">How it is built</span></h2><div class="stmt is-decision"><span class="tag decision">Decision</span>Death stays vanilla's in both forms, so that every mod that changes death applies to it; the switch waits for it (<a href="switch.html">Switching forms</a>).</div>
+<div class="table"><table><tr><th>Form</th><th>How it dies</th></tr><tr><td>Anchored form</td><td>Vanilla ticks it like any entity. <code>LivingEntity.tickDeath</code> sends the death event 60, then removes it (<code>RemovalReason.KILLED</code>) after 20 ticks. <code>Player</code> and <code>ServerPlayer</code> do not override it.</td></tr><tr><td>Anchor form</td><td><code>ServerPlayer.tick()</code> does not call the body tick; vanilla calls <code>doTick()</code> from the connection's tick, which the fake connection never gets. The anchor form calls <code>doTick()</code> itself every tick, as the prototype did; otherwise it never dies.</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>When a companion in the anchor form dies, its entry in the mod's data is removed, so that its owner's next connection does not bring it back (<a href="saving.html">Saving</a>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: <code>ServerPlayer.die</code> broadcasts a death message to every player through the player list, and does not go through <code>LivingEntity.die</code>; the anchored form sends no message.</div>
+<div class="stmt is-question"><span class="tag question">Question</span><strong>The death message</strong>, the same in both forms: none (a creature), to the owner only (as vanilla does for a tamed animal, not checked in 26.3), or to the whole server (a player).</div>
+<h3>Death mods</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in Ragdoll Deaths 1.2.1 sources and Simple Blood 1.3.1 bytecode.</div>
+<div class="table"><table><tr><th>Mod</th><th>What happens to a companion</th></tr><tr><td>Simple Blood</td><td>Works as is. It reads hits and death from the synced health. For a <code>Player</code>, its creative and spectator check reads the profile, absent for a companion, so the check passes. It takes the blood colour from the skin only for downloaded skins, so a companion bleeds the default red.</td></tr><tr><td>Ragdoll Deaths</td><td>Creates the body (captured when <code>deathTime &gt; 0</code>, kept as a ghost on unload). But the companion is a <code>Player</code> on the client, so its <code>playerBodyUntilRespawn</code> setting (on by default) keeps the body until a living player with the same UUID appears, which never happens: the body stays until a level change (or until its chunk unloads, for a physics body), and holds a slot of <code>maxActiveRagdolls</code>.</td></tr></table></div>
+<p>Neither mod injects into <code>handleRemoveEntities</code> or <code>handleAddEntity</code>. Ragdoll Deaths needs the real removal at death, which the switch never cuts into.</p>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>An issue will be opened on Ragdoll Deaths' repository (MIT, <a href="https://github.com/Frostfleee/Ragdoll-Deaths">Frostfleee/Ragdoll-Deaths</a>), proposing to keep a body until respawn only for a real connected player; not opened yet. Until then, a modpack can set <code>playerBodyUntilRespawn=false</code>, which also affects real players.</div>
+</main>
+</div>
+</body>
+</html>

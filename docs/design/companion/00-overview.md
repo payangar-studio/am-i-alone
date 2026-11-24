@@ -63,9 +63,6 @@ Until the other features exist, test commands stand in for them: one creates
 a companion (where the places will), one switches its form (where the modes
 will). Their syntax is decided with the issue of the first brick.
 
-Open question: how a companion's death is built so that death mods (Ragdoll
-Deaths, Simple Blood) apply to it: being checked.
-
 Sub-pages:
 
 | Page | What it answers |
@@ -75,3 +72,4 @@ Sub-pages:
 | `03-switch.md` Switching forms | How a companion changes form, without loss, duplication or visible change |
 | `04-facade.md` Client facade | What a client builds for a companion, why the mods animate it, why it is not in Tab |
 | `05-saving.md` Saving | Where and when each form is saved, at disconnection, restart and crash |
+| `06-death.md` Death | How a companion dies for good, and how the death mods apply to it |

@@ -79,8 +79,7 @@ that changes death applies to it; a riding or ridden companion stays under
 vanilla's riding. The switch waits until vanilla is done, and never stands in
 for it.
 
-What a companion's death leads to is decided on the feature page
-(`00-overview.md`): dead for good.
+What a companion's death leads to, and how it is built: `06-death.md`.
 
 ### Open question
 

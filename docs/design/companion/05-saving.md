@@ -18,7 +18,7 @@ which holds the core with the rest.
 | Where | With its chunk, in the world's entity files | In the mod's data, saved with the world (a Fabric global attachment): one entry per companion, keyed by its UUID, holding its entity save, which includes its dimension and position |
 | When | When vanilla saves or unloads the chunk | When its owner disconnects, before each world save, and when the server stops |
 | Back in the world | With its chunk | When its owner connects, where it was |
-| Entry removed | Never: it has none | When the companion switches back to the anchored form, or is removed for good |
+| Entry removed | Never: it has none | When the companion switches back to the anchored form, when it dies (`06-death.md`), or when it is removed for good |
 
 Why the mod saves the anchor form: a player is never stored in a chunk, and
 vanilla only writes the files of connected players. Why its entry goes when the
