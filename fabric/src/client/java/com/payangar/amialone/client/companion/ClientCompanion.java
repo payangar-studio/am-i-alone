@@ -1,0 +1,74 @@
+package com.payangar.amialone.client.companion;
+
+import com.mojang.authlib.GameProfile;
+import com.payangar.amialone.companion.CompanionIdentity;
+import com.payangar.amialone.companion.CompanionSkin;
+import com.payangar.amialone.companion.Companions;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
+import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * What a client builds for a companion: a remote player, drawn by the player renderer, so the
+ * player animation mods animate it. It has no profile of its own: no profile is ever sent for a
+ * companion, so it is not in the Tab list, and what a client player reads from its profile comes
+ * from the companion's identity instead.
+ */
+public class ClientCompanion extends RemotePlayer {
+    // The spawn packet sets the entity's UUID; the profile only fills the constructor.
+    private static final GameProfile NO_PROFILE = new GameProfile(Util.NIL_UUID, "Companion");
+
+    private @Nullable CompanionIdentity skinIdentity;
+    private @Nullable PlayerSkin skin;
+
+    public ClientCompanion(ClientLevel level) {
+        super(level, NO_PROFILE);
+    }
+
+    /** Makes every client level build companions as client companions. */
+    public static void register() {
+        Companions.clientFactory = (type, level) -> new ClientCompanion((ClientLevel) level);
+    }
+
+    private @Nullable CompanionIdentity identity() {
+        return getAttached(Companions.IDENTITY);
+    }
+
+    @Override
+    public PlayerSkin getSkin() {
+        CompanionIdentity identity = identity();
+        if (identity == null) {
+            return super.getSkin();
+        }
+        if (identity != skinIdentity) {
+            skinIdentity = identity;
+            skin = identity.skin()
+                    .flatMap(key -> registryAccess().lookupOrThrow(CompanionSkin.REGISTRY).getOptional(key))
+                    .map(entry -> PlayerSkin.insecure(entry.texture(), null, null, entry.model()))
+                    .orElse(null);
+        }
+        return skin != null ? skin : super.getSkin();
+    }
+
+    /** A name tag's name, otherwise the drawn name, as on the server. */
+    @Override
+    public Component getName() {
+        Component customName = getCustomName();
+        if (customName != null) {
+            return customName;
+        }
+        CompanionIdentity identity = identity();
+        return identity == null || identity.fullName().isEmpty()
+                ? super.getName()
+                : Component.literal(identity.fullName());
+    }
+
+    /** Its UUID, as on the server, so the client finds its team. */
+    @Override
+    public String getScoreboardName() {
+        return getStringUUID();
+    }
+}

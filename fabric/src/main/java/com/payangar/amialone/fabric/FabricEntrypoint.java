@@ -1,6 +1,7 @@
 package com.payangar.amialone.fabric;
 
 import com.payangar.amialone.CommonEntrypoint;
+import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.vendor.network.FabricNetwork;
 import net.fabricmc.api.ModInitializer;
 
@@ -10,5 +11,6 @@ public final class FabricEntrypoint implements ModInitializer {
     public void onInitialize() {
         FabricNetwork.register(CommonEntrypoint.NETWORK);
         CommonEntrypoint.init();
+        Companions.register();
     }
 }
