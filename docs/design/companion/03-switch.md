@@ -59,11 +59,23 @@ builds a new one (`ClientLevel.addEntity` discards an entity with the same id
 first), and what the client and the animation mods keep on the entity starts
 over: a Better Combat attack would be cut.
 
+### Death and riding stay vanilla
+
+Decision: the switch never cuts into a vanilla mechanic. A dying or dead
+companion goes through vanilla's death in its current form, so that every mod
+that changes death applies to it; a riding or ridden companion stays under
+vanilla's riding. The switch waits until vanilla is done, and never stands in
+for it.
+
 ### Open questions
+
+- **What a companion's death is.** Vanilla's player death ends on a respawn
+  that a client asks for; a companion has no client. What follows its death
+  (it stays dead, it comes back, its items) is to decide, with vanilla's death
+  left untouched.
 
 - **Checking it in game**: a switch in the middle of a Better Combat attack,
   and while walking, must not show.
-- **A companion riding, dead or dying**: dismount first, wait, or refuse.
 - **A client that starts seeing the companion during the switch**: whether it
   can receive the arrival without the notice, to check against how vanilla
   tracks entities.

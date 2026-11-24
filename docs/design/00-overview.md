@@ -62,7 +62,7 @@ server, and what crosses between them).
 
 ## Open questions
 
-- Switching forms: checking it in game, and a switch while riding or dying
+- Switching forms: checking it in game; what a companion's death is
   (`companion/03-switch.md`).
 - An owner who never comes back (`companion/05-saving.md`).
 - Taming, the other modes (`ownership/00-overview.md`).
