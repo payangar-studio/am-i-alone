@@ -1,7 +1,7 @@
 ---
 name: mc-research
 description: Answers one question about how Minecraft or a mod behaves, from their code, for a design decision of this mod. Use from the mod-feature-design skill (or any design discussion) for each question that needs reading vanilla's decompiled sources or another mod's code: which class handles X, what a mod hooks, whether a mechanism works for a given entity. It researches, and may write throwaway code to test a hypothesis, never the mod's real code; several can run in parallel on independent questions.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 
 Your goal is research: you answer one question about Minecraft or mods code,
