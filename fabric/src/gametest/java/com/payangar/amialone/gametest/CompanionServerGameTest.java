@@ -74,6 +74,17 @@ public class CompanionServerGameTest {
         helper.succeed();
     }
 
+    /** The identity must be there when the spawn packet goes out, or clients first draw a default skin. */
+    @GameTest
+    public void hasItsIdentityBeforeEnteringTheWorld(GameTestHelper helper) {
+        Entity created = Companions.TYPE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+        // Read first: printing the entity asks for its name, which would draw the identity.
+        boolean hasIdentity = created != null && created.hasAttached(Companions.IDENTITY);
+        helper.assertTrue(created instanceof Companion, "the server did not create a companion");
+        helper.assertTrue(hasIdentity, "a companion has no identity until it enters a world");
+        helper.succeed();
+    }
+
     @GameTest
     public void isRenamedByANameTag(GameTestHelper helper) {
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);

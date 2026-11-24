@@ -30,6 +30,11 @@ public class Companion extends Avatar {
         super(type, level);
         // The skin layers (hat, jacket, sleeves, trousers), hidden by the default 0.
         entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, ALL_LAYERS);
+        // Drawn before the entity enters a world, so its spawn reaches clients with it. A
+        // companion loaded from its chunk then replaces it with its saved one.
+        if (!level.isClientSide()) {
+            identity();
+        }
     }
 
     /** Its identity, drawn the first time it is asked for, then kept with the entity. */

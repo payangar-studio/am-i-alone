@@ -4,7 +4,6 @@ import com.payangar.amialone.CommonEntrypoint;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
@@ -56,13 +55,6 @@ public final class Companions {
         FabricDefaultAttributeRegistry.register(TYPE, LivingEntity.createLivingAttributes());
         DynamicRegistries.registerSynced(CompanionSkin.REGISTRY, CompanionSkin.CODEC);
         DynamicRegistries.register(CompanionNames.REGISTRY, CompanionNames.CODEC);
-        // A companion gets its identity when it first enters a world; one loaded from its chunk
-        // already has it.
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-            if (entity instanceof Companion companion) {
-                companion.identity();
-            }
-        });
     }
 
     private static Avatar create(EntityType<Avatar> type, Level level) {
