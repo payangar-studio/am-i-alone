@@ -47,9 +47,6 @@ the prototype, the anchor form ticked, loaded chunks and saved without being in
 it. Code that goes through the list of connected players (`@a`, a command
 naming a player) does not see it.
 
-Open question: changing dimension (a portal) in the anchor form, where vanilla
-moves a `ServerPlayer` through its connection: to check.
-
 Ruled out:
 
 | Option | Why |

@@ -10,7 +10,9 @@ an order, its mode.
 
 Decisions so far:
 
-- **Follow**: the companion goes with its owner. It is the only mode decided.
+- **Follow**: the companion goes with its owner, into another dimension too.
+  It is the only mode decided. Whether a companion follows its owner through a
+  portal depends on its mode, not on its form.
 - **One companion in follow mode per player** at a time.
 - **It leaves with its owner**: when the owner disconnects, a following
   companion leaves the world with them, and comes back where it was when they

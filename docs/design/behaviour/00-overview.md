@@ -21,4 +21,8 @@ What is known, at the macro level:
   player inputs (move, jump, turn). Vanilla's pathfinding requires a `Mob`, and
   neither form is one; some movement behaviours of vanilla are `Mob`-only too.
 
-Open question: the motor, designed with the first behaviour that moves (follow).
+Open questions, designed with the first behaviour that moves (follow):
+
+- the motor;
+- moving a companion to another dimension, in either form: vanilla moves a
+  `ServerPlayer` through its connection, which the anchor form only fakes.
