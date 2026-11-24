@@ -63,8 +63,7 @@ server, and what crosses between them).
 ## Open questions
 
 - Switching forms: checking it in game (`companion/03-switch.md`).
-- The death message of a companion; an issue to open on Ragdoll Deaths
-  (`companion/06-death.md`).
+- An issue to open on Ragdoll Deaths (`companion/06-death.md`).
 - An owner who never comes back (`companion/05-saving.md`).
 - Taming, the other modes (`ownership/00-overview.md`).
 - The motor (`behaviour/00-overview.md`).

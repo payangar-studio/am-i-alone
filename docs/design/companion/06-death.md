@@ -6,6 +6,11 @@ A companion that dies is dead for good, like a creature: it does not respawn.
 The mods that change how death looks (Ragdoll Deaths, Simple Blood) apply to it
 as they apply to a player.
 
+Decision: every player sees the death message of a companion, exactly as for a
+player ("Bob was slain by Zombie", with every variant vanilla has), following
+the same rules (the death messages game rule, team visibility). Nothing custom:
+a mod that adds death messages adds them for companions too.
+
 ## How it is built
 
 Decision: death stays vanilla's in both forms, so that every mod that changes
@@ -23,13 +28,29 @@ Decision: when a companion in the anchor form dies, its entry in the mod's data
 is removed, so that its owner's next connection does not bring it back
 (`05-saving.md`).
 
-Fact, read in the 26.3 code: `ServerPlayer.die` broadcasts a death message to
-every player through the player list, and does not go through
-`LivingEntity.die`; the anchored form sends no message.
+Fact, read in the 26.3 code: a player's death message comes from the combat
+tracker every living entity has (`CombatTracker.getDeathMessage`, line 88),
+which turns the killing damage type into a translated message
+(`death.attack.<msgId>`, fall variants, and so on); damage types are data, so
+a mod that adds damage types or death messages changes what it returns.
+`ServerPlayer.die` (line 880) then checks the `show_death_messages` game rule,
+sends the message to the dying player (`ClientboundPlayerCombatKillPacket`),
+and broadcasts it through the player list according to the team's death
+message visibility: everyone, the team only, or everyone but the team
+(`broadcastSystemMessage`, `broadcastSystemToTeam`,
+`broadcastSystemToAllExceptTeam`, which take any `Player`).
 
-Open question: the death message, the same in both forms: none (a creature), to
-the owner only (as vanilla does for a tamed animal, not checked in 26.3), or to
-the whole server (a player).
+Decision: the anchor form, a `ServerPlayer`, goes through `ServerPlayer.die`
+as is: the packet to itself goes to its fake connection and is dropped, the
+broadcast reaches every connected player. The anchored form, a `Player` but not
+a `ServerPlayer`, overrides `die` to run vanilla's death (`super.die`), then
+the same steps: the same game rule, the same message from its combat tracker,
+the same broadcast by team visibility. Only the packet to the dying player is
+left out: nobody plays it.
+
+Fact: a mod that changes the message itself, through damage types, translations
+or the combat tracker, reaches both forms. A mod that hooks `ServerPlayer.die`
+directly reaches only the anchor form.
 
 ### Death mods
 
