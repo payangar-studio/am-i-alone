@@ -73,6 +73,7 @@ Sub-pages:
 | `04-identity.md` Identity, names and skins | Its name, its UUID, its skin variant, and how the client learns them |
 | `05-saving.md` Saving | Where a companion is saved, when its owner leaves, at restart and crash |
 | `06-death.md` Death | What happens when a companion dies, its death message, the death mods |
+| `07-inventory.md` Inventory | What a companion carries, its designated weapons, its screen, what it drops |
 
 Ruled out:
 

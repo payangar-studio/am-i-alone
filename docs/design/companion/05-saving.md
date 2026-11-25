@@ -17,6 +17,9 @@ keeps, for each owner, their following companion: its UUID, dimension and
 position while it is in the world, and its whole entity save while it is away
 with its owner. Never in the players' files.
 
+Decision: its inventory is part of its entity save (`07-inventory.md`), so it
+goes wherever the companion goes, with nothing more to write.
+
 Step by step:
 
 1. Owner disconnects (`ServerPlayConnectionEvents.DISCONNECT`): the companion's

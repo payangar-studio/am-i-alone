@@ -23,6 +23,7 @@ one their own, the way one tames a wolf, and give it orders.
 | `ownership/` Ownership and modes | A player owns a companion and gives it orders, such as follow | Partly decided |
 | `behaviour/` Behaviour | What a companion does on its own: follow, stay, wander, stay around its home | Not designed |
 | `places/` Where companions live | Where companions appear: taverns, structures | Not designed |
+| `debug/` Companion debug stick | Scaffolding: an operator's item to test what has no interaction in the game yet | Designed with the inventory |
 
 How they fit: the places spawn companions; ownership gives a companion an owner
 and a mode; behaviour makes it act on that mode; the companion feature is the
@@ -41,6 +42,8 @@ server, and what crosses between them).
 | Owner | The player a companion belongs to. A companion may have none. |
 | Mode | The order an owner gives their companion. Only follow is decided so far. |
 | Home | The place a companion stays around when its mode says so. |
+| Designated weapon | One of a companion's two weapon slots, primary and secondary: what it reaches for to fight, not what it holds. |
+| Companion debug stick | The operators' scaffolding item that tests what has no interaction in the game yet. Vanilla's own is always called vanilla's debug stick. |
 | Connected player | A player of the server's list (`PlayerList`): counted, subject to the connection limit, shown in Tab. A companion never is one. |
 | Player of the world | A player of a world's list (`ServerLevel.players`): loads chunks, makes monsters spawn, counts for sleeping. |
 
@@ -56,6 +59,20 @@ server, and what crosses between them).
 | Synced attachment | Data that Fabric API attaches to an entity and sends to the clients that see it. |
 | `mod.toml` | This project's description of the mod, from which the build writes `fabric.mod.json`. |
 
+## Mods to keep working
+
+The mods the companion must stay compatible with, with no compatibility code
+where possible. Taken from the modpack grimoire-et-sortileges.
+
+| Mod | What it does to a companion | Where |
+|---|---|---|
+| Player Animation Library, Not Enough Animations, ETF, EMF, EMF Compat (core, Better Combat, Not Enough Animations), Fresh Animations and its Player Extension (resource packs), Touch'n Motion | Animate it as a player, on the client facade | `companion/02-facade.md` |
+| Better Combat | Animates it as a player, but a held weapon's pose and the attacks need an adapter; optional | `companion/02-facade.md` |
+| Ragdoll Deaths, Simple Blood | Change how its death looks | `companion/06-death.md` |
+| Tools on my Back | Shows a player's tools on their back; not checked on a companion | `companion/07-inventory.md` |
+| Death Locator | Marks where a player died; not checked on a companion | `companion/06-death.md` |
+| Grave mods (none in the pack) | Keep only players: a companion's items stay on the ground | `companion/07-inventory.md` |
+
 ## Open questions
 
 - Despawning around a companion far from any player, for a future mode
@@ -69,4 +86,5 @@ server, and what crosses between them).
 
 ## Blocks, items, config
 
-None yet.
+One item, the companion debug stick, for operators only (`debug/00-overview.md`). No
+block, no config yet.

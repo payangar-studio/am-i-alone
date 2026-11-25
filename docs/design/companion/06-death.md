@@ -18,6 +18,9 @@ like one: `LivingEntity.die`, then `LivingEntity.tickDeath` sends the death
 event 60 and removes it (`RemovalReason.KILLED`) after 20 ticks. Its ticket is
 removed with it, and its entry in the mod's data too (`05-saving.md`).
 
+Decision: it drops everything it carries on the ground, as a player does,
+whatever `keepInventory` says (`07-inventory.md`).
+
 Fact, read in the 26.3 code: a player's death message comes from the combat
 tracker every living entity has (`CombatTracker.getDeathMessage`, line 88),
 which turns the killing damage type into a translated message
@@ -39,6 +42,9 @@ or the combat tracker, reaches companions. A mod that hooks `ServerPlayer.die`
 directly does not.
 
 ### Death mods
+
+Question: Death Locator (in grimoire-et-sortileges) marks where a player died.
+Whether it reacts to a companion's death is not checked.
 
 Fact, read in Ragdoll Deaths 1.2.1 sources and Simple Blood 1.3.1 bytecode:
 

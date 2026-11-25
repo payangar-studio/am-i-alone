@@ -65,6 +65,16 @@ loaded but not checked one by one. Better Combat animates an attack, but only
 starts one from a real client's key press: making a companion attack will take
 code of ours.
 
+Fact, read in Better Combat 3.2.2: the pose of a held weapon at rest, for a
+player seen by another client, comes from two attachments Better Combat sets on
+the server, only for a `Player` (`PlayerEntityMixin.java:44-55`). A companion
+holding a weapon shows it without that pose.
+
+Decision: what Better Combat needs from a companion (the weapon pose, the
+attacks) goes in an adapter, kept apart in the mod so it can move to a mod of
+its own later. Better Combat stays optional: the mod works without it. Not
+built yet.
+
 Ruled out:
 
 | Option | Why |

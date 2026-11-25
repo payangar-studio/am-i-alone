@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Inventory</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    --game: #8a5a12; --build: #4b5563;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+      --game: #e0b064; --build: #b7bec8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); max-width: 76rem; margin: 0 auto; }
+  aside.tree { border-right: 1px solid var(--rule); padding: 1.6rem 1rem 2rem 16px; font-size: 0.93rem; }
+  aside.tree .inner { position: sticky; top: 1rem; }
+  .tree-title { font-weight: 700; margin-bottom: 0.6rem; }
+  .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree ul ul { padding-left: 0.9rem; border-left: 1px solid var(--rule); margin: 0.2rem 0 0.3rem 0.35rem; }
+  .tree li { margin: 0.22rem 0; }
+  .tree a { text-decoration: none; }
+  .tree a.here { color: var(--fg); font-weight: 700; }
+  details.tree-mobile { display: none; margin: 0 0 1rem; border: 1px solid var(--rule); border-radius: 6px; padding: 0.4rem 0.8rem; background: var(--panel); }
+  details.tree-mobile summary { cursor: pointer; font-weight: 600; }
+  main { padding: 1.6rem 16px 4rem 2rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .layout { display: block; }
+    aside.tree { display: none; }
+    details.tree-mobile { display: block; }
+    main { padding: 1.2rem 16px 3rem; }
+  }
+  .crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .crumbs a { text-decoration: none; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.4rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.35rem; }
+  h3 { margin: 1.7rem 0 0.5rem; font-size: 1.1rem; }
+  h2.part { display: flex; align-items: center; gap: 0.6rem; }
+  .ptag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 4px; color: var(--bg); }
+  .ptag.game { background: var(--game); }
+  .ptag.build { background: var(--build); }
+  .kind { display: inline-block; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 0.05rem 0.5rem; margin: 0.2rem 0 0.4rem; }
+  p { margin: 0.6rem 0; }
+  .lede { font-size: 1.08rem; }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html" class="here">Inventory</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<main>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html" class="here">Inventory</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › Inventory</div>
+<h1>Inventory</h1>
+<p class="lede">A companion carries as much as a player: storage, armor and two designated weapons. It drops everything when it dies.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2><p>A companion carries as much as a player: 36 slots of storage, four armor slots, and two designated weapon slots, primary and secondary. It picks nothing up yet.</p>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>No hotbar and no selected slot. A player chooses what they hold; what a companion holds is its own choice, made by its brain (not designed yet, <a href="../behaviour/index.html">Behaviour</a>): it will take in hand what it uses (its designated weapon to fight, food to eat) and put it back after. Until then its hands stay empty.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The designated weapon slots are not its hands. Each takes one weapon or one shield, and either slot takes either: a shield can be the primary. A weapon is something that deals damage: swords, axes, spears, the mace, the trident, bows and crossbows. Other mods' weapons and shields count when they are tagged as such, as almost all are (Farmer's Delight's skillet included); a modpack adds the others with a datapack (<a href="#weapons">What counts as a weapon</a>). Tools (pickaxes, shovels, hoes) are not weapons.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The armor it wears shows on it in the world, as on a player. Nothing else of its inventory shows.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>When it dies, it drops everything on the ground, as a player does: storage, armor, designated weapons, and its hands once it holds something. <code>keepInventory</code> does not apply to companions: a player keeps their items because they respawn, and a companion does not (<a href="death.html">Death</a>). Items with the curse of vanishing are destroyed, as for a player.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>No block takes items from a companion: a hopper under it leaves it alone.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The inventory screen shows the companion in 3D following the mouse, its armor slots, its two designated weapon slots and its 36 slots, above the inventory of the player who opened it; items move both ways. For now only an operator opens it, with the companion debug stick (<a href="../debug/index.html">Companion debug stick</a>). It is drawn with the kit of the mod's config screens (part of the socle, the base code <code>mod update</code> maintains), with no texture of the mod: a scaffolding look, which may change while testing.</div>
+<figure><svg viewBox="0 0 680 456" role="img"><title>The inventory screen of a companion, above the inventory of the player who opened it</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-plain" x="10" y="8" width="660" height="196" rx="8"/>
+<circle class="dot" cx="32" cy="30" r="10"/><text x="32" y="34" text-anchor="middle" class="mark">1</text>
+<text x="46" y="34" class="small">armor</text>
+<rect class="box-anchor" x="24" y="50" width="44" height="32" rx="3"/><text x="46" y="70" text-anchor="middle" class="small">head</text>
+<rect class="box-anchor" x="24" y="86" width="44" height="32" rx="3"/><text x="46" y="106" text-anchor="middle" class="small">chest</text>
+<rect class="box-anchor" x="24" y="122" width="44" height="32" rx="3"/><text x="46" y="142" text-anchor="middle" class="small">legs</text>
+<rect class="box-anchor" x="24" y="158" width="44" height="32" rx="3"/><text x="46" y="178" text-anchor="middle" class="small">feet</text>
+<circle class="dot" cx="104" cy="30" r="10"/><text x="104" y="34" text-anchor="middle" class="mark">2</text>
+<text x="118" y="34" class="small">3D view</text>
+<rect x="90" y="50" width="110" height="140" rx="4" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
+<rect class="box-core" x="135" y="62" width="20" height="20" rx="2"/>
+<rect class="box-core" x="131" y="84" width="28" height="42" rx="2"/>
+<rect class="box-core" x="121" y="84" width="8" height="40" rx="2"/>
+<rect class="box-core" x="161" y="84" width="8" height="40" rx="2"/>
+<rect class="box-core" x="132" y="128" width="12" height="44" rx="2"/>
+<rect class="box-core" x="146" y="128" width="12" height="44" rx="2"/>
+<text x="145" y="184" text-anchor="middle" class="small">follows the mouse</text>
+<circle class="dot" cx="220" cy="30" r="10"/><text x="220" y="34" text-anchor="middle" class="mark">3</text>
+<text x="234" y="34" class="small">weapons</text>
+<rect class="box-core" x="216" y="50" width="32" height="32" rx="3"/><text x="232" y="70" text-anchor="middle" class="small">1st</text>
+<rect class="box-core" x="216" y="86" width="32" height="32" rx="3"/><text x="232" y="106" text-anchor="middle" class="small">2nd</text>
+<text x="232" y="136" text-anchor="middle" class="small">primary,</text>
+<text x="232" y="150" text-anchor="middle" class="small">secondary</text>
+<circle class="dot" cx="306" cy="30" r="10"/><text x="306" y="34" text-anchor="middle" class="mark">4</text>
+<text x="320" y="34" class="small">storage: 36 slots, anything</text>
+<g><rect class="box-core" style="stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<g transform="translate(0,36)"><rect class="box-core" style="stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<g transform="translate(0,72)"><rect class="box-core" style="stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<g transform="translate(0,108)"><rect class="box-core" style="stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect class="box-core" style="stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<path class="line" d="M456,208 L456,248" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="466" y="232" class="small">items move both ways</text>
+<text x="446" y="226" text-anchor="end" class="small">opened by an operator,</text>
+<text x="446" y="240" text-anchor="end" class="small">with the companion debug stick</text>
+<rect class="box-plain" x="10" y="252" width="660" height="194" rx="8"/>
+<circle class="dot" cx="306" cy="274" r="10"/><text x="306" y="278" text-anchor="middle" class="mark">5</text>
+<text x="320" y="278" class="small">the inventory of the player who opened it</text>
+<g transform="translate(0,244)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<g transform="translate(0,280)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<g transform="translate(0,316)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<g transform="translate(0,360)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
+<text x="626" y="430" class="small">hotbar</text>
+</svg><figcaption>The companion's slots in blue (its equipment, as on any living entity) and amber (its own container); the player's own below. A scaffolding look, with no texture of the mod.</figcaption></figure>
+<ol class="legend">
+<li>Its four armor slots: each takes what fits it, as for a player.</li>
+<li>The companion in 3D, turning to follow the mouse.</li>
+<li>Its two designated weapon slots, primary and secondary: one weapon or one shield each, either in either.</li>
+<li>Its 36 storage slots: anything.</li>
+<li>The inventory of the player who opened the screen: for now, an operator with the companion debug stick. Items move both ways between it and the companion's slots.</li>
+</ol>
+<div class="stmt is-question"><span class="tag question">Question</span>Tools on my Back (in grimoire-et-sortileges, the modpack the mod is tested with) shows the tools a player carries on their back. Whether it shows a companion's, and from which slots, is not checked; it matters once a companion's weapons show.</div>
+<h3>Grave mods</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>No compatibility code with grave mods. A companion drops its items through vanilla's death path, so a grave mod that one day accepts entities other than players will catch them with nothing to change here.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read on 2026-11-25 in their sources: every Fabric grave mod checked hooks the death path a companion goes through (<code>LivingEntity.dropAllDeathLoot</code>) or a player-only one, then keeps only players, and none has a setting or an API for another entity.</div>
+<div class="table"><table><tr><th>Mod</th><th>26.x Fabric build</th><th>Where it keeps only players</th></tr><tr><td>Universal Graves 3.13.0</td><td>Yes</td><td><code>instanceof ServerPlayer</code> (<code>LivingEntityMixin.java:22</code>)</td></tr><tr><td>Gravestones (Pneumono) 1.4.3</td><td>Yes</td><td><code>instanceof Player</code> (<code>LivingEntityMixin.java:23</code>)</td></tr><tr><td>Your Items Are Safe</td><td>Yes</td><td><code>instanceof ServerPlayer</code> (<code>ModFabric.java:40</code>)</td></tr><tr><td>You're in Grave Danger</td><td>No (1.21.1)</td><td><code>instanceof ServerPlayer</code> (<code>LivingEntityMixin.java:20</code>)</td></tr><tr><td>Forgotten Graves</td><td>No (1.20.4)</td><td>Its mixin targets <code>Player</code></td></tr><tr><td>Corpse, GraveStone Mod (henkelmax)</td><td>No Fabric</td><td>Player death event</td></tr></table></div>
+<h2 class="part"><span class="ptag build">How it is built</span></h2><p>The inventory lives in two places on the companion: vanilla's equipment for the armor, and a container of the mod for the rest. They travel differently.</p>
+<figure><svg viewBox="0 0 680 372" role="img"><title>Where each part of a companion's inventory lives, and which clients get it</title><defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="bq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
+<text x="215" y="22" text-anchor="middle" class="title">Server</text>
+<text x="560" y="22" text-anchor="middle" class="title">Clients</text>
+<line x1="430" y1="10" x2="430" y2="340" style="stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 3 5"/>
+<rect class="box-plain" x="20" y="36" width="390" height="190" rx="8"/>
+<text x="36" y="58" class="title">Companion</text>
+<text x="118" y="58" class="small">the server entity</text>
+<rect class="box-anchor" x="40" y="70" width="350" height="62" rx="6"/>
+<circle class="dot" cx="58" cy="88" r="10"/><text x="58" y="92" text-anchor="middle" class="mark">1</text>
+<text x="215" y="94" text-anchor="middle" class="title">Equipment</text>
+<text x="215" y="113" text-anchor="middle" class="small">vanilla's: head, chest, legs, feet, and the hands</text>
+<rect class="box-core" x="40" y="148" width="350" height="62" rx="6"/>
+<circle class="dot" cx="58" cy="166" r="10"/><text x="58" y="170" text-anchor="middle" class="mark">2</text>
+<text x="215" y="172" text-anchor="middle" class="title">Its own container</text>
+<text x="215" y="191" text-anchor="middle" class="small">36 storage slots and 2 designated weapon slots</text>
+<path class="line" d="M40,101 L30,101 L30,246 L90,246 L90,266" marker-end="url(#b)"/>
+<path class="line" d="M150,210 L150,266" marker-end="url(#b)"/>
+<text x="158" y="250" class="small">both saved with it</text>
+<rect class="box-plain" x="30" y="268" width="230" height="66" rx="8"/>
+<circle class="dot" cx="48" cy="286" r="10"/><text x="48" y="290" text-anchor="middle" class="mark">3</text>
+<text x="150" y="292" text-anchor="middle" class="title">Entity save</text>
+<text x="150" y="310" text-anchor="middle" class="small">in its chunk, or in its owner's</text>
+<text x="150" y="324" text-anchor="middle" class="small">entry while away with them</text>
+<rect class="box-todo" x="290" y="268" width="120" height="66" rx="8"/>
+<circle class="dot" cx="306" cy="286" r="10"/><text x="306" y="290" text-anchor="middle" class="mark">6</text>
+<text x="356" y="292" text-anchor="middle" class="title">Hopper</text>
+<text x="356" y="310" text-anchor="middle" class="small">hopper minecart</text>
+<path class="ignored" d="M350,266 L350,214" marker-end="url(#bq)"/>
+<text x="342" y="246" text-anchor="end" class="small">takes nothing</text>
+<rect class="box-client" x="448" y="70" width="224" height="62" rx="8"/>
+<circle class="dot" cx="464" cy="86" r="10"/><text x="464" y="90" text-anchor="middle" class="mark">4</text>
+<text x="568" y="94" text-anchor="middle" class="title">Every client that sees it</text>
+<text x="560" y="113" text-anchor="middle" class="small">the facade wears the armor</text>
+<path class="line" d="M390,101 L446,101" marker-end="url(#b)"/>
+<rect class="box-client" x="448" y="148" width="224" height="62" rx="8"/>
+<circle class="dot" cx="464" cy="164" r="10"/><text x="464" y="168" text-anchor="middle" class="mark">5</text>
+<text x="568" y="172" text-anchor="middle" class="title">Client with the screen</text>
+<text x="560" y="191" text-anchor="middle" class="small">the menu, only while it is open</text>
+<path class="line" d="M392,179 L446,179" marker-start="url(#b)" marker-end="url(#b)"/>
+<path class="ignored" d="M20,360 L50,360"/><text x="58" y="364" class="small">dashed red line: does not happen</text>
+</svg><figcaption>The armor reaches every client that sees the companion; the container reaches only the player who opens its screen.</figcaption></figure>
+<ol class="legend">
+<li><strong>Equipment</strong>: vanilla's, which every living entity has. The armor lives there, and so do the hands.</li>
+<li><strong>Its own container</strong>: the 36 storage slots and the two designated weapon slots, a field of the entity.</li>
+<li>Both are part of the companion's <strong>entity save</strong>, which goes wherever the companion goes (<a href="saving.html">Saving</a>).</li>
+<li>Every client that sees the companion gets its equipment, when it changes and when the companion comes into view: the facade wears the armor. It never gets the container.</li>
+<li>The client of a player with the screen open gets the companion's slots through the screen's menu, and sends back what the player moves.</li>
+<li>Hoppers and the hopper minecart take nothing from a companion: it is not a vanilla <code>Container</code>.</li>
+</ol>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The armor is vanilla's equipment (<code>EntityEquipment</code>, the slots <code>HEAD</code>, <code>CHEST</code>, <code>LEGS</code>, <code>FEET</code>), which every living entity has.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Vanilla saves it under <code>equipment</code> (<code>LivingEntity.java:768-770</code>), sends it to the clients that see the companion when it changes and when they start seeing it (<code>LivingEntity.java:2911-2993</code>, <code>ServerEntity.java:314-327</code>), and <code>/item</code> reaches it as <code>armor.*</code> (<code>LivingEntity.java:3925-3950</code>). The client facade applies it with no code of ours (<code>ClientPacketListener.java:1475-1480</code>, then <code>PlayerEquipment</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The 36 storage slots and the two designated weapon slots are the companion's own container, a field of the entity, as a villager holds its own (<code>AbstractVillager.java:60</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Vanilla's player <code>Inventory</code> cannot be reused: its constructor takes a <code>Player</code> (<code>Inventory.java:59-66</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The container is saved in the companion's entity save. It goes wherever the entity save goes: in its chunk, and in its owner's entry while it is away with them (<a href="saving.html">Saving</a>), with nothing more to write.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The container is sent to a client only through the inventory screen's menu, by vanilla's menu sync.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Vanilla never sends a player's storage to other clients either; they get only the equipment (<code>ServerPlayer.java:298-312</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion is not a vanilla <code>Container</code>.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Hoppers, and the hopper minecart, take only from entities that are one (<code>HopperBlockEntity.java:391-393</code>, <code>EntitySelector.java:13</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span><code>/item</code> reaches the storage as <code>container.0</code> to <code>container.35</code>, as on a player (<code>Player.java:1687-1726</code>), and the designated weapons as <code>container.36</code> (primary) and <code>container.37</code> (secondary), through the entity's <code>getSlot</code>.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>An entity answers no slot unless it says so (<code>Entity.java:3577</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The drop at death overrides <code>dropEquipment</code>, empty for a living entity (<code>LivingEntity.java:1515-1516</code>): it destroys the items with the curse of vanishing, then drops the container and the equipment, as <code>Player.dropEquipment</code> does without its <code>keepInventory</code> check (<code>Player.java:553-568</code>). It runs inside vanilla's <code>dropAllDeathLoot</code>.</div>
+<h3>The inventory screen</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A menu type of the mod, with Fabric's <code>ExtendedMenuType</code>, which sends the companion's entity id to the client so the screen can draw it. Its slots:</div>
+<div class="table"><table><tr><th>Slots</th><th>Built on</th><th>Accepts</th></tr><tr><td>Armor</td><td>Vanilla's <code>ArmorSlot</code>, which takes any living entity (<code>ArmorSlot.java:18-60</code>)</td><td>What fits that armor slot, as for a player</td></tr><tr><td>Designated weapons</td><td>A slot of the mod</td><td>One weapon or one shield</td></tr><tr><td>Storage</td><td>Plain slots</td><td>Anything</td></tr><tr><td>The player's inventory</td><td>Vanilla's standard inventory slots</td><td>Anything</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Shift-click moves an item as in a player's inventory: from the player, armor to its slot, a weapon or a shield to a free designated weapon slot, anything else to the storage; from the companion, back to the player.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The client screen extends <code>AbstractContainerScreen</code> and draws itself with the kit's <code>Draw</code> and <code>Theme</code>.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span><code>Draw</code> and <code>Theme</code> depend only on vanilla's drawing and font classes, not on <code>ConfigScreen</code> (<code>vendor/gui/Draw.java</code>, <code>vendor/gui/Theme.java</code>). The 3D view is vanilla's <code>InventoryScreen.<wbr>extractEntityInInventoryFollowsMouse</code>, public and open to any living entity (<code>InventoryScreen.java:100</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The menu stays valid while the companion is alive and the player within 4 blocks of reach, as the horse's (<code>AbstractMountInventoryMenu.java:27-32</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>The server drops a click on an invalid menu (<code>ServerGamePacketListenerImpl.<wbr>java:1979-2012</code>) and closes it at the player's next tick (<code>ServerPlayer.java:589-593</code>). Each case the check covers:</div>
+<div class="table"><table><tr><th>While the screen is open</th><th>Without the check</th></tr><tr><td>The companion dies</td><td>It drops everything at once, but stays 20 ticks before it is removed (<code>LivingEntity.java:1468</code>, <code>576-580</code>): items put in then are lost</td></tr><tr><td>Its chunk unloads, or it leaves with its owner</td><td>It is saved, then removed: an item taken after would be duplicated</td></tr><tr><td>It changes dimension</td><td>A copy is made in the new dimension and the old one removed (<code>Entity.java:3187-3194</code>): same duplication</td></tr></table></div>
+<h3 id="weapons">What counts as a weapon</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>An item tag of the mod, <code>am_i_alone:companion_weapons</code>, decides what the designated weapon slots accept. It is built from vanilla's tags (<code>#minecraft:swords</code>, <code>#minecraft:axes</code>, <code>#minecraft:spears</code>, <code>#minecraft:enchantable/weapon</code>) and Fabric's conventional ones (<code>#c:tools/melee_weapon</code>, <code>ranged_weapon</code>, <code>bow</code>, <code>crossbow</code>, <code>trident</code>, <code>mace</code>, <code>shield</code>, each with <code>required: false</code>). A modpack adds an item with a datapack; removing one means replacing the whole tag.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 data and the Fabric conventional tags 4.10.5: no tag or component says "weapon or shield" alone. The <code>weapon</code> component is also on pickaxes, shovels and hoes (<code>ToolMaterial.java:57</code>); bows and crossbows carry no weapon component, only their class <code>ProjectileWeaponItem</code>; the shield is marked by <code>blocks_attacks</code>. Vanilla has no shield or ranged weapon tag; the <code>c:</code> tags list vanilla items by id, so <code>c:tools/melee_weapon</code> misses a modded sword that is only in <code>#minecraft:swords</code>, which is why both families are in the tag.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the jars of grimoire-et-sortileges: the tag accepts Farmer's Delight's knives and skillet (in <code>#minecraft:enchantable/weapon</code>) and ReArm's netherite bow, crossbow and shield (in <code>c:tools/bow</code>, <code>crossbow</code>, <code>shield</code>). No other mod of the pack adds a weapon.</div>
+<h3>Ruled out</h3>
+<div class="table"><table><tr><th>Option</th><th>Why it is ruled out</th></tr><tr><td>A hotbar and a selected slot whose item is in hand, as a player has</td><td>A player picks what they hold by hand; a companion's brain will pick it, so a hotbar would serve nobody</td></tr><tr><td>The designated weapon slots as its two hands</td><td>It would hold its weapon all the time; holding is the brain's choice, the designated weapon is what it reaches for</td></tr><tr><td>Vanilla's chest screen over the 36 slots (<code>ChestMenu</code>, four rows)</td><td>No client code, but no armor, no designated weapons, no view of the companion</td></tr><tr><td>A read-only screen fed by a snapshot</td><td>Items must be put in and taken out from the screen</td></tr><tr><td>Weapons recognised by their components (<code>weapon</code>, <code>blocks_attacks</code>, <code>ProjectileWeaponItem</code>)</td><td>Accepts pickaxes, shovels and hoes, which carry <code>weapon</code> too; nothing a datapack can adjust</td></tr><tr><td>The tag, plus components as a fallback, minus a tag of exclusions</td><td>It gives the same result as the tag alone on vanilla and on the pack, and needs a second tag. It only adds modded weapons that no tag lists, and it lets through a modded pickaxe that no tag lists</td></tr></table></div>
+</main>
+</div>
+</body>
+</html>
