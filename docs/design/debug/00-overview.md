@@ -1,7 +1,7 @@
 # Companion debug stick
 
-Scaffolding: an item to test what has no interaction in the game yet. Each of
-its actions is removed once the real interaction exists.
+The operators' debug mode: with it, an operator reaches any companion and
+what a player could not do, such as changing its owner.
 
 ## In game
 
@@ -13,9 +13,10 @@ included; its name tells them apart.
 
 | Action | What it does | Removed when |
 |---|---|---|
-| Right-click on a companion | Opens the companion's inventory screen (`../companion/07-inventory.md`) | The owner opens it by an interaction of the ownership feature (`../ownership/`) |
+| Right-click on a companion | Opens the companion's screen with its Debug tab (`../companion/08-screen.md`), whoever owns it | Stays |
 
-Decision: more actions will come on the same item, one per thing to test.
+Decision: the Debug tab of the companion's screen carries the debug actions
+(its owner, later changing it), rather than more gestures on the item.
 
 Question: whether the stick ships in published versions of the mod (one build,
 harmless since only operators use it and only `/give` gives it) or only in
@@ -28,11 +29,10 @@ checks (`Permissions.COMMANDS_GAMEMASTER`, `Player.java:1823-1825`), without
 vanilla's creative mode requirement, so it can be tested in survival.
 It is checked on the server.
 
-Decision: the item handles the click itself (`Item.interactLivingEntity`); the
-companion knows nothing of it. Fact: a companion does not consume a
-right-click, so the item gets it: `Player.interactOn` asks the entity first,
-then the item (`Player.java:806-842`), and neither `LivingEntity`, `Avatar`
-nor `Companion` answer it (`Entity.java:2317-2389`).
+Decision: the item handles the click itself (`Item.interactLivingEntity`).
+Fact: `Player.interactOn` asks the entity first, then the item
+(`Player.java:806-842`). The companion answers a right-click itself, but lets
+it pass to the stick in an operator's hand (`../companion/08-screen.md`).
 
 Decision: the item has no texture of the mod: its client item definition
 (`assets/am_i_alone/items/debug_stick.json`) points to vanilla's debug stick

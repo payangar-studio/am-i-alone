@@ -31,10 +31,10 @@ for a player.
 Decision: no block takes items from a companion: a hopper under it leaves it
 alone.
 
-Decision: the inventory screen shows the companion in 3D following the mouse,
-its armor slots, its two designated weapon slots and its 36 slots, above the
-inventory of the player who opened it; items move both ways. For now only an
-operator opens it, with the companion debug stick (`../debug/00-overview.md`). It is drawn
+Decision: the inventory is managed from the companion's screen
+(`08-screen.md`): its armor and designated weapons on every tab, its 36 slots
+on the Inventory tab, above the inventory of the player who opened it; items
+move both ways. It is drawn
 with the kit of the mod's config screens (part of the socle, the base code
 `mod update` maintains), with no texture of the mod: a scaffolding
 look, which may change while testing.
@@ -106,6 +106,9 @@ does without its `keepInventory` check (`Player.java:553-568`). It runs inside
 vanilla's `dropAllDeathLoot`.
 
 ### The inventory screen
+
+The first version, a screen of its own opened by the debug stick, which the
+companion's screen replaces (`08-screen.md`).
 
 Decision: a menu type of the mod, with Fabric's `ExtendedMenuType`, which sends
 the companion's entity id to the client so the screen can draw it. Its slots:

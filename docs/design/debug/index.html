@@ -103,58 +103,58 @@
 </head>
 <body>
 <div class="layout">
-<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html" class="here">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html" class="here">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
 <main>
-<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html" class="here">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html" class="here">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
 <div class="crumbs"><a href="../index.html">Am I Alone?</a> › Companion debug stick</div>
 <h1>Companion debug stick</h1>
-<div class="kind">Scaffolding, designed with the inventory</div>
-<p class="lede">An item to test what has no interaction in the game yet. Each of its actions is removed once the real interaction exists.</p>
+<div class="kind">Designed</div>
+<p class="lede">The operators' debug mode: with it, an operator reaches any companion and what a player could not do, such as changing its owner.</p>
 <h2 class="part"><span class="ptag game">In game</span></h2><p>An item, the companion debug stick, that only operators can use: in anyone else's hand it does nothing. It is obtained by <code>/give</code> only, in no creative tab. It looks like vanilla's debug stick, glint included; its name tells them apart.</p>
 <div class="table"><table><tr><th>Id</th><th>What it does</th><th>How it is obtained</th><th>Notable properties</th></tr><tr><td><code>am_i_alone:debug_stick</code></td><td>Its actions, below, for operators; nothing for anyone else</td><td><code>/give</code> only, in no creative tab</td><td>Named &quot;Companion Debug Stick&quot; (&quot;Bâton de débogage des compagnons&quot; in French); vanilla's debug stick look, glint included</td></tr></table></div>
-<div class="table"><table><tr><th>Action</th><th>What it does</th><th>Removed when</th></tr><tr><td>Right-click on a companion</td><td>Opens the companion's inventory screen (<a href="../companion/inventory.html">Inventory</a>)</td><td>The owner opens it by an interaction of the ownership feature (<a href="../ownership/index.html">Ownership and modes</a>)</td></tr></table></div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>More actions will come on the same item, one per thing to test.</div>
+<div class="table"><table><tr><th>Action</th><th>What it does</th><th>Removed when</th></tr><tr><td>Right-click on a companion</td><td>Opens the companion's screen with its Debug tab (<a href="../companion/screen.html">The companion's screen</a>), whoever owns it</td><td>Stays</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The Debug tab of the companion's screen carries the debug actions (its owner, later changing it), rather than more gestures on the item.</div>
 <div class="stmt is-question"><span class="tag question">Question</span>Whether the stick ships in published versions of the mod (one build, harmless since only operators use it and only <code>/give</code> gives it) or only in development (the debug code kept apart from the rest).</div>
 <h2 class="part"><span class="ptag build">How it is built</span></h2>
-<figure><svg viewBox="0 0 680 244" role="img"><title>A right-click with the companion debug stick on a companion</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker><marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--question)"/></marker></defs>
-<rect class="box-plain" x="10" y="96" width="104" height="58" rx="8"/>
-<text x="62" y="120" text-anchor="middle" class="title">Right-click</text>
-<text x="62" y="139" text-anchor="middle" class="small">on a companion</text>
-<path class="line" d="M114,125 L132,125" marker-end="url(#a)"/>
-<rect class="box-plain" x="134" y="96" width="164" height="58" rx="8"/>
-<text x="216" y="120" text-anchor="middle" class="title">Player.interactOn</text>
-<text x="216" y="139" text-anchor="middle" class="small">the entity first, then the item</text>
-<rect class="box-core" x="340" y="10" width="150" height="58" rx="8"/>
-<circle class="dot" cx="356" cy="26" r="10"/><text x="356" y="30" text-anchor="middle" class="mark">1</text>
-<text x="421" y="34" text-anchor="middle" class="title">Companion</text>
-<text x="415" y="53" text-anchor="middle" class="small">does not answer</text>
-<path class="ignored" d="M240,96 C260,60 300,42 338,40" marker-end="url(#aq)"/>
-<path class="line" d="M298,125 L314,125" marker-end="url(#a)"/>
-<rect class="box-anchored" x="316" y="96" width="194" height="58" rx="8"/>
-<circle class="dot" cx="332" cy="112" r="10"/><text x="332" y="116" text-anchor="middle" class="mark">2</text>
-<text x="424" y="120" text-anchor="middle" class="title" style="font-size: 13px">Companion debug stick</text>
-<text x="416" y="139" text-anchor="middle" class="small">gets the click</text>
-<path class="line" d="M510,125 L562,125" marker-end="url(#a)"/>
-<text x="536" y="117" text-anchor="middle" class="small">operator</text>
-<rect class="box-plain" x="564" y="88" width="108" height="78" rx="8"/>
-<circle class="dot" cx="578" cy="102" r="10"/><text x="578" y="106" text-anchor="middle" class="mark">3</text>
-<text x="618" y="130" text-anchor="middle" class="small">opens the</text>
-<text x="618" y="144" text-anchor="middle" class="small">companion's</text>
-<text x="618" y="158" text-anchor="middle" class="small">inventory screen</text>
-<path class="line" d="M413,154 L413,180" marker-end="url(#a)"/>
-<text x="421" y="172" class="small">anyone else</text>
-<rect class="box-todo" x="363" y="182" width="100" height="34" rx="8"/>
-<text x="413" y="203" text-anchor="middle" class="small">nothing</text>
-<path class="ignored" d="M10,236 L40,236"/><text x="48" y="240" class="small">dashed red line: does not happen</text>
+<figure><svg viewBox="0 0 680 196" role="img"><title>A right-click with the companion debug stick on a companion</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-plain" x="10" y="20" width="104" height="58" rx="8"/>
+<text x="62" y="44" text-anchor="middle" class="title">Right-click</text>
+<text x="62" y="63" text-anchor="middle" class="small">on a companion</text>
+<path class="line" d="M114,49 L132,49" marker-end="url(#a)"/>
+<rect class="box-plain" x="134" y="20" width="164" height="58" rx="8"/>
+<text x="216" y="44" text-anchor="middle" class="title">Player.interactOn</text>
+<text x="216" y="63" text-anchor="middle" class="small">the entity first, then the item</text>
+<path class="line" d="M298,49 L316,49" marker-end="url(#a)"/>
+<rect class="box-core" x="318" y="20" width="150" height="58" rx="8"/>
+<circle class="dot" cx="334" cy="36" r="10"/><text x="334" y="40" text-anchor="middle" class="mark">1</text>
+<text x="399" y="44" text-anchor="middle" class="title">Companion</text>
+<text x="393" y="63" text-anchor="middle" class="small">answers first</text>
+<path class="line" d="M468,49 L520,49" marker-end="url(#a)"/>
+<text x="494" y="41" text-anchor="middle" class="small">anyone else</text>
+<rect class="box-plain" x="522" y="20" width="150" height="58" rx="8"/>
+<text x="597" y="44" text-anchor="middle" class="small">the stick is any item:</text>
+<text x="597" y="60" text-anchor="middle" class="small">the usual gestures</text>
+<path class="line" d="M393,78 L393,118" marker-end="url(#a)"/>
+<text x="401" y="102" class="small">an operator holds the stick: lets it pass</text>
+<rect class="box-anchored" x="296" y="120" width="194" height="58" rx="8"/>
+<circle class="dot" cx="312" cy="136" r="10"/><text x="312" y="140" text-anchor="middle" class="mark">2</text>
+<text x="404" y="144" text-anchor="middle" class="title" style="font-size: 13px">Companion debug stick</text>
+<text x="396" y="163" text-anchor="middle" class="small">gets the click</text>
+<path class="line" d="M490,149 L540,149" marker-end="url(#a)"/>
+<rect class="box-plain" x="542" y="114" width="130" height="78" rx="8"/>
+<circle class="dot" cx="556" cy="128" r="10"/><text x="556" y="132" text-anchor="middle" class="mark">3</text>
+<text x="607" y="148" text-anchor="middle" class="small">the companion's screen</text>
+<text x="607" y="163" text-anchor="middle" class="small">on its Debug tab,</text>
+<text x="607" y="178" text-anchor="middle" class="small">whoever owns it</text>
 </svg><figcaption>What a right-click with the companion debug stick on a companion goes through.</figcaption></figure>
 <ol class="legend">
-<li>The companion is asked first and does not answer.</li>
+<li>The companion is asked first and answers the right-click itself. It lets the click pass to the stick only in an operator's hand; for anyone else the stick is any item, and the companion's usual gestures apply (<a href="../companion/screen.html">The companion's screen</a>).</li>
 <li>The companion debug stick gets the click next.</li>
-<li>On the server, an operator gets the companion's inventory screen; anyone else gets nothing.</li>
+<li>It opens the companion's screen with its Debug tab, whoever owns the companion.</li>
 </ol>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>&quot;Operator&quot; is the gamemaster permission, the one vanilla's debug stick checks (<code>Permissions.COMMANDS_GAMEMASTER</code>, <code>Player.java:1823-1825</code>), without vanilla's creative mode requirement, so it can be tested in survival. It is checked on the server.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The item handles the click itself (<code>Item.interactLivingEntity</code>); the companion knows nothing of it.</div>
-<div class="stmt is-fact"><span class="tag fact">Fact</span>A companion does not consume a right-click, so the item gets it: <code>Player.interactOn</code> asks the entity first, then the item (<code>Player.java:806-842</code>), and neither <code>LivingEntity</code>, <code>Avatar</code> nor <code>Companion</code> answer it (<code>Entity.java:2317-2389</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The item handles the click itself (<code>Item.interactLivingEntity</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span><code>Player.interactOn</code> asks the entity first, then the item (<code>Player.java:806-842</code>). The companion answers a right-click itself, but lets it pass to the stick in an operator's hand (<a href="../companion/screen.html">The companion's screen</a>).</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The item has no texture of the mod: its client item definition (<code>assets/<wbr>am_i_alone/<wbr>items/<wbr>debug_stick.json</code>) points to vanilla's debug stick model (<code>minecraft:item/debug_stick</code>), and the item carries <code>enchantment_glint_override</code>, as vanilla's does (<code>Items.java:2416-2423</code>).</div>
 </main>
 </div>
