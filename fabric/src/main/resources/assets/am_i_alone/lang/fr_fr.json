@@ -1,3 +1,5 @@
 {
-  "entity.am_i_alone.companion": "Compagnon"
+  "entity.am_i_alone.companion": "Compagnon",
+  "item.am_i_alone.debug_stick": "Bâton de débogage des compagnons",
+  "tag.item.am_i_alone.companion_weapons": "Armes des compagnons"
 }

@@ -1,18 +1,29 @@
 package com.payangar.amialone.companion;
 
+import com.payangar.amialone.CommonEntrypoint;
 import java.util.Arrays;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.scores.Team;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A companion on the server: a player-shaped entity that is not a player, saved with its chunk.
@@ -20,11 +31,17 @@ import net.minecraft.world.scores.Team;
  *
  * <p>It declares no synched data: any would take an id the client player uses for its own data.
  * Its identity travels as the {@link Companions#IDENTITY} attachment instead.
+ *
+ * <p>It carries a {@link CompanionInventory} and wears armor in vanilla's equipment slots. It is not
+ * a vanilla {@code Container}, so hoppers leave it alone.
  */
 public class Companion extends Avatar {
+    private static final String INVENTORY_KEY = CommonEntrypoint.MOD_ID + ":inventory";
     private static final byte ALL_LAYERS = (byte) Arrays.stream(PlayerModelPart.values())
             .mapToInt(PlayerModelPart::getMask)
             .reduce(0, (a, b) -> a | b);
+
+    private final CompanionInventory inventory = new CompanionInventory();
 
     public Companion(EntityType<? extends Avatar> type, Level level) {
         super(type, level);
@@ -42,6 +59,10 @@ public class Companion extends Avatar {
         return getAttachedOrCreate(Companions.IDENTITY, () -> CompanionIdentity.draw(registryAccess(), random));
     }
 
+    public CompanionInventory inventory() {
+        return inventory;
+    }
+
     @Override
     public ResolvableProfile getProfile() {
         // No player profile: the skin comes from the identity.
@@ -56,6 +77,56 @@ public class Companion extends Avatar {
         }
         String name = identity().fullName();
         return name.isEmpty() ? super.getName() : Component.literal(name);
+    }
+
+    /** {@code container.0} to {@code container.37} reach its inventory, as on a player; the rest is vanilla's. */
+    @Override
+    public @Nullable SlotAccess getSlot(int slot) {
+        SlotAccess access = inventory.getSlot(slot);
+        return access != null ? access : super.getSlot(slot);
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        inventory.save(output.list(INVENTORY_KEY, ItemStackWithSlot.CODEC));
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        inventory.load(input.listOrEmpty(INVENTORY_KEY, ItemStackWithSlot.CODEC));
+    }
+
+    /**
+     * Drops everything it carries, as {@code Player.dropEquipment} does but whatever {@code
+     * keepInventory} says: a player keeps their items because they respawn, a companion does not.
+     * The items with the curse of vanishing are destroyed first.
+     */
+    @Override
+    protected void dropEquipment(ServerLevel level) {
+        super.dropEquipment(level);
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            if (vanishes(inventory.getItem(i))) {
+                inventory.removeItemNoUpdate(i);
+            }
+        }
+        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
+            if (vanishes(equipment.get(slot))) {
+                equipment.set(slot, ItemStack.EMPTY);
+            }
+        }
+        for (ItemStack stack : inventory.removeAllItems()) {
+            ItemEntity drop = createItemStackToDrop(stack, true, false);
+            if (drop != null) {
+                level.addFreshEntity(drop);
+            }
+        }
+        equipment.dropAll(this);
+    }
+
+    private static boolean vanishes(ItemStack stack) {
+        return !stack.isEmpty() && EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP);
     }
 
     @Override
