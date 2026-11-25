@@ -1,3 +1,4 @@
 {
-  "entity.am_i_alone.companion": "Compagnon"
+  "entity.am_i_alone.companion": "Compagnon",
+  "tag.item.am_i_alone.companion_weapons": "Armes des compagnons"
 }

@@ -7,11 +7,13 @@
   "entrypoints": {
     "fabric-gametest": [
       "com.payangar.amialone.gametest.ExampleServerGameTest",
-      "com.payangar.amialone.gametest.CompanionServerGameTest"
+      "com.payangar.amialone.gametest.CompanionServerGameTest",
+      "com.payangar.amialone.gametest.CompanionInventoryServerGameTest"
     ],
     "fabric-client-gametest": [
       "com.payangar.amialone.gametest.ExampleClientGameTest",
-      "com.payangar.amialone.gametest.CompanionClientGameTest"
+      "com.payangar.amialone.gametest.CompanionClientGameTest",
+      "com.payangar.amialone.gametest.CompanionInventoryClientGameTest"
     ]
   },
   "depends": {

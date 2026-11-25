@@ -5,10 +5,12 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Avatar;
@@ -17,7 +19,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 
-/** What the companion registers: its entity type, its identity attachment, its data registries. */
+/**
+ * What the companion registers: its entity type, its identity attachment, its inventory menu, its
+ * data registries.
+ */
 public final class Companions {
     /**
      * What a client builds for a companion, set by the client entrypoint, as vanilla does for the
@@ -47,6 +52,10 @@ public final class Companions {
             id("identity"),
             builder -> builder.persistent(CompanionIdentity.CODEC)
                     .syncWith(CompanionIdentity.STREAM_CODEC, AttachmentSyncPredicate.all()));
+
+    /** The inventory screen's menu, which sends the companion's entity id to the client. */
+    public static final ExtendedMenuType<CompanionMenu, Integer> MENU = Registry.register(
+            BuiltInRegistries.MENU, id("companion"), new ExtendedMenuType<>(CompanionMenu::new, ByteBufCodecs.VAR_INT));
 
     private Companions() {}
 
