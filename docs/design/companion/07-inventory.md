@@ -128,6 +128,11 @@ and font classes, not on `ConfigScreen` (`vendor/gui/Draw.java`,
 `InventoryScreen.extractEntityInInventoryFollowsMouse`, public and open to any
 living entity (`InventoryScreen.java:100`).
 
+Decision: the 3D view shows no name tag; the screen's title already names the
+companion. Fact: a player always shows their name, and vanilla's view has no
+option to hide it, so the screen draws the view itself with the same steps,
+without the name tag.
+
 Decision: the menu stays valid while the companion is alive and the player
 within 4 blocks of reach, as the horse's (`AbstractMountInventoryMenu.java:27-32`).
 Fact: the server drops a click on an invalid menu
