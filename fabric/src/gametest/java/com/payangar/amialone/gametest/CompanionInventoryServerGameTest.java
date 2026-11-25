@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.payangar.amialone.companion.Companion;
 import com.payangar.amialone.companion.CompanionInventory;
 import com.payangar.amialone.companion.CompanionMenu;
+import com.payangar.amialone.companion.CompanionMenu.Tab;
 import com.payangar.amialone.companion.Companions;
 import io.netty.channel.embedded.EmbeddedChannel;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
@@ -19,6 +20,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.HashedStack;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
@@ -152,27 +154,165 @@ public class CompanionInventoryServerGameTest {
         });
     }
 
+    /**
+     * From the player, armor to its slot and weapons to a free designated weapon slot, storage open or
+     * not; anything else to the storage while the storage is open only. From the companion, back.
+     */
     @GameTest
     public void shiftClickSortsAsAPlayerInventory(GameTestHelper helper) {
+        for (boolean storage : List.of(false, true)) {
+            Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+            Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+            CompanionMenu menu = new CompanionMenu(1, player.getInventory(), companion, false);
+            if (storage) {
+                helper.assertTrue(menu.clickMenuButton(player, CompanionMenu.OPEN_STORAGE_BUTTON), "the storage did not open");
+            }
+            List<Item> carried = List.of(Items.IRON_HELMET, Items.IRON_SWORD, Items.SHIELD, Items.DIRT, Items.BOW);
+            for (int i = 0; i < carried.size(); i++) {
+                player.getInventory().setItem(9 + i, new ItemStack(carried.get(i)));
+                // The player's slot 9 is the first of the menu's player slots.
+                menu.clicked(CompanionMenu.PLAYER_START + i, 0, ContainerInput.QUICK_MOVE, player);
+            }
+            CompanionInventory inventory = companion.inventory();
+            String on = storage ? " with the storage open" : " with the storage closed";
+            helper.assertValueEqual(companion.getItemBySlot(EquipmentSlot.HEAD).getItem(), Items.IRON_HELMET, "armor" + on);
+            helper.assertValueEqual(
+                    inventory.getItem(CompanionInventory.PRIMARY_WEAPON).getItem(), Items.IRON_SWORD, "primary" + on);
+            helper.assertValueEqual(
+                    inventory.getItem(CompanionInventory.SECONDARY_WEAPON).getItem(), Items.SHIELD, "secondary" + on);
+            helper.assertValueEqual(inventory.getItem(0).getItem(), storage ? Items.DIRT : Items.AIR, "first storage slot" + on);
+            helper.assertValueEqual(
+                    inventory.getItem(1).getItem(), storage ? Items.BOW : Items.AIR, "a weapon with no free weapon slot" + on);
+            helper.assertValueEqual(
+                    player.getInventory().countItem(Items.DIRT) + player.getInventory().countItem(Items.BOW),
+                    storage ? 0 : 2,
+                    "dirt and bow left to the player" + on);
+
+            menu.clicked(CompanionMenu.ARMOR_START, 0, ContainerInput.QUICK_MOVE, player);
+            helper.assertTrue(companion.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), "the helmet stayed on the companion" + on);
+            helper.assertTrue(player.getInventory().contains(new ItemStack(Items.IRON_HELMET)), "the helmet is not back" + on);
+            companion.discard();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * While the storage is closed, the storage takes and gives nothing whatever the client sends:
+     * clicks, shift-clicks and double-click gathering, through the server's packet handler. After
+     * the storage's open button it does, until the close button, or until the Debug tab, which closes
+     * the storage and on which the storage does not open.
+     */
+    @GameTest
+    public void storageTakesNothingWhileClosed(GameTestHelper helper) {
+        ServerPlayer player = connectPlayer(helper, "storage_user");
+        try {
+            Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+            player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
+            CompanionMenu.open(player, companion, true);
+            CompanionMenu menu = (CompanionMenu) player.containerMenu;
+            CompanionInventory storage = companion.inventory();
+            checkStorage(helper, player, menu, storage, false, " once the screen opened");
+            pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
+            checkStorage(helper, player, menu, storage, true, " after the open button");
+            pressButton(player, menu, CompanionMenu.CLOSE_STORAGE_BUTTON);
+            checkStorage(helper, player, menu, storage, false, " after the close button");
+            pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
+            pressButton(player, menu, Tab.DEBUG.ordinal());
+            helper.assertValueEqual(menu.tab(), Tab.DEBUG, "the tab after the Debug tab's button");
+            checkStorage(helper, player, menu, storage, false, " after the Debug tab's button");
+            pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
+            checkStorage(helper, player, menu, storage, false, " after the open button on the Debug tab");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
+    /** The Debug tab exists in a screen opened with the debug stick only. */
+    @GameTest
+    public void debugTabOnlyWithTheStick(GameTestHelper helper) {
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        CompanionMenu menu = new CompanionMenu(1, player.getInventory(), companion);
-        List<Item> carried = List.of(Items.IRON_HELMET, Items.IRON_SWORD, Items.SHIELD, Items.DIRT, Items.BOW);
-        for (int i = 0; i < carried.size(); i++) {
-            player.getInventory().setItem(9 + i, new ItemStack(carried.get(i)));
-            // The player's slot 9 is the first of the menu's player slots.
-            menu.clicked(CompanionMenu.PLAYER_START + i, 0, ContainerInput.QUICK_MOVE, player);
-        }
-        CompanionInventory inventory = companion.inventory();
-        helper.assertValueEqual(companion.getItemBySlot(EquipmentSlot.HEAD).getItem(), Items.IRON_HELMET, "armor");
-        helper.assertValueEqual(inventory.getItem(CompanionInventory.PRIMARY_WEAPON).getItem(), Items.IRON_SWORD, "primary");
-        helper.assertValueEqual(inventory.getItem(CompanionInventory.SECONDARY_WEAPON).getItem(), Items.SHIELD, "secondary");
-        helper.assertValueEqual(inventory.getItem(0).getItem(), Items.DIRT, "first storage slot");
-        helper.assertValueEqual(inventory.getItem(1).getItem(), Items.BOW, "a weapon with no free weapon slot");
+        CompanionMenu plain = new CompanionMenu(1, player.getInventory(), companion, false);
+        helper.assertValueEqual(plain.tabs(), List.of(Tab.COMPANION), "the tabs without the stick");
+        helper.assertTrue(!plain.clickMenuButton(player, Tab.DEBUG.ordinal()), "the Debug tab opened without the stick");
+        helper.assertValueEqual(plain.tab(), Tab.COMPANION, "the tab after the Debug tab's button without the stick");
+        CompanionMenu debug = new CompanionMenu(2, player.getInventory(), companion, true);
+        helper.assertValueEqual(debug.tabs(), List.of(Tab.COMPANION, Tab.DEBUG), "the tabs with the stick");
+        helper.assertTrue(debug.clickMenuButton(player, Tab.DEBUG.ordinal()), "the Debug tab did not open with the stick");
+        helper.assertValueEqual(debug.tab(), Tab.DEBUG, "the tab after the Debug tab's button with the stick");
+        helper.succeed();
+    }
 
-        menu.clicked(CompanionMenu.ARMOR_START, 0, ContainerInput.QUICK_MOVE, player);
-        helper.assertTrue(companion.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), "the helmet stayed on the companion");
-        helper.assertTrue(player.getInventory().contains(new ItemStack(Items.IRON_HELMET)), "the helmet is not back");
+    /** Checks each way of reaching the storage, from the same items each time. */
+    private static void checkStorage(
+            GameTestHelper helper,
+            ServerPlayer player,
+            CompanionMenu menu,
+            CompanionInventory storage,
+            boolean open,
+            String on) {
+        helper.assertValueEqual(menu.storageOpen(), open, "the storage open" + on);
+        // Taking with a click.
+        fillForStorageCheck(player, menu, storage);
+        click(player, menu, CompanionMenu.STORAGE_START, ContainerInput.PICKUP);
+        helper.assertValueEqual(storage.countItem(Items.DIAMOND), open ? 0 : 5, "stored diamonds after a click on them" + on);
+
+        // Putting with a click: the dirt on the cursor, then on an empty storage slot.
+        fillForStorageCheck(player, menu, storage);
+        click(player, menu, CompanionMenu.PLAYER_START, ContainerInput.PICKUP);
+        click(player, menu, CompanionMenu.STORAGE_START + 1, ContainerInput.PICKUP);
+        helper.assertValueEqual(storage.countItem(Items.DIRT), open ? 3 : 0, "stored dirt after a click with it" + on);
+
+        // Shift-click into the storage: to an empty slot, and onto a matching stack.
+        fillForStorageCheck(player, menu, storage);
+        click(player, menu, CompanionMenu.PLAYER_START, ContainerInput.QUICK_MOVE);
+        click(player, menu, CompanionMenu.PLAYER_START + 1, ContainerInput.QUICK_MOVE);
+        helper.assertValueEqual(storage.countItem(Items.DIRT), open ? 3 : 0, "stored dirt after a shift-click" + on);
+        helper.assertValueEqual(storage.countItem(Items.DIAMOND), open ? 6 : 5, "stored diamonds after a shift-click" + on);
+
+        // Shift-click out of the storage.
+        fillForStorageCheck(player, menu, storage);
+        click(player, menu, CompanionMenu.STORAGE_START, ContainerInput.QUICK_MOVE);
+        helper.assertValueEqual(storage.countItem(Items.DIAMOND), open ? 0 : 5, "stored diamonds after a shift-click on them" + on);
+
+        // Double-click gathering: a diamond on the cursor gathers the others.
+        fillForStorageCheck(player, menu, storage);
+        click(player, menu, CompanionMenu.PLAYER_START + 1, ContainerInput.PICKUP);
+        click(player, menu, CompanionMenu.PLAYER_START + 1, ContainerInput.PICKUP_ALL);
+        helper.assertValueEqual(storage.countItem(Items.DIAMOND), open ? 0 : 5, "stored diamonds after gathering" + on);
+        helper.assertValueEqual(menu.getCarried().getCount(), open ? 6 : 1, "diamonds gathered on the cursor" + on);
+    }
+
+    /** Five diamonds in the storage; three dirt then one diamond in the player's first slots. */
+    private static void fillForStorageCheck(ServerPlayer player, CompanionMenu menu, CompanionInventory storage) {
+        menu.setCarried(ItemStack.EMPTY);
+        storage.clearContent();
+        storage.setItem(0, new ItemStack(Items.DIAMOND, 5));
+        player.getInventory().clearContent();
+        player.getInventory().setItem(9, new ItemStack(Items.DIRT, 3));
+        player.getInventory().setItem(10, new ItemStack(Items.DIAMOND));
+    }
+
+    /** A menu button as a client sends it (a tab, the storage), through the server's packet handler. */
+    private static void pressButton(ServerPlayer player, CompanionMenu menu, int button) {
+        player.connection.handleContainerButtonClick(new ServerboundContainerButtonClickPacket(menu.containerId, button));
+    }
+
+    @GameTest
+    public void menuOpenedWithoutTheStickIsValidForTheOwnerOnly(GameTestHelper helper) {
+        ServerPlayer player = connectPlayer(helper, "not_owner");
+        boolean valid;
+        try {
+            Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+            player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
+            CompanionMenu.open(player, companion, false);
+            valid = player.containerMenu.stillValid(player);
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        // No companion has an owner until ownership exists.
+        helper.assertTrue(!valid, "a menu opened without the stick is valid for a player who does not own the companion");
         helper.succeed();
     }
 
@@ -204,32 +344,33 @@ public class CompanionInventoryServerGameTest {
         player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
         player.getInventory().clearContent();
         player.getInventory().setItem(9, new ItemStack(Items.DIAMOND));
-        CompanionMenu.open(player, companion);
+        CompanionMenu.open(player, companion, true);
         helper.assertTrue(player.containerMenu instanceof CompanionMenu, "the menu did not open");
         CompanionMenu menu = (CompanionMenu) player.containerMenu;
         helper.assertTrue(menu.stillValid(player), "the menu is not valid next to a living companion");
-        shiftClick(player, menu, CompanionMenu.PLAYER_START);
+        pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
+        click(player, menu, CompanionMenu.PLAYER_START, ContainerInput.QUICK_MOVE);
         helper.assertValueEqual(companion.inventory().countItem(Items.DIAMOND), 1, "diamonds moved by a valid click");
 
         player.getInventory().setItem(9, new ItemStack(Items.EMERALD));
         change.accept(companion);
         helper.assertTrue(!menu.stillValid(player), "the menu is still valid once " + reason);
-        shiftClick(player, menu, CompanionMenu.PLAYER_START);
-        shiftClick(player, menu, CompanionMenu.STORAGE_START);
+        click(player, menu, CompanionMenu.PLAYER_START, ContainerInput.QUICK_MOVE);
+        click(player, menu, CompanionMenu.STORAGE_START, ContainerInput.QUICK_MOVE);
         helper.assertValueEqual(player.getInventory().getItem(9).getItem(), Items.EMERALD, "the player's emerald once " + reason);
         helper.assertValueEqual(player.getInventory().countItem(Items.DIAMOND), 0, "diamonds taken back once " + reason);
         player.closeContainer();
         companion.discard();
     }
 
-    /** A shift-click as a client sends it, through the server's packet handler. */
-    private static void shiftClick(ServerPlayer player, CompanionMenu menu, int slot) {
+    /** A left click as a client sends it, through the server's packet handler. */
+    private static void click(ServerPlayer player, CompanionMenu menu, int slot, ContainerInput input) {
         player.connection.handleContainerClick(new ServerboundContainerClickPacket(
                 menu.containerId,
                 menu.getStateId(),
                 (short) slot,
                 (byte) 0,
-                ContainerInput.QUICK_MOVE,
+                input,
                 Int2ObjectMaps.emptyMap(),
                 HashedStack.EMPTY));
     }

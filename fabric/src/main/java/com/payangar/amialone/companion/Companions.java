@@ -20,8 +20,8 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 
 /**
- * What the companion registers: its entity type, its identity attachment, its inventory menu, its
- * data registries.
+ * What the companion registers: its entity type, its identity and absorption attachments, its
+ * screen's menu, its data registries.
  */
 public final class Companions {
     /**
@@ -53,9 +53,18 @@ public final class Companions {
             builder -> builder.persistent(CompanionIdentity.CODEC)
                     .syncWith(CompanionIdentity.STREAM_CODEC, AttachmentSyncPredicate.all()));
 
-    /** The inventory screen's menu, which sends the companion's entity id to the client. */
-    public static final ExtendedMenuType<CompanionMenu, Integer> MENU = Registry.register(
-            BuiltInRegistries.MENU, id("companion"), new ExtendedMenuType<>(CompanionMenu::new, ByteBufCodecs.VAR_INT));
+    /**
+     * Its absorption, which a client needs for its health bar: vanilla syncs it for players only,
+     * as synched data a companion cannot declare. Not saved here: vanilla saves it with the entity.
+     */
+    public static final AttachmentType<Float> ABSORPTION = AttachmentRegistry.create(
+            id("absorption"), builder -> builder.syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.all()));
+
+    /** The companion's screen's menu, which sends the entity id and the debug flag to the client. */
+    public static final ExtendedMenuType<CompanionMenu, CompanionMenu.Opening> MENU = Registry.register(
+            BuiltInRegistries.MENU,
+            id("companion"),
+            new ExtendedMenuType<>(CompanionMenu::new, CompanionMenu.Opening.STREAM_CODEC));
 
     private Companions() {}
 

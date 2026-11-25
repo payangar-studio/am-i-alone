@@ -9,7 +9,11 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -66,6 +70,26 @@ public class ClientCompanion extends RemotePlayer {
         return identity == null || identity.fullName().isEmpty()
                 ? super.getName()
                 : Component.literal(identity.fullName());
+    }
+
+    /**
+     * The server's answer to a right-click ({@code Companion.interact}), predicted: no swing and no
+     * item use where the server lets nothing happen.
+     */
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        if (Companion.letsClickPass(player)) {
+            return super.interact(player, hand, location);
+        }
+        return Companion.isOwner(this, player)
+                ? InteractionResult.SUCCESS.withoutItem()
+                : InteractionResult.CONSUME.withoutItem();
+    }
+
+    /** Its absorption as the server sent it: a client player reads it from data a companion lacks. */
+    @Override
+    public float getAbsorptionAmount() {
+        return getAttachedOrElse(Companions.ABSORPTION, 0.0F);
     }
 
     /** Its name as plain text, rather than the placeholder profile's name. */

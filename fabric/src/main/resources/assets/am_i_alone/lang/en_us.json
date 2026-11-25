@@ -1,4 +1,10 @@
 {
+  "container.am_i_alone.companion.inventory.close": "Put its inventory away",
+  "container.am_i_alone.companion.inventory.open": "Its inventory",
+  "container.am_i_alone.companion.owner": "Owner: %s",
+  "container.am_i_alone.companion.owner.none": "none",
+  "container.am_i_alone.companion.tab.companion": "Companion",
+  "container.am_i_alone.companion.tab.debug": "Debug",
   "entity.am_i_alone.companion": "Companion",
   "item.am_i_alone.debug_stick": "Companion Debug Stick",
   "tag.item.am_i_alone.companion_weapons": "Companion Weapons"

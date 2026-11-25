@@ -11,19 +11,24 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotComparisonOptions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerSkin;
 
 /**
  * The companion seen from a client: built as a client player with its skin and name, out of the
  * Tab list, and drawn as a player (compared with the reference render
- * src/gametest/resources/templates/companion.png).
+ * src/gametest/resources/templates/companion.png); its effects and absorption, which a player's
+ * client gets only for itself, reach the client for its health bar.
  */
 public class CompanionClientGameTest implements FabricClientGameTest {
     private static final CompanionIdentity IDENTITY = new CompanionIdentity(
@@ -62,7 +67,31 @@ public class CompanionClientGameTest implements FabricClientGameTest {
                 context.assertScreenshotEquals(
                         TestScreenshotComparisonOptions.of("companion").save().disableCounterPrefix());
             }
+
+            // Its effects reach the client when given and when cleared, and so does its absorption.
+            world.getServer().runCommand("effect give " + id + " minecraft:poison 60");
+            context.waitFor(client -> companion(client, id).hasEffect(MobEffects.POISON));
+            world.getServer().runCommand("effect clear " + id + " minecraft:poison");
+            context.waitFor(client -> !companion(client, id).hasEffect(MobEffects.POISON));
+            world.getServer().runCommand("effect give " + id + " minecraft:absorption 60 1");
+            context.waitFor(client -> companion(client, id).getAbsorptionAmount() == 8.0F);
+
+            // A client that starts seeing a companion gets the effects it already has.
+            UUID late = world.getServer().computeOnServer(server -> {
+                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                Companion companion = (Companion) Companions.TYPE.create(player.level(), EntitySpawnReason.COMMAND);
+                companion.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 1200));
+                companion.snapTo(player.getX() + 2.0, player.getY(), player.getZ() + 3.0, 180.0F, 0.0F);
+                player.level().addFreshEntity(companion);
+                return companion.getUUID();
+            });
+            context.waitFor(client -> client.level.getEntity(late) instanceof ClientCompanion companion
+                    && companion.hasEffect(MobEffects.REGENERATION));
         }
+    }
+
+    private static LivingEntity companion(Minecraft client, UUID id) {
+        return (LivingEntity) client.level.getEntity(id);
     }
 
     /** A companion three blocks in front of the player, facing them, with a fixed identity. */

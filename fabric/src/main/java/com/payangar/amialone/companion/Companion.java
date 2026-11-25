@@ -1,18 +1,30 @@
 package com.payangar.amialone.companion;
 
 import com.payangar.amialone.CommonEntrypoint;
+import com.payangar.amialone.debug.Debug;
 import java.util.Arrays;
+import java.util.Collection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Avatar;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -22,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import org.jspecify.annotations.Nullable;
 
@@ -84,6 +97,90 @@ public class Companion extends Avatar {
     public @Nullable SlotAccess getSlot(int slot) {
         SlotAccess access = inventory.getSlot(slot);
         return access != null ? access : super.getSlot(slot);
+    }
+
+    /**
+     * A right-click: it opens its screen for its owner. For anyone else nothing happens, and the
+     * held item does not act either: a consumed click goes no further, and {@code CONSUME} swings
+     * no hand. The click passes on to the held item, as on any entity, when the player sneaks, or
+     * holds the debug stick with the gamemaster permission (the stick then opens the screen). The
+     * client's {@code ClientCompanion} answers the same, so it predicts no swing and no item use.
+     */
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        if (letsClickPass(player)) {
+            return super.interact(player, hand, location);
+        }
+        if (!isOwner(this, player)) {
+            return InteractionResult.CONSUME.withoutItem();
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            CompanionMenu.open(serverPlayer, this, false);
+        }
+        return InteractionResult.SUCCESS.withoutItem();
+    }
+
+    /**
+     * Whether a right-click on a companion goes on to the held item: when the player sneaks, or
+     * holds the debug stick with the gamemaster permission, which the client knows too.
+     */
+    public static boolean letsClickPass(Player player) {
+        return player.isSecondaryUseActive()
+                || player.isHolding(Debug.DEBUG_STICK)
+                        && player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+    }
+
+    /**
+     * Whether {@code player} owns {@code companion}. No companion has an owner until the ownership
+     * feature exists, so no one does: until then, only the debug stick opens a companion's screen.
+     */
+    public static boolean isOwner(Entity companion, Player player) {
+        return false;
+    }
+
+    /** Sends its new or changed effect to the clients that see it, for their health bar. */
+    @Override
+    protected void onEffectAdded(MobEffectInstance effect, @Nullable Entity source) {
+        super.onEffectAdded(effect, source);
+        sendToTrackingPlayers(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
+    }
+
+    @Override
+    protected void onEffectUpdated(MobEffectInstance effect, boolean doRefreshAttributes, @Nullable Entity source) {
+        super.onEffectUpdated(effect, doRefreshAttributes, source);
+        sendToTrackingPlayers(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
+    }
+
+    @Override
+    protected void onEffectsRemoved(Collection<MobEffectInstance> effects) {
+        super.onEffectsRemoved(effects);
+        for (MobEffectInstance effect : effects) {
+            sendToTrackingPlayers(new ClientboundRemoveMobEffectPacket(getId(), effect.getEffect()));
+        }
+    }
+
+    /** Sends all its effects to a client that starts seeing it, once the client has built it. */
+    @Override
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        for (MobEffectInstance effect : getActiveEffects()) {
+            player.connection.send(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
+        }
+    }
+
+    private void sendToTrackingPlayers(Packet<? super ClientGamePacketListener> packet) {
+        if (level() instanceof ServerLevel level) {
+            level.getChunkSource().sendToTrackingPlayers(this, packet);
+        }
+    }
+
+    /** Keeps the {@link Companions#ABSORPTION} attachment, which reaches the clients, up to date. */
+    @Override
+    protected void internalSetAbsorptionAmount(float amount) {
+        super.internalSetAbsorptionAmount(amount);
+        if (!level().isClientSide() && getAttachedOrElse(Companions.ABSORPTION, 0.0F) != amount) {
+            setAttached(Companions.ABSORPTION, amount);
+        }
     }
 
     @Override
