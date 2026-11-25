@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.payangar.amialone.companion.Companion;
 import com.payangar.amialone.companion.CompanionInventory;
 import com.payangar.amialone.companion.CompanionMenu;
+import com.payangar.amialone.companion.CompanionMenu.Panel;
 import com.payangar.amialone.companion.CompanionMenu.Tab;
 import com.payangar.amialone.companion.Companions;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -199,8 +200,8 @@ public class CompanionInventoryServerGameTest {
     /**
      * While the storage is closed, the storage takes and gives nothing whatever the client sends:
      * clicks, shift-clicks and double-click gathering, through the server's packet handler. After
-     * the storage's open button it does, until the close button, or until the Debug tab, which closes
-     * the storage and on which the storage does not open.
+     * the storage's open button it does, until the drawer's close button, or until the Debug tab,
+     * which closes the drawer and on which the storage does not open.
      */
     @GameTest
     public void storageTakesNothingWhileClosed(GameTestHelper helper) {
@@ -214,7 +215,7 @@ public class CompanionInventoryServerGameTest {
             checkStorage(helper, player, menu, storage, false, " once the screen opened");
             pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
             checkStorage(helper, player, menu, storage, true, " after the open button");
-            pressButton(player, menu, CompanionMenu.CLOSE_STORAGE_BUTTON);
+            pressButton(player, menu, CompanionMenu.CLOSE_DRAWER_BUTTON);
             checkStorage(helper, player, menu, storage, false, " after the close button");
             pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
             pressButton(player, menu, Tab.DEBUG.ordinal());
@@ -222,6 +223,44 @@ public class CompanionInventoryServerGameTest {
             checkStorage(helper, player, menu, storage, false, " after the Debug tab's button");
             pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
             checkStorage(helper, player, menu, storage, false, " after the open button on the Debug tab");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The drawer's Attributes panel closes the storage: opened directly or swapped in from the
+     * Inventory panel, the storage takes and gives nothing, shift-clicks included; swapped back, it
+     * does again; the close button closes the drawer whatever its panel. The Debug tab, which
+     * closes the drawer, refuses the Attributes panel too.
+     */
+    @GameTest
+    public void attributesPanelClosesTheStorage(GameTestHelper helper) {
+        ServerPlayer player = connectPlayer(helper, "attributes_user");
+        try {
+            Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+            player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
+            CompanionMenu.open(player, companion, true);
+            CompanionMenu menu = (CompanionMenu) player.containerMenu;
+            CompanionInventory storage = companion.inventory();
+            pressButton(player, menu, CompanionMenu.OPEN_ATTRIBUTES_BUTTON);
+            helper.assertValueEqual(menu.panel(), Panel.ATTRIBUTES, "the panel after the Attributes button");
+            checkStorage(helper, player, menu, storage, false, " on the Attributes panel");
+            pressButton(player, menu, CompanionMenu.OPEN_STORAGE_BUTTON);
+            helper.assertValueEqual(menu.panel(), Panel.INVENTORY, "the panel after swapping to the Inventory");
+            checkStorage(helper, player, menu, storage, true, " swapped to the Inventory panel");
+            pressButton(player, menu, CompanionMenu.OPEN_ATTRIBUTES_BUTTON);
+            helper.assertValueEqual(menu.panel(), Panel.ATTRIBUTES, "the panel after swapping to the Attributes");
+            checkStorage(helper, player, menu, storage, false, " swapped to the Attributes panel");
+            pressButton(player, menu, CompanionMenu.CLOSE_DRAWER_BUTTON);
+            helper.assertTrue(menu.panel() == null, "the panel after the close button is not none: " + menu.panel());
+            checkStorage(helper, player, menu, storage, false, " after the close button");
+            pressButton(player, menu, CompanionMenu.OPEN_ATTRIBUTES_BUTTON);
+            pressButton(player, menu, Tab.DEBUG.ordinal());
+            helper.assertTrue(menu.panel() == null, "the panel after the Debug tab's button is not none: " + menu.panel());
+            pressButton(player, menu, CompanionMenu.OPEN_ATTRIBUTES_BUTTON);
+            helper.assertTrue(menu.panel() == null, "the panel after the Attributes button on the Debug tab is not none: " + menu.panel());
         } finally {
             helper.getLevel().getServer().getPlayerList().remove(player);
         }

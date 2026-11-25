@@ -11,11 +11,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ArmorSlot;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.ticks.ContainerSingleItem;
@@ -26,9 +29,12 @@ import org.jspecify.annotations.Nullable;
  * and the inventory of the player who opened it, behind tabs. The client builds it from the
  * companion's entity id and an empty container, which the server's menu sync fills.
  *
- * <p>The client tells the server the open tab and whether the storage is open with vanilla's menu
- * button packet ({@link #clickMenuButton}); while the storage is closed the storage takes and gives
- * nothing, whatever a client sends. The storage opens on the {@link Tab#COMPANION} tab only.
+ * <p>The client tells the server the open tab and the drawer's open panel, if any, with vanilla's
+ * menu button packet ({@link #clickMenuButton}). The storage is open while the drawer shows the
+ * {@link Panel#INVENTORY} panel only; otherwise the storage takes and gives nothing, whatever a
+ * client sends. The drawer opens on the {@link Tab#COMPANION} tab only.
+ *
+ * <p>It also sends the client the companion's knockback resistance, which vanilla does not sync.
  *
  * <p>Its slots are not highlightable: the screen draws its own highlight, not vanilla's sprite.
  */
@@ -39,9 +45,13 @@ public class CompanionMenu extends AbstractContainerMenu {
     public static final int PLAYER_START = STORAGE_START + CompanionInventory.STORAGE_SIZE;
     public static final int PLAYER_END = PLAYER_START + 36;
 
-    /** The menu buttons that open and close the storage; the tabs' buttons are their ordinals. */
+    /**
+     * The menu buttons that open the drawer on a panel, or swap its panel, and close it; the tabs'
+     * buttons are their ordinals.
+     */
     public static final int OPEN_STORAGE_BUTTON = 10;
-    public static final int CLOSE_STORAGE_BUTTON = 11;
+    public static final int CLOSE_DRAWER_BUTTON = 11;
+    public static final int OPEN_ATTRIBUTES_BUTTON = 12;
 
     /**
      * Where the slots are drawn, in pixels from the screen's top left corner. The tabs stand above
@@ -80,6 +90,24 @@ public class CompanionMenu extends AbstractContainerMenu {
             InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS);
     private static final Identifier PRIMARY_WEAPON_ICON = Identifier.withDefaultNamespace("container/slot/sword");
 
+    /** The drawer's panels, in the order of their handles. */
+    public enum Panel {
+        /** The storage. */
+        INVENTORY(OPEN_STORAGE_BUTTON),
+        ATTRIBUTES(OPEN_ATTRIBUTES_BUTTON);
+
+        private final int button;
+
+        Panel(int button) {
+            this.button = button;
+        }
+
+        /** The menu button that opens the drawer on this panel. */
+        public int button() {
+            return button;
+        }
+    }
+
     /** The tabs, in their order; the ordinal is the menu button that opens one. */
     public enum Tab {
         COMPANION,
@@ -96,14 +124,18 @@ public class CompanionMenu extends AbstractContainerMenu {
                 ByteBufCodecs.VAR_INT, Opening::companionId, ByteBufCodecs.BOOL, Opening::debug, Opening::new);
     }
 
+    /** Its knockback resistance, in thousandths: a menu's data travels as shorts. */
+    private static final double KNOCKBACK_RESISTANCE_SCALE = 1000.0;
+
     private final LivingEntity companion;
     private final boolean debug;
+    private final ContainerData data;
     private Tab tab = Tab.COMPANION;
-    private boolean storageOpen;
+    private @Nullable Panel panel;
 
     /** The server's menu, over the companion itself; {@code debug} when opened with the debug stick. */
     public CompanionMenu(int containerId, Inventory playerInventory, Companion companion, boolean debug) {
-        this(containerId, playerInventory, companion, companion.inventory(), debug);
+        this(containerId, playerInventory, companion, companion.inventory(), knockbackResistance(companion), debug);
     }
 
     /** The client's menu, built from what the server sent. */
@@ -113,14 +145,22 @@ public class CompanionMenu extends AbstractContainerMenu {
                 playerInventory,
                 find(playerInventory.player, opening.companionId()),
                 new CompanionInventory(),
+                new SimpleContainerData(1),
                 opening.debug());
     }
 
     private CompanionMenu(
-            int containerId, Inventory playerInventory, LivingEntity companion, Container inventory, boolean debug) {
+            int containerId,
+            Inventory playerInventory,
+            LivingEntity companion,
+            Container inventory,
+            ContainerData data,
+            boolean debug) {
         super(Companions.MENU, containerId);
         this.companion = companion;
         this.debug = debug;
+        this.data = data;
+        addDataSlots(data);
         for (int i = 0; i < ARMOR.size(); i++) {
             EquipmentSlot slot = ARMOR.get(i);
             addSlot(new ArmorSlot(equipment(companion, slot), companion, slot, 0, ARMOR_X, COMPANION_Y + i * 18, ARMOR_ICONS.get(i)) {
@@ -179,6 +219,24 @@ public class CompanionMenu extends AbstractContainerMenu {
         throw new IllegalStateException("The companion " + id + " of an opened screen is not on the client");
     }
 
+    /** The server's data: the companion's knockback resistance, read at each sync. */
+    private static ContainerData knockbackResistance(LivingEntity companion) {
+        return new ContainerData() {
+            @Override
+            public int get(int id) {
+                return (int) Math.round(companion.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) * KNOCKBACK_RESISTANCE_SCALE);
+            }
+
+            @Override
+            public void set(int id, int value) {}
+
+            @Override
+            public int getCount() {
+                return 1;
+            }
+        };
+    }
+
     /** One equipment slot of {@code entity} as a container, for vanilla's {@link ArmorSlot}. */
     private static Container equipment(LivingEntity entity, EquipmentSlot slot) {
         return new ContainerSingleItem() {
@@ -220,29 +278,52 @@ public class CompanionMenu extends AbstractContainerMenu {
         return tab;
     }
 
-    /** Whether the storage is open: only then does the storage take and give items. */
+    /** The drawer's open panel; none while the drawer is closed. */
+    public @Nullable Panel panel() {
+        return panel;
+    }
+
+    /**
+     * Whether the storage is open, the drawer on the {@link Panel#INVENTORY} panel: only then does
+     * the storage take and give items.
+     */
     public boolean storageOpen() {
-        return storageOpen;
+        return panel == Panel.INVENTORY;
+    }
+
+    /**
+     * The companion's knockback resistance: on the client, as the server last sent it, to the
+     * thousandth.
+     */
+    public double knockbackResistance() {
+        return data.get(0) / KNOCKBACK_RESISTANCE_SCALE;
     }
 
     /**
      * The client's choice: opens the tab whose ordinal is {@code id}, if this screen has it, or
-     * opens or closes the storage. Leaving the {@link Tab#COMPANION} tab closes the storage.
+     * opens the drawer on a panel, swaps its panel, or closes it. Leaving the {@link Tab#COMPANION}
+     * tab closes the drawer.
      */
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (id == OPEN_STORAGE_BUTTON || id == CLOSE_STORAGE_BUTTON) {
+        if (id == OPEN_STORAGE_BUTTON || id == OPEN_ATTRIBUTES_BUTTON || id == CLOSE_DRAWER_BUTTON) {
             if (tab != Tab.COMPANION) {
                 return false;
             }
-            storageOpen = id == OPEN_STORAGE_BUTTON;
+            panel = switch (id) {
+                case OPEN_STORAGE_BUTTON -> Panel.INVENTORY;
+                case OPEN_ATTRIBUTES_BUTTON -> Panel.ATTRIBUTES;
+                default -> null;
+            };
             return true;
         }
         if (id < 0 || id >= Tab.values().length || !tabs().contains(Tab.values()[id])) {
             return false;
         }
         tab = Tab.values()[id];
-        storageOpen &= tab == Tab.COMPANION;
+        if (tab != Tab.COMPANION) {
+            panel = null;
+        }
         return true;
     }
 
@@ -259,8 +340,8 @@ public class CompanionMenu extends AbstractContainerMenu {
 
     /**
      * Shift-click: from the player, armor to its slot, a weapon or a shield to a free designated
-     * weapon slot, anything else to the storage while the storage is open only; from the companion,
-     * back to the player.
+     * weapon slot, anything else to the storage while the storage is open only (the drawer on its
+     * Inventory panel); from the companion, back to the player.
      */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -298,7 +379,7 @@ public class CompanionMenu extends AbstractContainerMenu {
             return true;
         }
         // Checked here too: moveItemStackTo merges into a matching stack without asking the slot.
-        return storageOpen && moveItemStackTo(stack, STORAGE_START, PLAYER_START, false);
+        return storageOpen() && moveItemStackTo(stack, STORAGE_START, PLAYER_START, false);
     }
 
     private static class PlainSlot extends Slot {
@@ -323,17 +404,17 @@ public class CompanionMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return storageOpen;
+            return storageOpen();
         }
 
         @Override
         public boolean mayPickup(Player player) {
-            return storageOpen;
+            return storageOpen();
         }
 
         @Override
         public boolean isActive() {
-            return storageOpen;
+            return storageOpen();
         }
     }
 

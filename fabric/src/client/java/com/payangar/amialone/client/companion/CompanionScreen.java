@@ -5,14 +5,23 @@ import com.payangar.amialone.companion.CompanionGroup;
 import com.payangar.amialone.companion.CompanionIdentity;
 import com.payangar.amialone.companion.CompanionInventory;
 import com.payangar.amialone.companion.CompanionMenu;
+import com.payangar.amialone.companion.CompanionMenu.Panel;
 import com.payangar.amialone.companion.CompanionMenu.Tab;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.vendor.gui.Draw;
 import com.payangar.amialone.vendor.gui.Theme;
+import java.util.EnumMap;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -32,13 +41,14 @@ import org.jspecify.annotations.Nullable;
 /**
  * A companion's screen: the companion in 3D following the mouse, its armor and designated weapons;
  * right of them its name, its armor and health bars and the tab's lines: its owner (Companion), the
- * debug options (Debug); the player's inventory below. Its storage slides out from under the panel
- * in a drawer, on the Companion tab only. Scaffolding drawn with the kit's colours and a few sprites
- * of the mod.
+ * debug options (Debug); the player's inventory below. A drawer slides out from under the panel, on
+ * the Companion tab only, with two panels behind two handles: its storage (Inventory) and its
+ * attributes (Attributes). Scaffolding drawn with the kit's colours and a few sprites of the mod.
  *
  * <p>A slot's position is fixed, so the storage's slots sit where the open drawer shows them, and
- * the client's menu opens the storage only once the drawer is fully out: until then vanilla neither
- * draws nor reaches them. The server is told at the click, as for the tabs.
+ * the client's menu opens the storage only once the drawer is fully out on the Inventory panel:
+ * until then vanilla neither draws nor reaches them. The server is told at the click, as for the
+ * tabs.
  */
 public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final String KEY = "container.am_i_alone.companion.";
@@ -66,13 +76,16 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final int INFO_WIDTH = WIDTH - PADDING - INFO_X;
     private static final int NAME_Y = PANEL_Y + 8;
     private static final int BARS_Y = NAME_Y + 12;
-    private static final int OWNER_Y = BARS_Y + 24;
+    /** Between the hearts' last row and the owner line: with one row, 24 under the bars' top. */
+    private static final int OWNER_GAP = 5;
     private static final Identifier FEMALE = sprite("female");
     private static final Identifier MALE = sprite("male");
     private static final Identifier CHEST = sprite("chest");
+    private static final Identifier ATTRIBUTES = sprite("attributes");
     /**
-     * The storage's drawer, as high as the panel and hidden under it when closed: a padding around
-     * its slots' boxes, on the left from the panel's right border, which covers its first columns.
+     * The drawer, as high as the panel and hidden under it when closed: a padding around its
+     * storage's slot boxes, on the left from the panel's right border, which covers its first
+     * columns.
      */
     private static final int DRAWER_WIDTH = CompanionMenu.STORAGE_X - 1 - CompanionMenu.DRAWER_X
             + CompanionMenu.STORAGE_COLUMNS * 18 + PADDING;
@@ -82,19 +95,42 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final int DRAWER_OPEN_X = CompanionMenu.DRAWER_X;
     private static final int DRAWER_CLOSED_X = WIDTH - DRAWER_WIDTH;
     private static final int SLIDE_MILLIS = 200;
-    /** The handle, its left border on the drawer's right border, which it opens. */
+    /** The drawer's inside, from its top left corner: its storage's slot boxes, or the attributes. */
+    private static final int CONTENT_X = CompanionMenu.STORAGE_X - 1 - CompanionMenu.DRAWER_X;
+    private static final int CONTENT_Y = CompanionMenu.STORAGE_Y - 1 - CompanionMenu.DRAWER_Y;
+    private static final int CONTENT_WIDTH = CompanionMenu.STORAGE_COLUMNS * 18;
+    private static final int CONTENT_HEIGHT = DRAWER_HEIGHT - 2 * PADDING;
+    /**
+     * The handles, one per panel, stacked, neighbours sharing a border, their left border on the
+     * drawer's right border. The open panel's handle stands further out, as the chosen tab stands
+     * higher, and is drawn last.
+     */
     private static final int HANDLE_X = DRAWER_WIDTH - 1;
     private static final int HANDLE_Y = 14;
     private static final int HANDLE_WIDTH = 21;
+    private static final int SELECTED_HANDLE_WIDTH = HANDLE_WIDTH + 2;
     private static final int HANDLE_HEIGHT = 26;
-    /** From the panel's left edge to the open handle's right edge. */
-    private static final int OPEN_WIDTH = DRAWER_OPEN_X + HANDLE_X + HANDLE_WIDTH;
+    private static final int HANDLE_PITCH = HANDLE_HEIGHT - 1;
+    /** From the panel's left edge to the open panel's handle's right edge. */
+    private static final int OPEN_WIDTH = DRAWER_OPEN_X + HANDLE_X + SELECTED_HANDLE_WIDTH;
     /** What a narrow screen keeps on each side. */
     private static final int MARGIN = 4;
 
+    /**
+     * The drawer's panel left open when a screen last closed, for the session: the next screen
+     * opens with the drawer out on it. None when the drawer was closed.
+     */
+    private static @Nullable Panel remembered;
+
     private final HealthBars bars = new HealthBars();
-    /** Whether the player wants the storage open: the drawer slides towards it. */
-    private boolean storageWanted;
+    private final AttributesPanel attributes = new AttributesPanel();
+    private final Map<Panel, Handle> handles = new EnumMap<>(Panel.class);
+    /** The panel the player wants open, none to close the drawer: the drawer slides towards it. */
+    private @Nullable Panel wanted;
+    /** The panel the drawer shows, which stays while the drawer closes. */
+    private Panel shown = Panel.INVENTORY;
+    /** Whether the drawer was restored from {@link #remembered}, once per screen. */
+    private boolean restored;
     /** How far the drawer is out, from 0 (closed) to 1 (open). */
     private float slide;
     private long lastFrame = -1;
@@ -121,19 +157,33 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     @Override
     protected void init() {
         super.init();
+        handles.clear();
+        for (Panel panel : Panel.values()) {
+            handles.put(panel, addRenderableWidget(new Handle(panel)));
+        }
+        if (!restored) {
+            restored = true;
+            if (remembered != null && menu.tab() == Tab.COMPANION) {
+                setDrawer(remembered);
+                slide = 1;
+            }
+        }
         layout();
     }
 
     /**
      * Places the screen: centred, and moved left as the drawer opens so that the panel and the
      * open drawer fit, as vanilla's recipe book moves the inventory. On a screen too narrow even
-     * for that, the panel keeps a margin and the open drawer overlaps it.
+     * for that, the panel keeps a margin and the open drawer overlaps it. The handles follow.
      */
     private void layout() {
         int centred = (width - imageWidth) / 2;
         int open = Math.max(MARGIN, Math.min(centred, width - MARGIN - OPEN_WIDTH));
         drawerShift = Math.min(0, width - MARGIN - OPEN_WIDTH - open);
         leftPos = centred + Math.round((open - centred) * eased());
+        for (Handle handle : handles.values()) {
+            handle.place();
+        }
     }
 
     /** Moves the drawer towards where the player wants it; here the storage opens once it is out. */
@@ -141,8 +191,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         long now = Util.getMillis();
         float step = lastFrame < 0 ? 0 : (now - lastFrame) / (float) SLIDE_MILLIS;
         lastFrame = now;
-        slide = Math.clamp(slide + (storageWanted ? step : -step), 0f, 1f);
-        if (storageWanted && slide == 1 && !menu.storageOpen()) {
+        slide = Math.clamp(slide + (wanted != null ? step : -step), 0f, 1f);
+        if (wanted == Panel.INVENTORY && slide == 1 && !menu.storageOpen()) {
             menu.clickMenuButton(minecraft.player, CompanionMenu.OPEN_STORAGE_BUTTON);
         }
         layout();
@@ -167,7 +217,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             if (mouseX >= x && mouseX < x + width) {
                 return tab;
             }
-            x += width + 1;
+            x += width - 1;
         }
         return null;
     }
@@ -177,9 +227,14 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         return DRAWER_CLOSED_X + Math.round((DRAWER_OPEN_X + drawerShift - DRAWER_CLOSED_X) * eased());
     }
 
-    /** Whether the drawer is drawn over the panel: open, on a screen too narrow for both. */
+    /** Whether the drawer is drawn over the panel: fully out, on a screen too narrow for both. */
     private boolean drawerOnTop() {
-        return drawerShift < 0 && menu.storageOpen();
+        return drawerShift < 0 && wanted != null && slide == 1;
+    }
+
+    /** Whether the drawer is out on the Attributes panel. */
+    private boolean attributesShown() {
+        return menu.tab() == Tab.COMPANION && wanted == Panel.ATTRIBUTES && slide == 1;
     }
 
     /** Whether the mouse is on the drawer, which exists on the Companion tab only. */
@@ -189,16 +244,9 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
                 && within(mouseX, mouseY, leftPos + drawerX(), topPos + DRAWER_Y, DRAWER_WIDTH, DRAWER_HEIGHT);
     }
 
-    /** Whether the mouse is on the handle's part out of the drawer. */
+    /** Whether the mouse is on a handle's part out of the drawer. */
     private boolean onHandle(double mouseX, double mouseY) {
-        return menu.tab() == Tab.COMPANION
-                && within(
-                        mouseX,
-                        mouseY,
-                        leftPos + drawerX() + HANDLE_X + 1,
-                        topPos + DRAWER_Y + HANDLE_Y,
-                        HANDLE_WIDTH - 1,
-                        HANDLE_HEIGHT);
+        return handles.values().stream().anyMatch(handle -> handle.isMouseOver(mouseX, mouseY));
     }
 
     private static boolean within(double mouseX, double mouseY, int x, int y, int width, int height) {
@@ -224,14 +272,32 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             selectTab(tab);
             return true;
         }
-        if (onHandle(event.x(), event.y())) {
-            toggleStorage();
-            return true;
-        }
         return super.mouseClicked(event, doubleClick);
     }
 
-    /** The drawer and its handle are part of the screen: a click there throws nothing. */
+    /**
+     * Escape puts the drawer away first when it overlaps the panel, on a narrow screen, as vanilla's
+     * recipe book does; otherwise it closes the screen.
+     */
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (event.isEscape() && wanted != null && drawerShift < 0) {
+            setDrawer(null);
+            return true;
+        }
+        return super.keyPressed(event);
+    }
+
+    /** The wheel scrolls the attributes when they outgrow the drawer. */
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (attributesShown() && overDrawer(x, y) && attributes.scroll(menu, CONTENT_HEIGHT, scrollY)) {
+            return true;
+        }
+        return super.mouseScrolled(x, y, scrollX, scrollY);
+    }
+
+    /** The drawer and its handles are part of the screen: a click there throws nothing. */
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
         return super.hasClickedOutside(mouseX, mouseY, left, top)
@@ -255,13 +321,14 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     /**
      * Opens {@code tab} here and tells the server, with vanilla's menu button packet. The menu
      * stays: the item on the cursor and the view do not move. Leaving the Companion tab closes the
-     * storage, on both sides.
+     * drawer, on both sides.
      */
     public void selectTab(Tab tab) {
         if (tab != menu.tab() && menu.clickMenuButton(minecraft.player, tab.ordinal())) {
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, tab.ordinal());
             if (tab != Tab.COMPANION) {
-                storageWanted = false;
+                wanted = null;
+                remembered = null;
                 slide = 0;
                 layout();
             }
@@ -269,16 +336,27 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     }
 
     /**
-     * Opens or closes the storage, on the Companion tab, and tells the server, which opens it at once.
-     * Here it opens once the drawer is out, and closes at once.
+     * A click on the handle of {@code panel}, on the Companion tab: puts the drawer away if it is
+     * out on that panel, otherwise opens it on that panel, or swaps its panel at once if it is out.
      */
-    public void toggleStorage() {
-        if (menu.tab() != Tab.COMPANION) {
-            return;
+    public void pressHandle(Panel panel) {
+        if (menu.tab() == Tab.COMPANION) {
+            setDrawer(wanted == panel ? null : panel);
         }
-        storageWanted = !storageWanted;
-        int button = storageWanted ? CompanionMenu.OPEN_STORAGE_BUTTON : CompanionMenu.CLOSE_STORAGE_BUTTON;
-        if (!storageWanted) {
+    }
+
+    /**
+     * Opens the drawer on {@code panel}, or closes it, and tells the server, which opens or closes
+     * the storage at once. Here the storage opens once the drawer is out, and closes at once.
+     */
+    private void setDrawer(@Nullable Panel panel) {
+        wanted = panel;
+        remembered = panel;
+        if (panel != null) {
+            shown = panel;
+        }
+        int button = panel != null ? panel.button() : CompanionMenu.CLOSE_DRAWER_BUTTON;
+        if (panel != Panel.INVENTORY) {
             menu.clickMenuButton(minecraft.player, button);
         }
         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, button);
@@ -290,17 +368,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractRenderState(graphics, mouseX, mouseY, a);
-        if (onHandle(mouseX, mouseY) && menu.getCarried().isEmpty()) {
-            Component tooltip = Component.translatable(KEY + (storageWanted ? "inventory.close" : "inventory.open"));
-            graphics.setTooltipForNextFrame(font, tooltip, mouseX, mouseY);
-        }
-    }
-
-    @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        // The first of a frame's drawing: its slots and labels follow with the same position.
+        // The first of a frame's drawing: its slots, labels and handles follow with the same position.
         slide();
         super.extractBackground(graphics, mouseX, mouseY, a);
         boolean drawer = menu.tab() == Tab.COMPANION;
@@ -335,38 +404,72 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     }
 
     /**
-     * The drawer with its slots' boxes, which slide with it, and its handle: a chest and an arrow
-     * towards where a click moves the drawer, lit while the storage is open or under the mouse.
+     * The drawer with the shown panel, which slides with it: the storage's slot boxes, or the
+     * attributes; and its handles.
      */
     private void extractDrawer(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int x = leftPos + drawerX();
         int y = topPos + DRAWER_Y;
         Draw.box(graphics, x, y, DRAWER_WIDTH, DRAWER_HEIGHT, Theme.SURFACE, Theme.BORDER);
-        int slotsX = x + CompanionMenu.STORAGE_X - CompanionMenu.DRAWER_X - 1;
-        int slotsY = y + CompanionMenu.STORAGE_Y - CompanionMenu.DRAWER_Y - 1;
-        for (int i = 0; i < CompanionInventory.STORAGE_SIZE; i++) {
-            int column = i % CompanionMenu.STORAGE_COLUMNS;
-            int row = i / CompanionMenu.STORAGE_COLUMNS;
-            sunken(graphics, slotsX + column * 18, slotsY + row * 18, 18, 18);
+        int contentX = x + CONTENT_X;
+        int contentY = y + CONTENT_Y;
+        if (shown == Panel.INVENTORY) {
+            for (int i = 0; i < CompanionInventory.STORAGE_SIZE; i++) {
+                int column = i % CompanionMenu.STORAGE_COLUMNS;
+                int row = i / CompanionMenu.STORAGE_COLUMNS;
+                sunken(graphics, contentX + column * 18, contentY + row * 18, 18, 18);
+            }
+        } else {
+            boolean hoverable = attributesShown() && menu.getCarried().isEmpty();
+            attributes.extract(
+                    graphics, font, menu, contentX, contentY, CONTENT_WIDTH, CONTENT_HEIGHT, mouseX, mouseY, hoverable);
         }
-        boolean hovered = onHandle(mouseX, mouseY);
-        int face = hovered ? Theme.SURFACE_HOVER : Theme.SURFACE;
-        int handleX = x + HANDLE_X;
-        int handleY = y + HANDLE_Y;
-        Draw.box(graphics, handleX, handleY, HANDLE_WIDTH, HANDLE_HEIGHT, face, Theme.BORDER);
-        // Open on the drawer's side, as the chosen tab is on the panel's: neither the drawer's border
-        // and bevel nor the handle's left ones between them, the handle's top and bottom bevels
-        // running to the opening.
-        Draw.fill(graphics, handleX - 1, handleY + 1, 1, HANDLE_HEIGHT - 2, Theme.SURFACE);
-        Draw.fill(graphics, handleX, handleY + 1, 2, HANDLE_HEIGHT - 2, face);
-        Draw.fill(graphics, handleX, handleY + 1, 2, 1, Theme.BEVEL_LIGHT);
-        Draw.fill(graphics, handleX, handleY + HANDLE_HEIGHT - 2, 2, 1, Theme.BEVEL_DARK);
-        int colour = storageWanted ? Theme.HEADING : hovered ? Theme.TEXT : Theme.TEXT_DIM;
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, CHEST, handleX + 5, handleY + 4, 11, 10, colour);
-        // A 3 by 5 arrow, pointing right to open the storage and left to put it away.
-        for (int column = 0; column < 3; column++) {
-            int height = 5 - 2 * (storageWanted ? 2 - column : column);
-            Draw.fill(graphics, handleX + 9 + column, handleY + 17 + (5 - height) / 2, 1, height, colour);
+        for (Handle handle : handles.values()) {
+            if (!handle.selected()) {
+                extractHandle(graphics, handle, mouseX, mouseY);
+            }
+        }
+        if (wanted != null) {
+            extractHandle(graphics, handles.get(wanted), mouseX, mouseY);
+        }
+    }
+
+    /**
+     * A handle: its panel's icon, and an arrow towards where a click moves the drawer. The open
+     * panel's handle is in the drawer's colour and open on its side, as the chosen tab is on the
+     * panel's; the others are a darker band, lit under the mouse or the keyboard's focus. While the
+     * drawer is closed every handle points out; once open, the open panel's points back and the
+     * others have no arrow.
+     */
+    private void extractHandle(GuiGraphicsExtractor graphics, Handle handle, int mouseX, int mouseY) {
+        boolean selected = handle.selected();
+        int handleX = handle.getX() - 1;
+        int handleY = handle.getY();
+        int colour;
+        if (selected) {
+            Draw.box(graphics, handleX, handleY, SELECTED_HANDLE_WIDTH, HANDLE_HEIGHT, Theme.SURFACE, Theme.BORDER);
+            // Neither the drawer's border and bevel nor the handle's left ones between them, the
+            // handle's top and bottom bevels running to the opening.
+            Draw.fill(graphics, handleX - 1, handleY + 1, 1, HANDLE_HEIGHT - 2, Theme.SURFACE);
+            Draw.fill(graphics, handleX, handleY + 1, 2, HANDLE_HEIGHT - 2, Theme.SURFACE);
+            Draw.fill(graphics, handleX, handleY + 1, 2, 1, Theme.BEVEL_LIGHT);
+            Draw.fill(graphics, handleX, handleY + HANDLE_HEIGHT - 2, 2, 1, Theme.BEVEL_DARK);
+            colour = Theme.HEADING;
+        } else {
+            int face = handle.lit(mouseX, mouseY) ? Theme.SURFACE_HOVER : Theme.BAND;
+            Draw.box(graphics, handleX, handleY, HANDLE_WIDTH, HANDLE_HEIGHT, face, Theme.BORDER);
+            colour = handle.lit(mouseX, mouseY) ? Theme.TEXT : Theme.TEXT_DIM;
+        }
+        // The icon and the arrow centred between the borders, one pixel further out when selected.
+        int inset = selected ? 1 : 0;
+        Identifier icon = handle.panel == Panel.INVENTORY ? CHEST : ATTRIBUTES;
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, icon, handleX + 5 + inset, handleY + 4, 11, 10, colour);
+        if (wanted == null || selected) {
+            // A 3 by 5 arrow, pointing right to open the drawer and left to put it away.
+            for (int column = 0; column < 3; column++) {
+                int height = 5 - 2 * (selected ? 2 - column : column);
+                Draw.fill(graphics, handleX + 9 + inset + column, handleY + 17 + (5 - height) / 2, 1, height, colour);
+            }
         }
     }
 
@@ -409,27 +512,36 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     }
 
     /**
-     * The tabs above the panel: each a box of the kit's colours, the chosen one in the panel's
-     * colour and open at the bottom, so it joins the panel.
+     * The tabs above the panel, side by side, neighbours sharing a border: each a box of the kit's
+     * colours, the chosen one drawn last, in the panel's colour and open at the bottom, so it joins
+     * the panel.
      */
     private void extractTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         Tab hovered = tabAt(mouseX, mouseY);
         int x = leftPos + TABS_X;
+        int chosenX = x;
         for (Tab tab : menu.tabs()) {
-            int width = tabWidth(tab);
-            boolean chosen = tab == menu.tab();
-            if (chosen) {
-                Draw.box(graphics, x, topPos, width, TAB_HEIGHT + 1, Theme.SURFACE, Theme.BORDER);
-                Draw.fill(graphics, x + 1, topPos + TAB_HEIGHT, width - 2, 1, Theme.SURFACE);
+            if (tab == menu.tab()) {
+                chosenX = x;
             } else {
-                int face = tab == hovered ? Theme.SURFACE_HOVER : Theme.BAND;
-                Draw.box(graphics, x, topPos + 2, width, TAB_HEIGHT - 2, face, Theme.BORDER);
+                extractTab(graphics, tab, x, false, tab == hovered);
             }
-            int colour = chosen ? Theme.HEADING : Theme.TEXT_DIM;
-            int textY = topPos + (chosen ? 0 : 2) + (TAB_HEIGHT - (chosen ? 0 : 2) - font.lineHeight) / 2 + 1;
-            Draw.text(graphics, font, title(tab), x + TAB_MARGIN, textY, colour);
-            x += width + 1;
+            x += tabWidth(tab) - 1;
         }
+        extractTab(graphics, menu.tab(), chosenX, true, false);
+    }
+
+    private void extractTab(GuiGraphicsExtractor graphics, Tab tab, int x, boolean chosen, boolean hovered) {
+        int width = tabWidth(tab);
+        if (chosen) {
+            Draw.box(graphics, x, topPos, width, TAB_HEIGHT + 1, Theme.SURFACE, Theme.BORDER);
+            Draw.fill(graphics, x + 1, topPos + TAB_HEIGHT, width - 2, 1, Theme.SURFACE);
+        } else {
+            Draw.box(graphics, x, topPos + 2, width, TAB_HEIGHT - 2, hovered ? Theme.SURFACE_HOVER : Theme.BAND, Theme.BORDER);
+        }
+        int colour = chosen ? Theme.HEADING : Theme.TEXT_DIM;
+        int textY = topPos + (chosen ? 0 : 2) + (TAB_HEIGHT - (chosen ? 0 : 2) - font.lineHeight) / 2 + 1;
+        Draw.text(graphics, font, title(tab), x + TAB_MARGIN, textY, colour);
     }
 
     private static void sunken(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
@@ -478,9 +590,10 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             int symbolX = x + font.width(name) + 4;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, symbol, symbolX, topPos + NAME_Y - 1, symbolWidth, 9);
         }
-        bars.extract(graphics, menu.companion(), x, topPos + BARS_Y, minecraft.gui.hud.getGuiTicks());
+        // The tab's lines follow the hearts, whose rows grow with the health and the absorption.
+        int linesY = bars.extract(graphics, menu.companion(), x, topPos + BARS_Y, minecraft.gui.hud.getGuiTicks()) + OWNER_GAP;
         int ownerColour = menu.tab() == Tab.DEBUG ? Theme.TEXT : Theme.TEXT_DIM;
-        Draw.text(graphics, font, owner(), x, topPos + OWNER_Y, INFO_WIDTH, ownerColour);
+        Draw.text(graphics, font, owner(), x, linesY, INFO_WIDTH, ownerColour);
     }
 
     /** The symbol of its group, from its skin: female or male; none without a skin. */
@@ -497,5 +610,76 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     /** Its owner; none until ownership exists. */
     private static Component owner() {
         return Component.translatable(KEY + "owner", Component.translatable(KEY + "owner.none"));
+    }
+
+    /**
+     * A handle as a button, for the mouse, the keyboard and the narrator, over the handle's part
+     * out of the drawer; the screen draws it with the drawer. Its message is its tooltip: its
+     * panel's name, or, once selected, the action that puts its panel away.
+     */
+    private final class Handle extends AbstractButton {
+        private final Panel panel;
+
+        Handle(Panel panel) {
+            super(0, 0, HANDLE_WIDTH - 1, HANDLE_HEIGHT, Component.empty());
+            this.panel = panel;
+        }
+
+        /** Whether the drawer is out, or going out, on its panel. */
+        boolean selected() {
+            return wanted == panel;
+        }
+
+        /** Whether it is lit: under the mouse, or focused from the keyboard. */
+        boolean lit(int mouseX, int mouseY) {
+            return isMouseOver(mouseX, mouseY) || isFocused() && minecraft.getLastInputType().isKeyboard();
+        }
+
+        /** Follows the drawer, the tab and the open panel. */
+        void place() {
+            visible = menu.tab() == Tab.COMPANION;
+            setRectangle(
+                    (selected() ? SELECTED_HANDLE_WIDTH : HANDLE_WIDTH) - 1,
+                    HANDLE_HEIGHT,
+                    leftPos + drawerX() + HANDLE_X + 1,
+                    topPos + DRAWER_Y + HANDLE_Y + panel.ordinal() * HANDLE_PITCH);
+            String name = panel.name().toLowerCase(Locale.ROOT);
+            Component message = Component.translatable(KEY + name + (selected() ? ".close" : ".open"));
+            if (!message.equals(getMessage())) {
+                setMessage(message);
+                // Without narration: the message narrates it already.
+                setTooltip(Tooltip.create(message, null));
+            }
+        }
+
+        @Override
+        public void onPress(InputWithModifiers input) {
+            pressHandle(panel);
+        }
+
+        @Override
+        protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {}
+
+        /** No tooltip over an item on the cursor, as over the slots. */
+        @Override
+        protected void extractTooltipForNextRenderPass(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+            if (menu.getCarried().isEmpty()) {
+                super.extractTooltipForNextRenderPass(graphics, mouseX, mouseY);
+            }
+        }
+
+        /** A click leaves no focus behind, which would keep it lit. */
+        @Override
+        public boolean shouldTakeFocusAfterInteraction() {
+            return false;
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            defaultButtonNarrationText(output);
+            if (selected()) {
+                output.add(NarratedElementType.HINT, Component.translatable(KEY + "drawer.selected"));
+            }
+        }
     }
 }

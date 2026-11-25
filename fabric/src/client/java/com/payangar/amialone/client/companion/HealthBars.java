@@ -39,8 +39,10 @@ public final class HealthBars {
      * Draws the bars of {@code entity}, the armor row's top left corner at {@code xLeft, top}.
      *
      * @param tickCount the GUI's tick count, which paces the blink, the wobble and the bounce
+     * @return the y just under the hearts' last row, as laid out: rows and row height from the
+     *     health and the absorption, without the wobble and the bounce
      */
-    public void extract(GuiGraphicsExtractor graphics, LivingEntity entity, int xLeft, int top, int tickCount) {
+    public int extract(GuiGraphicsExtractor graphics, LivingEntity entity, int xLeft, int top, int tickCount) {
         int currentHealth = Mth.ceil(entity.getHealth());
         boolean blink = healthBlinkTime > tickCount && (healthBlinkTime - tickCount) / 3L % 2L == 1L;
         long timeMillis = Util.getMillis();
@@ -81,6 +83,7 @@ public final class HealthBars {
                 oldHealth,
                 totalAbsorption,
                 blink);
+        return yLineBase + 9;
     }
 
     /** As the HUD's, except that no armor still shows the row, empty: the screen keeps its layout. */
