@@ -48,7 +48,7 @@ public class CompanionMenu extends AbstractContainerMenu {
             InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE,
             InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS,
             InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS);
-    private static final Identifier WEAPON_ICON = Identifier.withDefaultNamespace("container/slot/sword");
+    private static final Identifier PRIMARY_WEAPON_ICON = Identifier.withDefaultNamespace("container/slot/sword");
 
     private final LivingEntity companion;
 
@@ -74,8 +74,13 @@ public class CompanionMenu extends AbstractContainerMenu {
                 }
             });
         }
-        addSlot(new WeaponSlot(inventory, CompanionInventory.PRIMARY_WEAPON, WEAPONS_X, COMPANION_Y));
-        addSlot(new WeaponSlot(inventory, CompanionInventory.SECONDARY_WEAPON, WEAPONS_X, COMPANION_Y + 18));
+        addSlot(new WeaponSlot(inventory, CompanionInventory.PRIMARY_WEAPON, WEAPONS_X, COMPANION_Y, PRIMARY_WEAPON_ICON));
+        addSlot(new WeaponSlot(
+                inventory,
+                CompanionInventory.SECONDARY_WEAPON,
+                WEAPONS_X,
+                COMPANION_Y + 18,
+                InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));
         for (int i = 0; i < CompanionInventory.STORAGE_SIZE; i++) {
             addSlot(new PlainSlot(inventory, i, STORAGE_X + i % 9 * 18, COMPANION_Y + i / 9 * 18));
         }
@@ -203,8 +208,11 @@ public class CompanionMenu extends AbstractContainerMenu {
 
     /** A designated weapon slot: one item of {@link CompanionInventory#WEAPONS}. */
     private static class WeaponSlot extends PlainSlot {
-        WeaponSlot(Container container, int slot, int x, int y) {
+        private final Identifier emptyIcon;
+
+        WeaponSlot(Container container, int slot, int x, int y, Identifier emptyIcon) {
             super(container, slot, x, y);
+            this.emptyIcon = emptyIcon;
         }
 
         @Override
@@ -219,7 +227,7 @@ public class CompanionMenu extends AbstractContainerMenu {
 
         @Override
         public @Nullable Identifier getNoItemIcon() {
-            return WEAPON_ICON;
+            return emptyIcon;
         }
     }
 }
