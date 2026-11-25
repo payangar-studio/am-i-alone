@@ -128,6 +128,9 @@ and font classes, not on `ConfigScreen` (`vendor/gui/Draw.java`,
 `InventoryScreen.extractEntityInInventoryFollowsMouse`, public and open to any
 living entity (`InventoryScreen.java:100`).
 
+Decision: an empty primary weapon slot shows vanilla's sword outline, an
+empty secondary one vanilla's shield outline, as the player's offhand slot.
+
 Decision: the 3D view shows no name tag; the screen's title already names the
 companion. Fact: a player always shows their name, and vanilla's view has no
 option to hide it, so the screen draws the view itself with the same steps,
