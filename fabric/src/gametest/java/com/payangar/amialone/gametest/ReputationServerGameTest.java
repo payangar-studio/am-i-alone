@@ -21,6 +21,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.gossip.GossipType;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -183,5 +187,61 @@ public class ReputationServerGameTest {
             helper.getLevel().getServer().getPlayerList().remove(player);
         }
         helper.succeed();
+    }
+
+    /** A splash potion of healing a player throws: vanilla heals it at once, the mixin names the thrower. */
+    @GameTest(maxTicks = 100)
+    public void aThrownPotionOfHealingMakesItThinkBetterOfTheThrower(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        companion.setHealth(10.0F);
+        ServerPlayer player = connectPlayer(helper, "healer");
+        ThrownSplashPotion potion = new ThrownSplashPotion(
+                helper.getLevel(), player, PotionContents.createItemStack(Items.SPLASH_POTION, Potions.HEALING));
+        potion.setPos(companion.getX(), companion.getY() + 2.5, companion.getZ());
+        potion.setDeltaMovement(0.0, -0.5, 0.0);
+        helper.getLevel().addFreshEntity(potion);
+        // Instant health I restores 4 at the centre of the splash: 2 hearts.
+        helper.succeedWhen(() -> {
+            helper.assertValueEqual(companion.opinionOf(player), 2, "opinion of the thrower");
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        });
+    }
+
+    @GameTest
+    public void healingItAtFullHealthBringsNothing(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        ServerPlayer player = connectPlayer(helper, "healer");
+        try {
+            MobEffects.INSTANT_HEALTH.value().applyInstantaneousEffect(helper.getLevel(), null, player, companion, 1, 1.0);
+            helper.assertValueEqual(companion.opinionOf(player), 0, "opinion after healing a companion at full health");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
+    @GameTest
+    public void aHealByACreatureCreditsNoOne(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        companion.setHealth(10.0F);
+        Entity witch = helper.spawn(EntityTypes.WITCH, 3, 2, 3);
+        MobEffects.INSTANT_HEALTH.value().applyInstantaneousEffect(helper.getLevel(), null, witch, companion, 0, 1.0);
+        helper.assertTrue(companion.getHealth() > 10.0F, "the witch's potion did not heal the companion");
+        helper.assertTrue(companion.gossips().getGossipEntries().isEmpty(), "a witch's heal left a rumour");
+        helper.succeed();
+    }
+
+    /** Regeneration heals over time; each heart goes to the player who applied it. */
+    @GameTest(maxTicks = 200)
+    public void regenerationMakesItThinkBetterOfWhoAppliedIt(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        companion.setHealth(10.0F);
+        ServerPlayer player = connectPlayer(helper, "healer");
+        // Regeneration II heals 1 every 25 ticks.
+        companion.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1), player);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(companion.opinionOf(player) >= 2, "opinion of the healer: " + companion.opinionOf(player) + ", health " + companion.getHealth() + ", regeneration " + companion.hasEffect(MobEffects.REGENERATION));
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        });
     }
 }

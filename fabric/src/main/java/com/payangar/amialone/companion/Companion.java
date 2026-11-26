@@ -4,8 +4,11 @@ import com.payangar.amialone.CommonEntrypoint;
 import com.payangar.amialone.debug.Debug;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -19,13 +22,16 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ReputationEventHandler;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -64,7 +70,8 @@ import org.jspecify.annotations.Nullable;
  * <p>It has an opinion of each player made of vanilla's rumours, kept and heard as a villager
  * does: its own {@link GossipContainer}, the rumours villagers pass on to it, the ones it gets when
  * hit or when it sees a villager or a companion killed ({@link ReputationEventHandler}), and the
- * daily forgetting. A mod changing those vanilla pieces changes the companions too.
+ * daily forgetting. A mod changing those vanilla pieces changes the companions too. One event is
+ * its own: a player who heals it gets a minor positive rumour, +1 for each heart restored.
  */
 public class Companion extends Avatar implements ReputationEventHandler {
     private static final String INVENTORY_KEY = CommonEntrypoint.MOD_ID + ":inventory";
@@ -86,6 +93,13 @@ public class Companion extends Avatar implements ReputationEventHandler {
     private final GossipContainer gossips = new GossipContainer();
     private long lastGossipTime;
     private long lastGossipDecayTime;
+    /** The player who applied each of its healing effects, the ones a heal is credited to. */
+    private final Map<Holder<MobEffect>, UUID> healers = new HashMap<>();
+    /** While a thrown potion heals it at once: whether, and the player who threw it, if one did. */
+    private boolean healingAtOnce;
+    private @Nullable UUID healingAtOnceBy;
+    /** The health each player restored that is not yet a whole heart, so not yet a rumour. */
+    private final Map<UUID, Float> healthRestored = new HashMap<>();
 
     public Companion(EntityType<? extends Avatar> type, Level level) {
         super(type, level);
@@ -138,6 +152,85 @@ public class Companion extends Avatar implements ReputationEventHandler {
         } else if (type == ReputationEventType.VILLAGER_KILLED) {
             gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
         }
+    }
+
+    /**
+     * Instant health from a thrown or lingering potion is about to heal it: vanilla gives it the
+     * thrower nowhere else ({@code HealOrHarmMobEffect.applyInstantaneousEffect}, through the mod's
+     * mixin). {@code thrower} is the potion's owner, or the potion when it has none.
+     */
+    public void beginHealingAtOnce(@Nullable Entity thrower) {
+        healingAtOnce = true;
+        healingAtOnceBy = playerBehind(thrower);
+    }
+
+    public void endHealingAtOnce() {
+        healingAtOnce = false;
+        healingAtOnceBy = null;
+    }
+
+    /**
+     * Heals it, and credits the health actually restored to the player behind the heal: the one who
+     * threw the potion healing it at once, otherwise the one who applied its instant health (a
+     * tipped arrow) or its regeneration. Every 2 health, a heart, is a minor positive rumour of +1.
+     */
+    @Override
+    public void heal(float amount) {
+        float before = getHealth();
+        super.heal(amount);
+        float restored = getHealth() - before;
+        if (restored <= 0 || level().isClientSide()) {
+            return;
+        }
+        UUID healer = healingAtOnce ? healingAtOnceBy : effectHealer();
+        if (healer != null) {
+            float total = healthRestored.getOrDefault(healer, 0.0F) + restored;
+            int hearts = (int) (total / 2.0F);
+            // Vanilla drops a rumour worth less than 2: the first heart waits for the second.
+            int known = gossips.getReputation(healer, type -> type == GossipType.MINOR_POSITIVE);
+            if (hearts > 0 && known + hearts >= GossipContainer.DISCARD_THRESHOLD) {
+                gossips.add(healer, GossipType.MINOR_POSITIVE, hearts);
+                total -= hearts * 2.0F;
+            }
+            healthRestored.put(healer, total);
+        }
+    }
+
+    /** The player behind a heal over time: its instant health from an arrow first, else its regeneration. */
+    private @Nullable UUID effectHealer() {
+        if (hasEffect(MobEffects.INSTANT_HEALTH)) {
+            return healers.get(MobEffects.INSTANT_HEALTH);
+        }
+        return hasEffect(MobEffects.REGENERATION) ? healers.get(MobEffects.REGENERATION) : null;
+    }
+
+    /**
+     * Remembers who applied a healing effect: the player behind {@code source}, or no one when a
+     * creature or a dispenser did. Vanilla updates effects every so often without a source: that
+     * forgets no one.
+     */
+    private void rememberHealer(MobEffectInstance effect, @Nullable Entity source) {
+        Holder<MobEffect> type = effect.getEffect();
+        if (source == null || !(type.is(MobEffects.INSTANT_HEALTH) || type.is(MobEffects.REGENERATION))) {
+            return;
+        }
+        UUID player = playerBehind(source);
+        if (player != null) {
+            healers.put(type, player);
+        } else {
+            healers.remove(type);
+        }
+    }
+
+    /** The player behind {@code source}: the player itself, or the owner of a potion, an arrow or a cloud. */
+    private static @Nullable UUID playerBehind(@Nullable Entity source) {
+        if (source instanceof Player player) {
+            return player.getUUID();
+        }
+        if (source instanceof TraceableEntity traceable && traceable.getOwner() instanceof Player owner) {
+            return owner.getUUID();
+        }
+        return null;
     }
 
     /** Being hurt by an entity is an event for itself, as for a villager ({@code Villager.setLastHurtByMob}). */
@@ -332,12 +425,14 @@ public class Companion extends Avatar implements ReputationEventHandler {
     @Override
     protected void onEffectAdded(MobEffectInstance effect, @Nullable Entity source) {
         super.onEffectAdded(effect, source);
+        rememberHealer(effect, source);
         sendToTrackingPlayers(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
     }
 
     @Override
     protected void onEffectUpdated(MobEffectInstance effect, boolean doRefreshAttributes, @Nullable Entity source) {
         super.onEffectUpdated(effect, doRefreshAttributes, source);
+        rememberHealer(effect, source);
         sendToTrackingPlayers(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
     }
 
@@ -345,6 +440,7 @@ public class Companion extends Avatar implements ReputationEventHandler {
     protected void onEffectsRemoved(Collection<MobEffectInstance> effects) {
         super.onEffectsRemoved(effects);
         for (MobEffectInstance effect : effects) {
+            healers.remove(effect.getEffect());
             sendToTrackingPlayers(new ClientboundRemoveMobEffectPacket(getId(), effect.getEffect()));
         }
     }

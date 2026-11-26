@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.payangar.amialone.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "HealOrHarmMobEffectMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
