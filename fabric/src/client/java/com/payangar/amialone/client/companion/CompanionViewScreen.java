@@ -306,6 +306,11 @@ public abstract class CompanionViewScreen<M extends CompanionViewMenu> extends A
         return drawerOnTop() && slot.x + 17 > drawerX();
     }
 
+    /** Whether the drawer, over the panel, covers something ending at {@code right}, from the panel's left edge. */
+    protected boolean coveredUpTo(int right) {
+        return drawerOnTop() && right > drawerX();
+    }
+
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         int tab = tabAt(event.x(), event.y());

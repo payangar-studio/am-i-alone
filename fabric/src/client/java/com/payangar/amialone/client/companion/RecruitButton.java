@@ -17,8 +17,9 @@ import net.minecraft.world.item.Items;
 /**
  * Recruit, in the mod's colours: the screen's main action, filled with the accent, its label on
  * the left and its price on the right, an emerald with its count as a villager's offer shows it. A
- * price lowered from {@code basePrice} shows the base struck through in red and the price beside
- * it, as a villager's discounted offer; greyed while the player cannot pay.
+ * price that differs from {@code basePrice}, lowered or raised by the companion's opinion, shows the
+ * base struck through in red and the price beside it, as a villager's offer does; greyed while the
+ * player cannot pay.
  */
 public class RecruitButton extends AbstractButton {
     /** Room for the emerald and its count, whose shadow ends on the icon's 18th row. */
@@ -63,14 +64,14 @@ public class RecruitButton extends AbstractButton {
         Draw.text(graphics, font, label, x + MARGIN, textY, textColour);
 
         // The price on the right, drawn as a villager's offer does (MerchantScreen): the emerald with
-        // its count over its bottom right corner; when lowered, that count is the base, struck
+        // its count over its bottom right corner; when it differs, that count is the base, struck
         // through, and the price follows, one count further.
-        boolean lowered = basePrice != price;
-        int iconX = x + width - MARGIN - COUNT_END - (lowered ? LOWERED_OFFSET : 0);
+        boolean differs = basePrice != price;
+        int iconX = x + width - MARGIN - COUNT_END - (differs ? LOWERED_OFFSET : 0);
         int iconY = y + 1;
         graphics.item(EMERALD, iconX, iconY);
         graphics.itemDecorations(font, EMERALD, iconX, iconY, String.valueOf(basePrice));
-        if (lowered) {
+        if (differs) {
             graphics.itemDecorations(font, EMERALD, iconX + LOWERED_OFFSET, iconY, String.valueOf(price));
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, STRIKETHROUGH, iconX + 7, iconY + 12, 9, 2);
         }

@@ -55,12 +55,20 @@ public class RecruitmentClientGameTest implements FabricClientGameTest {
             context.waitFor(client -> !screen(client).getMenu().attributeValues().isEmpty());
             context.waitTicks(5);
             screenshot(context, compare, "recruit_screen_attributes");
+            // On a screen too narrow for the panel and the drawer side by side, the drawer covers
+            // Recruit, which hides, so that a click on the attributes cannot recruit.
+            context.getInput().resizeWindow(640, 480);
+            context.waitTicks(2);
+            check(!context.computeOnClient(client -> screen(client).recruitShown()), "Recruit shows under the drawer");
+            context.getInput().resizeWindow(854, 480);
+            context.waitTicks(2);
+            check(context.computeOnClient(client -> screen(client).recruitShown()), "Recruit stays hidden beside the drawer");
             context.runOnClient(client -> screen(client).pressHandle(Panel.ATTRIBUTES));
             context.runOnClient(client -> screen(client).onClose());
             context.waitFor(client -> !(client.gui.screen() instanceof RecruitScreen));
             waitForServerClose(context, world);
 
-            // Cured by the player: the companion thinks 100 of them, so 10 off at 0.1; the drawn
+            // An opinion of 100, set directly, so 10 off at 0.1; the drawn
             // price is struck through, the price to pay beside it.
             world.getServer().runOnServer(server -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();

@@ -58,13 +58,22 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
         }
     }
 
+    /** Whether Recruit is shown, and so can be clicked: not while the drawer covers it. */
+    public boolean recruitShown() {
+        return recruit != null && recruit.visible;
+    }
 
-    /** Follows the screen, which moves as the drawer slides, and greys Recruit while it cannot pay. */
+    /**
+     * Follows the screen, which moves as the drawer slides, hides Recruit while the drawer covers
+     * it on a narrow screen, and greys it while the player cannot pay.
+     */
     private void placeRecruit() {
         if (recruit == null) {
             return;
         }
         recruit.setPosition(leftPos + INFO_X, topPos + BUTTON_Y);
+        // A widget is drawn and clicked over the drawer: hidden, it can be neither.
+        recruit.visible = !coveredUpTo(INFO_X + INFO_WIDTH);
         boolean canPay = menu.canPay(minecraft.player);
         if (shownCanPay == null || shownCanPay != canPay) {
             shownCanPay = canPay;
