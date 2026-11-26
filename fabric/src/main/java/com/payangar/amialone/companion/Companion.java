@@ -71,12 +71,22 @@ public class Companion extends Avatar {
         // companion loaded from its chunk then replaces it with its saved one.
         if (!level.isClientSide()) {
             identity();
+            price();
         }
     }
 
     /** Its identity, drawn the first time it is asked for, then kept with the entity. */
     public CompanionIdentity identity() {
         return getAttachedOrCreate(Companions.IDENTITY, () -> CompanionIdentity.draw(registryAccess(), random));
+    }
+
+    /**
+     * Its price in emeralds, drawn the first time it is asked for, then kept with the entity: in
+     * the constructor for a new companion, at its first recruitment screen for one saved before
+     * prices existed.
+     */
+    public int price() {
+        return getAttachedOrCreate(Companions.PRICE, () -> Recruitment.drawPrice(random));
     }
 
     public CompanionInventory inventory() {
@@ -107,22 +117,28 @@ public class Companion extends Avatar {
     }
 
     /**
-     * A right-click: it opens its screen for its owner. For anyone else nothing happens, and the
-     * held item does not act either: a consumed click goes no further, and {@code CONSUME} swings
-     * no hand. The click passes on to the held item, as on any entity, when the player sneaks, or
-     * holds the debug stick with the gamemaster permission (the stick then opens the screen). The
-     * client's {@code ClientCompanion} answers the same, so it predicts no swing and no item use.
+     * A right-click: it opens its recruitment screen while it has no owner, its screen for its
+     * owner. For anyone else nothing happens, and the held item does not act either: a consumed
+     * click goes no further, and {@code CONSUME} swings no hand. The click passes on to the held
+     * item, as on any entity, when the player sneaks, or holds the debug stick with the gamemaster
+     * permission (the stick then opens the screen). The client's {@code ClientCompanion} answers
+     * the same from the synced owner, so it predicts no swing and no item use.
      */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
         if (letsClickPass(player, hand)) {
             return super.interact(player, hand, location);
         }
-        if (!isOwner(this, player)) {
+        boolean owned = hasOwner(this);
+        if (owned && !isOwner(this, player)) {
             return InteractionResult.CONSUME.withoutItem();
         }
         if (player instanceof ServerPlayer serverPlayer) {
-            CompanionMenu.open(serverPlayer, this, false);
+            if (owned) {
+                CompanionMenu.open(serverPlayer, this, false);
+            } else {
+                RecruitMenu.open(serverPlayer, this);
+            }
         }
         return InteractionResult.SUCCESS.withoutItem();
     }
@@ -139,12 +155,15 @@ public class Companion extends Avatar {
                         && player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
-    /**
-     * Whether {@code player} owns {@code companion}. No companion has an owner until the ownership
-     * feature exists, so no one does: until then, only the debug stick opens a companion's screen.
-     */
+    /** Whether {@code player} owns {@code companion}; on a client, from the synced owner. */
     public static boolean isOwner(Entity companion, Player player) {
-        return false;
+        CompanionOwner owner = companion.getAttached(Companions.OWNER);
+        return owner != null && owner.is(player);
+    }
+
+    /** Whether {@code companion} has an owner: a player recruited it. */
+    public static boolean hasOwner(Entity companion) {
+        return companion.hasAttached(Companions.OWNER);
     }
 
     /**

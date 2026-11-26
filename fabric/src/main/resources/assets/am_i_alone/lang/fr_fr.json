@@ -33,7 +33,12 @@
   "container.am_i_alone.companion.owner": "Propriétaire : %s",
   "container.am_i_alone.companion.owner.none": "aucun",
   "container.am_i_alone.companion.tab.companion": "Compagnon",
+  "container.am_i_alone.companion.recruit": "Recruter",
+  "container.am_i_alone.companion.recruit.need": "Il vous faut %s émeraudes dans votre inventaire",
+  "container.am_i_alone.companion.recruit.need_slot": "Placez %s émeraudes dans la case",
+  "container.am_i_alone.companion.recruit.price": "Prix : %s émeraudes",
   "container.am_i_alone.companion.tab.debug": "Débogage",
+  "container.am_i_alone.companion.tab.recruitment": "Recrutement",
   "entity.am_i_alone.companion": "Compagnon",
   "item.am_i_alone.debug_stick": "Bâton de débogage des compagnons",
   "tag.item.am_i_alone.companion_weapons": "Armes des compagnons"

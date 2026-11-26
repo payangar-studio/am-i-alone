@@ -3,7 +3,7 @@ package com.payangar.amialone.fabric.client;
 import com.payangar.amialone.CommonEntrypoint;
 import com.payangar.amialone.client.ClientEntrypoint;
 import com.payangar.amialone.companion.CompanionAttributeValues;
-import com.payangar.amialone.companion.CompanionMenu;
+import com.payangar.amialone.companion.CompanionViewMenu;
 import com.payangar.amialone.vendor.network.FabricNetworkClient;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -16,7 +16,7 @@ public final class FabricClientEntrypoint implements ClientModInitializer {
         ClientEntrypoint.init();
         // The companion's attribute values, for the screen open on it.
         ClientPlayNetworking.registerGlobalReceiver(CompanionAttributeValues.TYPE, (message, context) -> {
-            if (context.player().containerMenu instanceof CompanionMenu menu) {
+            if (context.player().containerMenu instanceof CompanionViewMenu menu) {
                 menu.receive(message);
             }
         });
