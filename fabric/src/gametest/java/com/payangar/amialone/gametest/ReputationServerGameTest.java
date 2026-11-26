@@ -3,6 +3,7 @@ package com.payangar.amialone.gametest;
 import static com.payangar.amialone.gametest.CompanionInventoryServerGameTest.connectPlayer;
 
 import com.payangar.amialone.companion.Companion;
+import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.companion.RecruitMenu;
 import com.payangar.amialone.companion.Recruitment;
@@ -243,5 +244,26 @@ public class ReputationServerGameTest {
             helper.assertTrue(companion.opinionOf(player) >= 2, "opinion of the healer: " + companion.opinionOf(player) + ", health " + companion.getHealth() + ", regeneration " + companion.hasEffect(MobEffects.REGENERATION));
             helper.getLevel().getServer().getPlayerList().remove(player);
         });
+    }
+
+    /** The Debug tab shows the companion's opinion of the player who opened it, kept up to date. */
+    @GameTest
+    public void theDebugTabShowsItsOpinionOfTheViewer(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        ServerPlayer player = connectPlayer(helper, "operator");
+        try {
+            player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
+            companion.gossips().add(player.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+            CompanionMenu.open(player, companion, true);
+            CompanionMenu menu = (CompanionMenu) player.containerMenu;
+            menu.broadcastChanges();
+            helper.assertValueEqual(menu.opinion(), -25, "the Debug tab's opinion");
+            companion.gossips().add(player.getUUID(), GossipType.MINOR_POSITIVE, 10);
+            menu.broadcastChanges();
+            helper.assertValueEqual(menu.opinion(), -15, "the Debug tab's opinion after a change");
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
     }
 }

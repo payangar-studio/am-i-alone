@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ArmorSlot;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -120,6 +121,8 @@ public class CompanionMenu extends CompanionViewMenu {
     }
 
     private final boolean debug;
+    /** On the Debug tab, the companion's opinion of the player who opened it, synced each tick. */
+    private final DataSlot opinion = DataSlot.standalone();
     private Tab tab = Tab.COMPANION;
     private @Nullable Panel panel;
 
@@ -166,6 +169,9 @@ public class CompanionMenu extends CompanionViewMenu {
             addSlot(new StorageSlot(inventory, i, STORAGE_X + i % STORAGE_COLUMNS * 18, STORAGE_Y + i / STORAGE_COLUMNS * 18));
         }
         addPlayerInventory(playerInventory);
+        if (debug) {
+            addDataSlot(opinion);
+        }
     }
 
     /**
@@ -212,6 +218,23 @@ public class CompanionMenu extends CompanionViewMenu {
                 return true;
             }
         };
+    }
+
+    /**
+     * The companion's opinion of the player who opened the screen, for the Debug tab: on the
+     * client, as the server last synced it; 0 without the debug stick.
+     */
+    public int opinion() {
+        return opinion.get();
+    }
+
+    /** Before vanilla's sync, the opinion the Debug tab shows, which changes as the companion hears or is healed. */
+    @Override
+    public void broadcastChanges() {
+        if (debug && viewer() != null && companion() instanceof Companion companion) {
+            opinion.set(companion.opinionOf(viewer()));
+        }
+        super.broadcastChanges();
     }
 
     /** Whether the server opened it with the debug stick, which gives it the {@link Tab#DEBUG} tab. */

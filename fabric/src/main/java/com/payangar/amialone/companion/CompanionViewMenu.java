@@ -64,6 +64,11 @@ public abstract class CompanionViewMenu extends AbstractContainerMenu {
         return companion;
     }
 
+    /** On the server, the player who opened the screen; none on the client. */
+    protected @Nullable ServerPlayer viewer() {
+        return viewer;
+    }
+
     /** Whether the companion is alive and within reach of {@code player}, as a horse's inventory. */
     protected boolean companionInReach(Player player) {
         return companion.isAlive() && player.isWithinEntityInteractionRange(companion, 4.0);

@@ -109,11 +109,18 @@ public class CompanionScreen extends CompanionViewScreen<CompanionMenu> {
         }
     }
 
-    /** Its owner, brighter on the Debug tab, where it is the tab's content. */
+    /**
+     * Its owner, brighter on the Debug tab, where it is the tab's content with the companion's
+     * opinion of the player looking at it.
+     */
     @Override
     protected void extractLines(GuiGraphicsExtractor graphics, int x, int y) {
-        int colour = menu.tab() == Tab.DEBUG ? Theme.TEXT : Theme.TEXT_DIM;
-        Draw.text(graphics, font, owner(), x, y, INFO_WIDTH, colour);
+        boolean debug = menu.tab() == Tab.DEBUG;
+        Draw.text(graphics, font, owner(), x, y, INFO_WIDTH, debug ? Theme.TEXT : Theme.TEXT_DIM);
+        if (debug) {
+            Component opinion = Component.translatable(KEY + "debug.opinion", menu.opinion());
+            Draw.text(graphics, font, opinion, x, y + font.lineHeight + 2, INFO_WIDTH, Theme.TEXT);
+        }
     }
 
     /** Its owner's name, as they were called when they recruited it; none before. */

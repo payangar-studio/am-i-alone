@@ -27,6 +27,7 @@
   "container.am_i_alone.companion.attributes.open": "Its attributes",
   "container.am_i_alone.companion.attributes.value.attack_range": "Attack range",
   "container.am_i_alone.companion.attributes.value.attack_range.min": "Can't hit closer than %s blocks",
+  "container.am_i_alone.companion.debug.opinion": "Your reputation: %s",
   "container.am_i_alone.companion.drawer.selected": "Selected",
   "container.am_i_alone.companion.inventory.close": "Put its inventory away",
   "container.am_i_alone.companion.inventory.open": "Its inventory",
