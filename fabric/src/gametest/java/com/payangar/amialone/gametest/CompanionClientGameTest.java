@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The companion seen from a client: built as a client player with its skin and name, out of the
@@ -66,6 +68,18 @@ public class CompanionClientGameTest implements FabricClientGameTest {
                 Screenshots.compare(context, "companion");
             }
 
+            // Its name shows while the crosshair is on it, as a mob's, and not otherwise, unlike a player's.
+            context.waitFor(client -> client.crosshairPickEntity == companion(client, id));
+            String shown = context.computeOnClient(client -> nameTag(client, id));
+            check("Aldric Fenwood".equals(shown), "the companion under the crosshair shows no name: " + shown);
+            world.getServer().runOnServer(server -> {
+                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                player.connection.teleport(player.getX(), player.getY(), player.getZ(), 180.0F, 0.0F);
+            });
+            context.waitFor(client -> client.crosshairPickEntity == null);
+            String hidden = context.computeOnClient(client -> nameTag(client, id));
+            check(hidden == null, "the companion away from the crosshair shows its name: " + hidden);
+
             // Its effects reach the client when given and when cleared, and so does its absorption.
             world.getServer().runCommand("effect give " + id + " minecraft:poison 60");
             context.waitFor(client -> companion(client, id).hasEffect(MobEffects.POISON));
@@ -90,6 +104,12 @@ public class CompanionClientGameTest implements FabricClientGameTest {
 
     private static LivingEntity companion(Minecraft client, UUID id) {
         return (LivingEntity) client.level.getEntity(id);
+    }
+
+    /** The name tag the renderer extracts for the companion, null when it draws none. */
+    private static @Nullable String nameTag(Minecraft client, UUID id) {
+        Component nameTag = client.getEntityRenderDispatcher().extractEntity(companion(client, id), 1.0F).nameTag;
+        return nameTag == null ? null : nameTag.getString();
     }
 
     /** A companion three blocks in front of the player, facing them, with a fixed identity. */
