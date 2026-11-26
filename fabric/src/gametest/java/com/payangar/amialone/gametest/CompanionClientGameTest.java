@@ -10,7 +10,6 @@ import java.util.UUID;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
-import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotComparisonOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.Identifier;
@@ -64,8 +63,7 @@ public class CompanionClientGameTest implements FabricClientGameTest {
             // Under a test profile (mod.testProfile), other mods change the render: the
             // references hold the mod alone.
             if (System.getProperty("mod.testProfile") == null) {
-                context.assertScreenshotEquals(
-                        TestScreenshotComparisonOptions.of("companion").save().disableCounterPrefix());
+                Screenshots.compare(context, "companion");
             }
 
             // Its effects reach the client when given and when cleared, and so does its absorption.

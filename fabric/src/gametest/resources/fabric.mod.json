@@ -15,7 +15,8 @@
     "fabric-client-gametest": [
       "com.payangar.amialone.gametest.ExampleClientGameTest",
       "com.payangar.amialone.gametest.CompanionClientGameTest",
-      "com.payangar.amialone.gametest.CompanionInventoryClientGameTest"
+      "com.payangar.amialone.gametest.CompanionInventoryClientGameTest",
+      "com.payangar.amialone.gametest.ScreenshotsClientGameTest"
     ]
   },
   "depends": {
