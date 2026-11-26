@@ -43,21 +43,35 @@ first.
 Decision: the storage panel is the player's inventory turned on its side: 4
 columns of 9 rows.
 
-Decision: the attributes panel lists its attributes in three groups (Defence,
-Movement, Hazards), the headings in white, each row a short label and its
-value aligned right; hovering a row shows the attribute's full name, its
-current value and its base. Not "statistics": that is vanilla's screen of the
-player's counters.
+Decision: the attributes panel lists its attributes in groups, the headings in
+white, each row a short label and its value aligned right; hovering a row
+shows the attribute's full name, its current value and its base. Not
+"statistics": that is vanilla's screen of the player's counters.
+
+Decision: what the panel shows is data, so that another mod or a datapack
+shows its own attributes: two registries filled by data and synced to the
+clients, as the skins are (`04-identity.md`). A group
+(`am_i_alone:companion_attribute_group`) has a heading and an order. An entry
+(`am_i_alone:companion_attribute`) names an attribute, its group, its order in
+the group, its short label (the attribute's own name when absent), its format
+and when it is shown (always, or only when it differs from its default). An
+attribute with no entry is not shown. A mod adds an attribute with one file of
+its own; a datapack replaces an entry or a group with a file of the same name.
+
+The mod ships these entries:
 
 | Attributes | Shown |
 |---|---|
 | Max health, armor, armor toughness, knockback resistance, movement speed | Always |
 | Max absorption, water and ground movement efficiency, jump, step height, oxygen, burning time, explosion knockback resistance, safe fall distance, fall damage multiplier | Only when gear or an effect changes them from their default |
-| Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback | Never: they mean nothing to a player looking at a companion |
+| Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback | No entry: they mean nothing to a player looking at a companion |
 
-Decision: values as vanilla writes them (`#.##`); knockback resistance ×10 as
-item tooltips show it, movement speed as a percentage of normal, burning time
-and fall damage as percentages. A value that differs from its default takes
+The groups it ships: Defence, Movement, Hazards.
+
+Decision: values as vanilla writes them (`#.##`), in one of a few formats an
+entry picks: the plain value, the value ×10 (knockback resistance, as item
+tooltips show it), a percentage of its default (movement speed), a
+percentage (burning time, fall damage). A value that differs from its default takes
 the colour of its effect: green for a gain, red for a loss. Rows that overflow
 the panel scroll with the wheel.
 
@@ -144,16 +158,16 @@ get that much health for now.
 
 Fact: on the client a companion is a player (`02-facade.md`), so its attribute
 map is a player's (`Player.createAttributes`), with attributes the companion
-does not have and other defaults: the panel lists a fixed set of the
-companion's attributes (`LivingEntity.createLivingAttributes`), never the
-client's map. The values of the syncable ones arrive by vanilla
-(`ClientboundUpdateAttributesPacket`); knockback resistance is not syncable
-(`Attributes.java:61`), and the equipment's modifiers are applied on the
+does not have and other defaults: the panel never reads the client's map.
+Vanilla sends only the syncable attributes (`ClientboundUpdateAttributesPacket`);
+knockback resistance is not syncable (`Attributes.java:61`), nor may be the
+attributes of other mods, and the equipment's modifiers are applied on the
 server only.
 
-Decision: knockback resistance travels through the menu's data
-(`ContainerData`, ×1000, sent each time it changes), like a furnace's
-progress.
+Decision: while its screen is open, the server sends the client the current
+and base values of every attribute that has an entry and that the companion
+has, in one message of the mod, again when one changes. The panel shows only
+those.
 
 ### Opening
 

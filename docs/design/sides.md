@@ -24,7 +24,8 @@ What crosses from the server to the client:
 | Equipment (`ClientboundSetEquipmentPacket`) | When it comes into view, and on every change | Its armor on the facade | `companion/07-inventory.md` |
 | Effects (`ClientboundUpdateMobEffectPacket`, `ClientboundRemoveMobEffectPacket`) | When it comes into view, and when one is added, updated or removed | The heart types of its health bar | `companion/08-screen.md` |
 | Absorption (synced attachment) | When it comes into view, and on every change | The absorption hearts | `companion/08-screen.md` |
-| Its screen's menu (opening with the entity id and the debug flag, then vanilla's slot sync and menu data) | When a player opens its screen, then on every change | The screen, its slots, its knockback resistance | `companion/08-screen.md` |
+| Its screen's menu (opening with the entity id and the debug flag, then vanilla's slot sync) | When a player opens its screen, then on every change | The screen, its slots | `companion/08-screen.md` |
+| Its attribute values (a message of the mod) | While its screen is open: at opening, then when one changes | The attributes panel | `companion/08-screen.md` |
 
 What goes from the client to the server:
 
