@@ -1,0 +1,7 @@
+{
+  "attribute": "absent_mod:mana",
+  "group": "am_i_alone:defence",
+  "order": 15,
+  "format": "plain",
+  "shown": "always"
+}

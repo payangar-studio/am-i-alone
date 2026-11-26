@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:burning_time",
+  "group": "am_i_alone:hazards",
+  "order": 20,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.burning_time"
+  },
+  "format": "percent",
+  "shown": "when_changed"
+}

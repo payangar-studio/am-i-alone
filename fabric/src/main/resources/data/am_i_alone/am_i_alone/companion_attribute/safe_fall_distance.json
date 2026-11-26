@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:safe_fall_distance",
+  "group": "am_i_alone:hazards",
+  "order": 40,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.safe_fall_distance"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}

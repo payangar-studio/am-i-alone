@@ -1,32 +1,40 @@
 package com.payangar.amialone.client.companion;
 
+import com.payangar.amialone.companion.CompanionAttribute;
+import com.payangar.amialone.companion.CompanionAttributeGroup;
+import com.payangar.amialone.companion.CompanionAttributeValues.Value;
 import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.vendor.gui.Draw;
 import com.payangar.amialone.vendor.gui.Theme;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.ToIntFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.jspecify.annotations.Nullable;
 
 /**
  * The drawer's Attributes panel: the companion's attributes in groups, a label on the left and the
  * value on the right, the full name with the current and base values in a row's tooltip.
  *
- * <p>The list is fixed: the client builds a companion as a player, whose attribute map is a
- * player's, not the companion's. Every value comes from the client companion, which vanilla keeps
- * up to date, except its knockback resistance, which vanilla does not sync and the menu sends. The
- * base shown is the attribute's default, the companion's base: its entity type registers vanilla's
- * living defaults.
+ * <p>What it shows is data: the groups and the attributes of the {@link CompanionAttributeGroup}
+ * and {@link CompanionAttribute} registries, each in its order. The values are the ones the server
+ * sent the menu, never the client companion's: the client builds a companion as a player, whose
+ * attribute map is a player's. An attribute the server sent no value for is not shown.
  *
  * <p>The rows scroll with the mouse wheel when they outgrow the panel.
  */
@@ -45,54 +53,28 @@ final class AttributesPanel {
     private static final int SCROLL_STEP = ROW_HEIGHT;
     private static final int SCROLLBAR_WIDTH = 2;
 
-    /** How a value reads. */
-    private enum Format {
-        PLAIN,
-        /** Tenfold, as vanilla's item tooltips show knockback resistance. */
-        TENFOLD,
-        /** A percentage of the default: 100% is normal. */
-        OF_DEFAULT,
-        /** A multiplier as a percentage. */
-        PERCENT
-    }
+    /** A row: an entry, its attribute and the values the server sent. */
+    private record Row(CompanionAttribute entry, Holder<Attribute> attribute, Value values) {
+        double value() {
+            return values.value();
+        }
 
-    /** A row: always shown, or only when its value differs from the default. */
-    private record Row(Holder<Attribute> attribute, String name, Format format, boolean always) {
+        double base() {
+            return values.base();
+        }
+
+        /** The entry's short label, or the attribute's own name. */
         Component label() {
-            return Component.translatable(KEY + "label." + name);
+            return entry.label().orElseGet(() -> Component.translatable(attribute.value().getDescriptionId()));
+        }
+
+        boolean changed() {
+            return Math.abs(value() - base()) > 1.0E-6;
         }
     }
 
-    private record Group(String name, List<Row> rows) {}
-
-    private static final List<Group> GROUPS = List.of(
-            new Group(
-                    "defence",
-                    List.of(
-                            new Row(Attributes.MAX_HEALTH, "max_health", Format.PLAIN, true),
-                            new Row(Attributes.ARMOR, "armor", Format.PLAIN, true),
-                            new Row(Attributes.ARMOR_TOUGHNESS, "armor_toughness", Format.PLAIN, true),
-                            new Row(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", Format.TENFOLD, true),
-                            new Row(Attributes.MAX_ABSORPTION, "max_absorption", Format.PLAIN, false))),
-            new Group(
-                    "movement",
-                    List.of(
-                            new Row(Attributes.MOVEMENT_SPEED, "movement_speed", Format.OF_DEFAULT, true),
-                            new Row(Attributes.WATER_MOVEMENT_EFFICIENCY, "water_movement_efficiency", Format.PLAIN, false),
-                            new Row(Attributes.MOVEMENT_EFFICIENCY, "movement_efficiency", Format.PLAIN, false),
-                            new Row(Attributes.JUMP_STRENGTH, "jump_strength", Format.PLAIN, false),
-                            new Row(Attributes.STEP_HEIGHT, "step_height", Format.PLAIN, false))),
-            new Group(
-                    "hazards",
-                    List.of(
-                            new Row(Attributes.OXYGEN_BONUS, "oxygen_bonus", Format.PLAIN, false),
-                            new Row(Attributes.BURNING_TIME, "burning_time", Format.PERCENT, false),
-                            new Row(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE, "explosion_knockback_resistance", Format.PLAIN, false),
-                            new Row(Attributes.SAFE_FALL_DISTANCE, "safe_fall_distance", Format.PLAIN, false),
-                            new Row(Attributes.FALL_DAMAGE_MULTIPLIER, "fall_damage_multiplier", Format.PERCENT, false))));
-
     /** A line drawn this frame: a header ({@code row} null) or a row with its values. */
-    private record Line(int y, @Nullable Row row, Component text, double value) {}
+    private record Line(int y, @Nullable Row row, Component text) {}
 
     private int scroll;
 
@@ -127,9 +109,9 @@ final class AttributesPanel {
                 continue;
             }
             Row row = line.row();
-            String value = format(row, line.value());
+            String value = format(row, row.value());
             int valueWidth = font.width(value);
-            graphics.text(font, value, x + width - valueWidth, textY, colour(row, line.value()), false);
+            graphics.text(font, value, x + width - valueWidth, textY, colour(row), false);
             graphics.text(font, fit(font, line.text(), width - valueWidth - VALUE_GAP), x, textY, Theme.TEXT_DIM, false);
             if (hoverable
                     && mouseX >= x && mouseX < x + width
@@ -146,7 +128,7 @@ final class AttributesPanel {
             Draw.fill(graphics, barX, thumbY, SCROLLBAR_WIDTH, thumb, Theme.BORDER_HOVER);
         }
         if (hovered != null) {
-            graphics.setComponentTooltipForNextFrame(font, tooltip(hovered), mouseX, mouseY);
+            graphics.setComponentTooltipForNextFrame(font, tooltip(hovered.row()), mouseX, mouseY);
         }
     }
 
@@ -160,73 +142,83 @@ final class AttributesPanel {
         return true;
     }
 
-    /** The lines to draw, from the top of the content: each group's header, then its shown rows. */
+    /**
+     * The lines to draw, from the top of the content: each group's header, then its shown rows;
+     * groups and rows in their order, then by id.
+     */
     private static List<Line> lines(CompanionMenu menu) {
+        RegistryAccess registries = menu.companion().registryAccess();
+        Map<Holder<Attribute>, Value> values = menu.attributeValues();
+        Map<ResourceKey<CompanionAttributeGroup>, List<Row>> rowsByGroup = new HashMap<>();
+        for (Holder.Reference<CompanionAttribute> holder :
+                sorted(registries.lookupOrThrow(CompanionAttribute.REGISTRY), CompanionAttribute::order)) {
+            CompanionAttribute entry = holder.value();
+            @Nullable Holder<Attribute> attribute = entry.resolve().orElse(null);
+            @Nullable Value value = attribute == null ? null : values.get(attribute);
+            if (value == null) {
+                continue;
+            }
+            Row row = new Row(entry, attribute, value);
+            if (entry.shown() == CompanionAttribute.Shown.ALWAYS || row.changed()) {
+                rowsByGroup.computeIfAbsent(entry.group().unwrapKey().orElseThrow(), key -> new ArrayList<>()).add(row);
+            }
+        }
         List<Line> lines = new ArrayList<>();
         int y = 0;
-        for (Group group : GROUPS) {
-            List<Line> rows = new ArrayList<>();
-            for (Row row : group.rows()) {
-                double value = value(menu, row);
-                if (row.always() || differs(row, value)) {
-                    rows.add(new Line(0, row, row.label(), value));
-                }
-            }
-            if (rows.isEmpty()) {
+        for (Holder.Reference<CompanionAttributeGroup> group :
+                sorted(registries.lookupOrThrow(CompanionAttributeGroup.REGISTRY), CompanionAttributeGroup::order)) {
+            List<Row> rows = rowsByGroup.get(group.key());
+            if (rows == null) {
                 continue;
             }
             if (!lines.isEmpty()) {
                 y += GROUP_GAP;
             }
-            lines.add(new Line(y, null, Component.translatable(KEY + "group." + group.name()), 0));
-            for (Line row : rows) {
+            lines.add(new Line(y, null, group.value().heading()));
+            for (Row row : rows) {
                 y += ROW_HEIGHT;
-                lines.add(new Line(y, row.row(), row.text(), row.value()));
+                lines.add(new Line(y, row, row.label()));
             }
             y += ROW_HEIGHT;
         }
         return lines;
     }
 
+    /** The registry's entries by {@code order}, then by id. */
+    private static <T> List<Holder.Reference<T>> sorted(Registry<T> registry, ToIntFunction<T> order) {
+        return registry.listElements()
+                .sorted(Comparator.<Holder.Reference<T>>comparingInt(holder -> order.applyAsInt(holder.value()))
+                        .thenComparing(holder -> holder.key().identifier()))
+                .toList();
+    }
+
     private static int contentHeight(List<Line> lines) {
         return lines.isEmpty() ? 0 : lines.getLast().y() + ROW_HEIGHT;
     }
 
-    private static double value(CompanionMenu menu, Row row) {
-        return row.attribute() == Attributes.KNOCKBACK_RESISTANCE
-                ? menu.knockbackResistance()
-                : menu.companion().getAttributeValue(row.attribute());
-    }
-
-    private static double base(Row row) {
-        return row.attribute().value().getDefaultValue();
-    }
-
-    private static boolean differs(Row row, double value) {
-        return Math.abs(value - base(row)) > 1.0E-6;
-    }
-
     private static String format(Row row, double value) {
-        return switch (row.format()) {
+        return switch (row.entry().format()) {
             case PLAIN -> FORMAT.format(value);
-            case TENFOLD -> FORMAT.format(value * 10.0);
-            case OF_DEFAULT -> FORMAT.format(value / base(row) * 100.0) + "%";
+            case TIMES_TEN -> FORMAT.format(value * 10.0);
+            // A base of zero has no percentage: the plain value.
+            case PERCENT_OF_DEFAULT -> row.base() == 0.0
+                    ? FORMAT.format(value)
+                    : FORMAT.format(value / row.base() * 100.0) + "%";
             case PERCENT -> FORMAT.format(value * 100.0) + "%";
         };
     }
 
     /** The default colour, or, for a changed value, the colour of the change's sentiment. */
-    private static int colour(Row row, double value) {
-        if (!differs(row, value)) {
+    private static int colour(Row row) {
+        if (!row.changed()) {
             return Theme.TEXT;
         }
-        ChatFormatting style = row.attribute().value().getStyle(value > base(row));
+        ChatFormatting style = row.attribute().value().getStyle(row.value() > row.base());
         return style == ChatFormatting.BLUE ? GOOD : style == ChatFormatting.RED ? BAD : Theme.TEXT;
     }
 
     /** The attribute's full vanilla name, capitalised as a title, then its current and base values. */
-    private static List<Component> tooltip(Line line) {
-        Row row = line.row();
+    private static List<Component> tooltip(Row row) {
         String name = Component.translatable(row.attribute().value().getDescriptionId()).getString();
         if (!name.isEmpty()) {
             int first = name.codePointAt(0);
@@ -236,8 +228,8 @@ final class AttributesPanel {
         }
         return List.of(
                 Component.literal(name),
-                Component.translatable(KEY + "current", format(row, line.value())).withStyle(ChatFormatting.GRAY),
-                Component.translatable(KEY + "base", format(row, base(row))).withStyle(ChatFormatting.GRAY));
+                Component.translatable(KEY + "current", format(row, row.value())).withStyle(ChatFormatting.GRAY),
+                Component.translatable(KEY + "base", format(row, row.base())).withStyle(ChatFormatting.GRAY));
     }
 
     /** {@code text}, cut with an ellipsis to fit {@code width}. */

@@ -2,7 +2,12 @@ package com.payangar.amialone.companion;
 
 import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -11,14 +16,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ArmorSlot;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.ticks.ContainerSingleItem;
@@ -34,7 +37,8 @@ import org.jspecify.annotations.Nullable;
  * {@link Panel#INVENTORY} panel only; otherwise the storage takes and gives nothing, whatever a
  * client sends. The drawer opens on the {@link Tab#COMPANION} tab only.
  *
- * <p>It also sends the client the companion's knockback resistance, which vanilla does not sync.
+ * <p>The server's menu also sends the client the companion's attribute values ({@link
+ * CompanionAttributeValues}) at its opening and whenever one changes.
  *
  * <p>Its slots are not highlightable: the screen draws its own highlight, not vanilla's sprite.
  */
@@ -124,18 +128,19 @@ public class CompanionMenu extends AbstractContainerMenu {
                 ByteBufCodecs.VAR_INT, Opening::companionId, ByteBufCodecs.BOOL, Opening::debug, Opening::new);
     }
 
-    /** Its knockback resistance, in thousandths: a menu's data travels as shorts. */
-    private static final double KNOCKBACK_RESISTANCE_SCALE = 1000.0;
-
     private final LivingEntity companion;
     private final boolean debug;
-    private final ContainerData data;
+    /** On the server, the player it sends the attribute values to; none on the client. */
+    private final @Nullable ServerPlayer viewer;
+    /** On the server, the attribute values last sent; on the client, the ones last received. */
+    private List<CompanionAttributeValues.Value> attributeValues = List.of();
+    private boolean attributeValuesSent;
     private Tab tab = Tab.COMPANION;
     private @Nullable Panel panel;
 
     /** The server's menu, over the companion itself; {@code debug} when opened with the debug stick. */
     public CompanionMenu(int containerId, Inventory playerInventory, Companion companion, boolean debug) {
-        this(containerId, playerInventory, companion, companion.inventory(), knockbackResistance(companion), debug);
+        this(containerId, playerInventory, companion, companion.inventory(), debug);
     }
 
     /** The client's menu, built from what the server sent. */
@@ -145,7 +150,6 @@ public class CompanionMenu extends AbstractContainerMenu {
                 playerInventory,
                 find(playerInventory.player, opening.companionId()),
                 new CompanionInventory(),
-                new SimpleContainerData(1),
                 opening.debug());
     }
 
@@ -154,13 +158,11 @@ public class CompanionMenu extends AbstractContainerMenu {
             Inventory playerInventory,
             LivingEntity companion,
             Container inventory,
-            ContainerData data,
             boolean debug) {
         super(Companions.MENU, containerId);
         this.companion = companion;
         this.debug = debug;
-        this.data = data;
-        addDataSlots(data);
+        this.viewer = playerInventory.player instanceof ServerPlayer player ? player : null;
         for (int i = 0; i < ARMOR.size(); i++) {
             EquipmentSlot slot = ARMOR.get(i);
             addSlot(new ArmorSlot(equipment(companion, slot), companion, slot, 0, ARMOR_X, COMPANION_Y + i * 18, ARMOR_ICONS.get(i)) {
@@ -219,24 +221,6 @@ public class CompanionMenu extends AbstractContainerMenu {
         throw new IllegalStateException("The companion " + id + " of an opened screen is not on the client");
     }
 
-    /** The server's data: the companion's knockback resistance, read at each sync. */
-    private static ContainerData knockbackResistance(LivingEntity companion) {
-        return new ContainerData() {
-            @Override
-            public int get(int id) {
-                return (int) Math.round(companion.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) * KNOCKBACK_RESISTANCE_SCALE);
-            }
-
-            @Override
-            public void set(int id, int value) {}
-
-            @Override
-            public int getCount() {
-                return 1;
-            }
-        };
-    }
-
     /** One equipment slot of {@code entity} as a container, for vanilla's {@link ArmorSlot}. */
     private static Container equipment(LivingEntity entity, EquipmentSlot slot) {
         return new ContainerSingleItem() {
@@ -292,11 +276,48 @@ public class CompanionMenu extends AbstractContainerMenu {
     }
 
     /**
-     * The companion's knockback resistance: on the client, as the server last sent it, to the
-     * thousandth.
+     * The values of the companion's attributes that have an entry: on the client, as the server
+     * last sent them; empty until the first message.
      */
-    public double knockbackResistance() {
-        return data.get(0) / KNOCKBACK_RESISTANCE_SCALE;
+    public Map<Holder<Attribute>, CompanionAttributeValues.Value> attributeValues() {
+        return attributeValues.stream()
+                .collect(Collectors.toUnmodifiableMap(CompanionAttributeValues.Value::attribute, Function.identity()));
+    }
+
+    /** The client's side: takes the values the server sent for this menu. */
+    public void receive(CompanionAttributeValues message) {
+        if (message.containerId() == containerId) {
+            attributeValues = List.copyOf(message.values());
+        }
+    }
+
+    /**
+     * The server's per-tick sync, then the attribute values if they changed. The first one, when
+     * the player opens the screen (vanilla calls it as it adds the player's listener), sends them
+     * all.
+     */
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+        sendAttributeValues();
+    }
+
+    /**
+     * Sends the viewer the companion's attribute values, unless they are the ones it already has.
+     * Without a check of the client's channels: the mod is required on both sides, and the side
+     * check refuses a client without it.
+     */
+    private void sendAttributeValues() {
+        if (viewer == null) {
+            return;
+        }
+        List<CompanionAttributeValues.Value> values = CompanionAttributeValues.of(companion);
+        if (attributeValuesSent && values.equals(attributeValues)) {
+            return;
+        }
+        attributeValues = values;
+        attributeValuesSent = true;
+        ServerPlayNetworking.send(viewer, new CompanionAttributeValues(containerId, values));
     }
 
     /**

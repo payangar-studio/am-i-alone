@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,7 +22,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * What the companion registers: its entity type, its identity and absorption attachments, its
- * screen's menu, its data registries.
+ * screen's menu and the message of its attribute values, its data registries.
  */
 public final class Companions {
     /**
@@ -73,6 +74,9 @@ public final class Companions {
         FabricDefaultAttributeRegistry.register(TYPE, LivingEntity.createLivingAttributes());
         DynamicRegistries.registerSynced(CompanionSkin.REGISTRY, CompanionSkin.CODEC);
         DynamicRegistries.register(CompanionNames.REGISTRY, CompanionNames.CODEC);
+        DynamicRegistries.registerSynced(CompanionAttributeGroup.REGISTRY, CompanionAttributeGroup.CODEC);
+        DynamicRegistries.registerSynced(CompanionAttribute.REGISTRY, CompanionAttribute.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(CompanionAttributeValues.TYPE, CompanionAttributeValues.STREAM_CODEC);
     }
 
     private static Avatar create(EntityType<Avatar> type, Level level) {

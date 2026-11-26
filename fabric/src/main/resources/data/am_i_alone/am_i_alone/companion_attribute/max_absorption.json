@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:max_absorption",
+  "group": "am_i_alone:defence",
+  "order": 50,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.max_absorption"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.payangar.amialone.client.companion.ClientCompanion;
 import com.payangar.amialone.client.companion.CompanionScreen;
 import com.payangar.amialone.companion.Companion;
+import com.payangar.amialone.companion.CompanionAttributeValues;
 import com.payangar.amialone.companion.CompanionIdentity;
 import com.payangar.amialone.companion.CompanionInventory;
 import com.payangar.amialone.companion.CompanionMenu;
@@ -96,9 +97,8 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
             context.waitTicks(2);
             screenshot(context, compare, "companion_screen_storage");
 
-            // Attributes changed on the server reach the client: its speed, its safe fall and its
-            // oxygen through vanilla's sync, its knockback resistance, which vanilla does not sync,
-            // through the menu.
+            // Attributes changed on the server reach the screen through the menu's message, its
+            // knockback resistance included, which vanilla does not sync.
             world.getServer().runOnServer(server -> {
                 LivingEntity companion = (LivingEntity) server.getPlayerList().getPlayers().getFirst().level().getEntity(id);
                 modify(companion, Attributes.KNOCKBACK_RESISTANCE, 0.4, AttributeModifier.Operation.ADD_VALUE);
@@ -106,8 +106,10 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
                 modify(companion, Attributes.SAFE_FALL_DISTANCE, -1.0, AttributeModifier.Operation.ADD_VALUE);
                 modify(companion, Attributes.OXYGEN_BONUS, 1.0, AttributeModifier.Operation.ADD_VALUE);
             });
-            context.waitFor(client -> Math.abs(screen(client).getMenu().knockbackResistance() - 0.4) < 1.0E-9
-                    && Math.abs(attribute(client, id, Attributes.MOVEMENT_SPEED) - 0.98) < 1.0E-9);
+            context.waitFor(client -> sentValue(client, Attributes.KNOCKBACK_RESISTANCE) == 0.4
+                    && Math.abs(sentValue(client, Attributes.MOVEMENT_SPEED) - 0.98) < 1.0E-9
+                    && sentValue(client, Attributes.SAFE_FALL_DISTANCE) == 2.0
+                    && sentValue(client, Attributes.OXYGEN_BONUS) == 1.0);
 
             // The Attributes handle swaps the panel at once, and closes the storage on both sides.
             context.runOnClient(client -> screen(client).pressHandle(Panel.ATTRIBUTES));
@@ -189,6 +191,12 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
 
     private static double attribute(Minecraft client, UUID id, Holder<Attribute> attribute) {
         return ((LivingEntity) client.level.getEntity(id)).getAttributeValue(attribute);
+    }
+
+    /** The value of {@code attribute} the server last sent the open screen; NaN before any. */
+    private static double sentValue(Minecraft client, Holder<Attribute> attribute) {
+        CompanionAttributeValues.Value value = screen(client).getMenu().attributeValues().get(attribute);
+        return value == null ? Double.NaN : value.value();
     }
 
     private static void modify(LivingEntity entity, Holder<Attribute> attribute, double amount, AttributeModifier.Operation operation) {

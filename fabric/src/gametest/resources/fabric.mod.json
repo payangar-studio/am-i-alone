@@ -9,7 +9,8 @@
       "com.payangar.amialone.gametest.ExampleServerGameTest",
       "com.payangar.amialone.gametest.CompanionServerGameTest",
       "com.payangar.amialone.gametest.CompanionInventoryServerGameTest",
-      "com.payangar.amialone.gametest.DebugStickServerGameTest"
+      "com.payangar.amialone.gametest.DebugStickServerGameTest",
+      "com.payangar.amialone.gametest.CompanionAttributesServerGameTest"
     ],
     "fabric-client-gametest": [
       "com.payangar.amialone.gametest.ExampleClientGameTest",

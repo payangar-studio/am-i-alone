@@ -416,11 +416,19 @@ public class CompanionInventoryServerGameTest {
 
     /** A player connected to the test's server, without a client. */
     static ServerPlayer connectPlayer(GameTestHelper helper, String name) {
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        return connectPlayer(helper, name, connection);
+    }
+
+    /**
+     * A player connected to the test's server over {@code connection}, already in a channel: a test
+     * that reads what the server sends keeps the channel.
+     */
+    static ServerPlayer connectPlayer(GameTestHelper helper, String name, Connection connection) {
         ServerLevel level = helper.getLevel();
         CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), name), false);
         ServerPlayer player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), ClientInformation.createDefault());
-        Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
         level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
         return player;
     }

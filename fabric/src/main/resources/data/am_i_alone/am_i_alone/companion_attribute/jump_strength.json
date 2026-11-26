@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:jump_strength",
+  "group": "am_i_alone:movement",
+  "order": 40,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.jump_strength"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}
