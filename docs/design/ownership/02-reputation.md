@@ -56,11 +56,11 @@ offer does, with a coefficient of 0.1, between the villagers' 0.05 (most
 offers) and 0.2 (armour, tools, books): the opinion × 0.1, rounded down,
 comes off the price. A bad opinion raises it, by at least 1, as a villager's.
 
-Fact: a companion's good opinion stays small. It learns the good only by word
-of mouth: the major positive rumour of a cure never spreads, and hearing
-several villagers keeps the strongest version of each rumour rather than
-adding them (`GossipContainer.java:161-163`). At best it holds a minor
-positive 20 (from a cured villager) and trading 5: +25, so 2 emeralds off. A
+Fact: a companion's good opinion stays small. The major positive rumour of a
+cure never spreads to it, and hearing several villagers keeps the strongest
+version of each rumour rather than adding them (`GossipContainer.java:161-163`).
+Its minor positive, heard or earned by healing it, is capped at 25, and the
+trading it hears at 5: +30 at best, so 3 emeralds off. A
 bad opinion goes down to −700, 70 more. Decision: kept at 0.1: the rumour
 system makes the good spread badly, and that is accepted; Hero of the Village
 gives the larger discounts.
