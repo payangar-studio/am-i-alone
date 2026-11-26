@@ -55,7 +55,8 @@ clients, as the skins are (`04-identity.md`). A group
 (`am_i_alone:companion_attribute`) names an attribute, or a value the mod
 computes (attack range is the first), its group, its order in the group, its
 short label (the attribute's own name when absent), its format, when it is
-shown (always, or only when it differs from its default) and, optionally, a
+shown (always, only when it differs from its default, or only when the
+companion is armed: a primary designated weapon, or a weapon in its main hand) and, optionally, a
 colour threshold: the value the colour compares to instead of the default. An
 attribute with no entry is not shown. A mod adds an attribute with one file of
 its own; a datapack replaces an entry or a group with a file of the same name.
@@ -64,7 +65,8 @@ The mod ships these entries:
 
 | Attributes | Shown |
 |---|---|
-| Attack damage, attack speed, attack range (`07-inventory.md`), max health, armor, armor toughness, knockback resistance, movement speed | Always |
+| Attack damage, attack range (`07-inventory.md`), max health, armor, armor toughness, knockback resistance, movement speed | Always |
+| Attack speed | Only when armed: without a weapon it says nothing useful |
 | Max absorption, water and ground movement efficiency, jump, step height, oxygen, burning time, explosion knockback resistance, safe fall distance, fall damage multiplier | Only when gear or an effect changes them from their default |
 | Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback | No entry: they mean nothing to a player looking at a companion |
 
