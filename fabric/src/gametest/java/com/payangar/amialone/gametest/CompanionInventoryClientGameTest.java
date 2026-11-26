@@ -17,7 +17,6 @@ import java.util.UUID;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
-import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotComparisonOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
@@ -72,8 +71,7 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
             // references hold the mod alone.
             boolean compare = System.getProperty("mod.testProfile") == null;
             if (compare) {
-                context.assertScreenshotEquals(
-                        TestScreenshotComparisonOptions.of("companion_armor").save().disableCounterPrefix());
+                Screenshots.compare(context, "companion_armor");
             }
 
             // Only the debug stick opens the screen until companions have owners.
@@ -180,7 +178,7 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
 
     private static void screenshot(ClientGameTestContext context, boolean compare, String name) {
         if (compare) {
-            context.assertScreenshotEquals(TestScreenshotComparisonOptions.of(name).save().disableCounterPrefix());
+            Screenshots.compare(context, name);
         }
     }
 

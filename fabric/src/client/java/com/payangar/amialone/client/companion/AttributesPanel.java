@@ -2,7 +2,9 @@ package com.payangar.amialone.client.companion;
 
 import com.payangar.amialone.companion.CompanionAttribute;
 import com.payangar.amialone.companion.CompanionAttributeGroup;
+import com.payangar.amialone.companion.CompanionAttributeValues.Computed;
 import com.payangar.amialone.companion.CompanionAttributeValues.Value;
+import com.payangar.amialone.companion.CompanionComputedValue;
 import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.vendor.gui.Draw;
 import com.payangar.amialone.vendor.gui.Theme;
@@ -28,13 +30,14 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The drawer's Attributes panel: the companion's attributes in groups, a label on the left and the
- * value on the right, the full name with the current and base values in a row's tooltip.
+ * The drawer's Attributes panel: the companion's attributes and computed values in groups, a label
+ * on the left and the value on the right, the full name with the current and base values in a
+ * row's tooltip.
  *
- * <p>What it shows is data: the groups and the attributes of the {@link CompanionAttributeGroup}
- * and {@link CompanionAttribute} registries, each in its order. The values are the ones the server
- * sent the menu, never the client companion's: the client builds a companion as a player, whose
- * attribute map is a player's. An attribute the server sent no value for is not shown.
+ * <p>What it shows is data: the groups and the entries of the {@link CompanionAttributeGroup} and
+ * {@link CompanionAttribute} registries, each in its order. The values are the ones the server sent
+ * the menu, never the client companion's: the client builds a companion as a player, whose
+ * attribute map is a player's. An entry the server sent no value for is not shown.
  *
  * <p>The rows scroll with the mouse wheel when they outgrow the panel.
  */
@@ -53,25 +56,10 @@ final class AttributesPanel {
     private static final int SCROLL_STEP = ROW_HEIGHT;
     private static final int SCROLLBAR_WIDTH = 2;
 
-    /** A row: an entry, its attribute and the values the server sent. */
-    private record Row(CompanionAttribute entry, Holder<Attribute> attribute, Value values) {
-        double value() {
-            return values.value();
-        }
+    private static final String EN_DASH = "\u2013";
 
-        double base() {
-            return values.base();
-        }
-
-        /** The entry's short label, or the attribute's own name. */
-        Component label() {
-            return entry.label().orElseGet(() -> Component.translatable(attribute.value().getDescriptionId()));
-        }
-
-        boolean changed() {
-            return Math.abs(value() - base()) > 1.0E-6;
-        }
-    }
+    /** A row: its label, its value as it reads, the value's colour, and its tooltip. */
+    private record Row(Component label, String value, int colour, List<Component> tooltip) {}
 
     /** A line drawn this frame: a header ({@code row} null) or a row with its values. */
     private record Line(int y, @Nullable Row row, Component text) {}
@@ -109,9 +97,8 @@ final class AttributesPanel {
                 continue;
             }
             Row row = line.row();
-            String value = format(row, row.value());
-            int valueWidth = font.width(value);
-            graphics.text(font, value, x + width - valueWidth, textY, colour(row), false);
+            int valueWidth = font.width(row.value());
+            graphics.text(font, row.value(), x + width - valueWidth, textY, row.colour(), false);
             graphics.text(font, fit(font, line.text(), width - valueWidth - VALUE_GAP), x, textY, Theme.TEXT_DIM, false);
             if (hoverable
                     && mouseX >= x && mouseX < x + width
@@ -128,7 +115,7 @@ final class AttributesPanel {
             Draw.fill(graphics, barX, thumbY, SCROLLBAR_WIDTH, thumb, Theme.BORDER_HOVER);
         }
         if (hovered != null) {
-            graphics.setComponentTooltipForNextFrame(font, tooltip(hovered.row()), mouseX, mouseY);
+            graphics.setComponentTooltipForNextFrame(font, hovered.row().tooltip(), mouseX, mouseY);
         }
     }
 
@@ -149,17 +136,17 @@ final class AttributesPanel {
     private static List<Line> lines(CompanionMenu menu) {
         RegistryAccess registries = menu.companion().registryAccess();
         Map<Holder<Attribute>, Value> values = menu.attributeValues();
+        Map<CompanionComputedValue, Computed> computed = menu.computedValues();
         Map<ResourceKey<CompanionAttributeGroup>, List<Row>> rowsByGroup = new HashMap<>();
         for (Holder.Reference<CompanionAttribute> holder :
                 sorted(registries.lookupOrThrow(CompanionAttribute.REGISTRY), CompanionAttribute::order)) {
             CompanionAttribute entry = holder.value();
-            @Nullable Holder<Attribute> attribute = entry.resolve().orElse(null);
-            @Nullable Value value = attribute == null ? null : values.get(attribute);
-            if (value == null) {
-                continue;
-            }
-            Row row = new Row(entry, attribute, value);
-            if (entry.shown() == CompanionAttribute.Shown.ALWAYS || row.changed()) {
+            @Nullable Row row = entry.resolve()
+                    .map(attribute -> attributeRow(entry, attribute, values.get(attribute)))
+                    .orElseGet(() -> entry.computed()
+                            .map(value -> computedRow(entry, computed.get(value)))
+                            .orElse(null));
+            if (row != null) {
                 rowsByGroup.computeIfAbsent(entry.group().unwrapKey().orElseThrow(), key -> new ArrayList<>()).add(row);
             }
         }
@@ -196,40 +183,94 @@ final class AttributesPanel {
         return lines.isEmpty() ? 0 : lines.getLast().y() + ROW_HEIGHT;
     }
 
-    private static String format(Row row, double value) {
-        return switch (row.entry().format()) {
+    /**
+     * An attribute's row, unless the server sent no value or the entry hides it: its value against
+     * the attribute's default, its colour against the entry's threshold or that default.
+     */
+    private static @Nullable Row attributeRow(CompanionAttribute entry, Holder<Attribute> holder, @Nullable Value value) {
+        Attribute attribute = holder.value();
+        if (value == null || !entry.shows(attribute, value.value())) {
+            return null;
+        }
+        Component name = Component.translatable(attribute.getDescriptionId());
+        double reference = attribute.getDefaultValue();
+        return new Row(
+                entry.label().orElse(name),
+                format(entry, value.value(), reference),
+                colour(entry.tone(attribute, value.value())),
+                List.of(
+                        Component.literal(titleCase(name.getString())),
+                        Component.translatable(KEY + "current", format(entry, value.value(), reference))
+                                .withStyle(ChatFormatting.GRAY),
+                        Component.translatable(KEY + "base", format(entry, value.base(), reference))
+                                .withStyle(ChatFormatting.GRAY)));
+    }
+
+    /** A computed value's row, unless the server sent none or the entry hides it. */
+    private static @Nullable Row computedRow(CompanionAttribute entry, @Nullable Computed value) {
+        if (value == null) {
+            return null;
+        }
+        return switch (value.value()) {
+            case ATTACK_RANGE -> attackRangeRow(entry, value);
+        };
+    }
+
+    /**
+     * The attack range: its maximum, or its minimum and maximum when the weapon cannot hit closer,
+     * in the default colour; changed from its default when it is not the bare hand's, up to the
+     * interaction range. Its tooltip says how close it cannot hit.
+     */
+    private static @Nullable Row attackRangeRow(CompanionAttribute entry, Computed range) {
+        boolean changed = range.min() > 0.0 || Math.abs(range.max() - range.base()) > 1.0E-6;
+        if (entry.shown() == CompanionAttribute.Shown.WHEN_CHANGED && !changed) {
+            return null;
+        }
+        String max = format(entry, range.max(), range.base());
+        String text = range.min() > 0.0 ? format(entry, range.min(), range.base()) + EN_DASH + max : max;
+        Component name = Component.translatable(KEY + "value.attack_range");
+        List<Component> tooltip = new ArrayList<>();
+        tooltip.add(name);
+        tooltip.add(Component.translatable(KEY + "current", text).withStyle(ChatFormatting.GRAY));
+        if (range.min() > 0.0) {
+            tooltip.add(Component.translatable(KEY + "value.attack_range.min", format(entry, range.min(), range.base()))
+                    .withStyle(ChatFormatting.GRAY));
+        }
+        tooltip.add(Component.translatable(KEY + "base", format(entry, range.base(), range.base()))
+                .withStyle(ChatFormatting.GRAY));
+        return new Row(entry.label().orElse(name), text, Theme.TEXT, List.copyOf(tooltip));
+    }
+
+    /** {@code value} as the entry's format writes it, {@code reference} its 100%. */
+    private static String format(CompanionAttribute entry, double value, double reference) {
+        return switch (entry.format()) {
             case PLAIN -> FORMAT.format(value);
             case TIMES_TEN -> FORMAT.format(value * 10.0);
-            // A base of zero has no percentage: the plain value.
-            case PERCENT_OF_DEFAULT -> row.base() == 0.0
+            // A reference of zero has no percentage: the plain value.
+            case PERCENT_OF_DEFAULT -> reference == 0.0
                     ? FORMAT.format(value)
-                    : FORMAT.format(value / row.base() * 100.0) + "%";
+                    : FORMAT.format(value / reference * 100.0) + "%";
             case PERCENT -> FORMAT.format(value * 100.0) + "%";
         };
     }
 
-    /** The default colour, or, for a changed value, the colour of the change's sentiment. */
-    private static int colour(Row row) {
-        if (!row.changed()) {
-            return Theme.TEXT;
-        }
-        ChatFormatting style = row.attribute().value().getStyle(row.value() > row.base());
-        return style == ChatFormatting.BLUE ? GOOD : style == ChatFormatting.RED ? BAD : Theme.TEXT;
+    private static int colour(CompanionAttribute.Tone tone) {
+        return switch (tone) {
+            case NEUTRAL -> Theme.TEXT;
+            case GOOD -> GOOD;
+            case BAD -> BAD;
+        };
     }
 
-    /** The attribute's full vanilla name, capitalised as a title, then its current and base values. */
-    private static List<Component> tooltip(Row row) {
-        String name = Component.translatable(row.attribute().value().getDescriptionId()).getString();
-        if (!name.isEmpty()) {
-            int first = name.codePointAt(0);
-            name = new StringBuilder().appendCodePoint(Character.toTitleCase(first))
-                    .append(name, Character.charCount(first), name.length())
-                    .toString();
+    /** {@code name} capitalised as a title, as vanilla's attribute names are not. */
+    private static String titleCase(String name) {
+        if (name.isEmpty()) {
+            return name;
         }
-        return List.of(
-                Component.literal(name),
-                Component.translatable(KEY + "current", format(row, row.value())).withStyle(ChatFormatting.GRAY),
-                Component.translatable(KEY + "base", format(row, row.base())).withStyle(ChatFormatting.GRAY));
+        int first = name.codePointAt(0);
+        return new StringBuilder().appendCodePoint(Character.toTitleCase(first))
+                .append(name, Character.charCount(first), name.length())
+                .toString();
     }
 
     /** {@code text}, cut with an ellipsis to fit {@code width}. */

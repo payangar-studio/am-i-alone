@@ -10,9 +10,12 @@ import com.payangar.amialone.companion.CompanionMenu.Tab;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.vendor.gui.Draw;
 import com.payangar.amialone.vendor.gui.Theme;
+import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.IntStream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -61,6 +64,15 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final int TABS_X = 6;
     private static final int TAB_HEIGHT = PANEL_Y;
     private static final int TAB_MARGIN = 8;
+    /**
+     * The unselected tabs and handles form a stack behind the panel or the drawer, and behind the
+     * selected one: each runs this far under what is in front of it, past its border and bevel, so
+     * that its covered edge is hidden, as a folder tab behind a page.
+     */
+    private static final int TUCK = 3;
+    /** The unselected tabs' and handles' border and bevel light, dimmer than the selected one's. */
+    private static final int BEHIND_BORDER = Theme.BORDER_DISABLED;
+    private static final int BEHIND_BEVEL_LIGHT = 0x12FFFFFF;
     /** The box of the companion's 3D view, between the armor and the weapons. */
     private static final int VIEW_X = 26;
     private static final int VIEW_Y = CompanionMenu.COMPANION_Y - 1;
@@ -380,8 +392,9 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         if (drawer && !drawerOnTop()) {
             extractDrawer(graphics, mouseX, mouseY);
         }
+        extractTabs(graphics, mouseX, mouseY, false);
         Draw.box(graphics, leftPos, topPos + PANEL_Y, imageWidth, imageHeight - PANEL_Y, Theme.SURFACE, Theme.BORDER);
-        extractTabs(graphics, mouseX, mouseY);
+        extractTabs(graphics, mouseX, mouseY, true);
         for (Slot slot : menu.slots) {
             if (slot.isActive() && !isStorageSlot(slot)) {
                 sunken(graphics, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
@@ -409,11 +422,20 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
 
     /**
      * The drawer with the shown panel, which slides with it: the storage's slot boxes, or the
-     * attributes; and its handles.
+     * attributes; and its handles: the others behind the drawer, from the back, the open panel's in
+     * front.
      */
     private void extractDrawer(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int x = leftPos + drawerX();
         int y = topPos + DRAWER_Y;
+        int anchor = wanted == null ? 0 : wanted.ordinal();
+        for (int i : fromTheBack(handles.size(), anchor)) {
+            extractHandle(graphics, handles.get(Panel.values()[i]), anchor, mouseX, mouseY);
+        }
+        if (wanted == null) {
+            // None selected: the first is the front of the stack.
+            extractHandle(graphics, handles.get(Panel.values()[anchor]), anchor, mouseX, mouseY);
+        }
         Draw.box(graphics, x, y, DRAWER_WIDTH, DRAWER_HEIGHT, Theme.SURFACE, Theme.BORDER);
         int contentX = x + CONTENT_X;
         int contentY = y + CONTENT_Y;
@@ -428,24 +450,19 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             attributes.extract(
                     graphics, font, menu, contentX, contentY, CONTENT_WIDTH, CONTENT_HEIGHT, mouseX, mouseY, hoverable);
         }
-        for (Handle handle : handles.values()) {
-            if (!handle.selected()) {
-                extractHandle(graphics, handle, mouseX, mouseY);
-            }
-        }
         if (wanted != null) {
-            extractHandle(graphics, handles.get(wanted), mouseX, mouseY);
+            extractHandle(graphics, handles.get(wanted), anchor, mouseX, mouseY);
         }
     }
 
     /**
      * A handle: its panel's icon, and an arrow towards where a click moves the drawer. The open
      * panel's handle is in the drawer's colour and open on its side, as the chosen tab is on the
-     * panel's; the others are a darker band, lit under the mouse or the keyboard's focus. While the
-     * drawer is closed every handle points out; once open, the open panel's points back and the
-     * others have no arrow.
+     * panel's; the others are behind the drawer and each other ({@link #fromTheBack}), darker
+     * and dimmer, lit under the mouse or the keyboard's focus. While the drawer is closed every handle points out; once open, the open
+     * panel's points back and the others have no arrow.
      */
-    private void extractHandle(GuiGraphicsExtractor graphics, Handle handle, int mouseX, int mouseY) {
+    private void extractHandle(GuiGraphicsExtractor graphics, Handle handle, int anchor, int mouseX, int mouseY) {
         boolean selected = handle.selected();
         int handleX = handle.getX() - 1;
         int handleY = handle.getY();
@@ -460,8 +477,12 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             Draw.fill(graphics, handleX, handleY + HANDLE_HEIGHT - 2, 2, 1, Theme.BEVEL_DARK);
             colour = Theme.HEADING;
         } else {
-            int face = handle.lit(mouseX, mouseY) ? Theme.SURFACE_HOVER : Theme.BAND;
-            Draw.box(graphics, handleX, handleY, HANDLE_WIDTH, HANDLE_HEIGHT, face, Theme.BORDER);
+            // Under the drawer, and under its neighbour nearer the anchor, which are drawn over it.
+            int i = handle.panel.ordinal();
+            int up = i > anchor ? TUCK : 0;
+            int down = i < anchor ? TUCK : 0;
+            int face = handle.lit(mouseX, mouseY) ? Theme.ROW_HOVER : Theme.BAND;
+            behind(graphics, handleX - TUCK, handleY - up, HANDLE_WIDTH + TUCK, HANDLE_HEIGHT + up + down, face);
             colour = handle.lit(mouseX, mouseY) ? Theme.TEXT : Theme.TEXT_DIM;
         }
         // The icon and the arrow centred between the borders, one pixel further out when selected.
@@ -516,36 +537,73 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     }
 
     /**
-     * The tabs above the panel, side by side, neighbours sharing a border: each a box of the kit's
-     * colours, the chosen one drawn last, in the panel's colour and open at the bottom, so it joins
-     * the panel.
+     * The tabs above the panel, side by side, neighbours meeting on a border: the others, drawn
+     * before the panel from the back ({@link #fromTheBack}), darker and dimmer, behind it and each
+     * other; the chosen one, drawn after, a box in the panel's colour, open at the bottom, so it
+     * joins the panel.
      */
-    private void extractTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        Tab hovered = tabAt(mouseX, mouseY);
+    private void extractTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean chosen) {
+        List<Tab> tabs = menu.tabs();
+        int anchor = tabs.indexOf(menu.tab());
+        int[] xs = new int[tabs.size()];
         int x = leftPos + TABS_X;
-        int chosenX = x;
-        for (Tab tab : menu.tabs()) {
-            if (tab == menu.tab()) {
-                chosenX = x;
-            } else {
-                extractTab(graphics, tab, x, false, tab == hovered);
-            }
-            x += tabWidth(tab) - 1;
+        for (int i = 0; i < tabs.size(); i++) {
+            xs[i] = x;
+            x += tabWidth(tabs.get(i)) - 1;
         }
-        extractTab(graphics, menu.tab(), chosenX, true, false);
+        if (chosen) {
+            extractTab(graphics, menu.tab(), xs[anchor], 0, false);
+            return;
+        }
+        Tab hovered = tabAt(mouseX, mouseY);
+        for (int i : fromTheBack(tabs.size(), anchor)) {
+            extractTab(graphics, tabs.get(i), xs[i], i - anchor, tabs.get(i) == hovered);
+        }
     }
 
-    private void extractTab(GuiGraphicsExtractor graphics, Tab tab, int x, boolean chosen, boolean hovered) {
+    /**
+     * A tab, {@code fromChosen} places after the chosen one (before it when negative); the chosen
+     * one at 0.
+     */
+    private void extractTab(GuiGraphicsExtractor graphics, Tab tab, int x, int fromChosen, boolean hovered) {
         int width = tabWidth(tab);
+        boolean chosen = fromChosen == 0;
         if (chosen) {
             Draw.box(graphics, x, topPos, width, TAB_HEIGHT + 1, Theme.SURFACE, Theme.BORDER);
             Draw.fill(graphics, x + 1, topPos + TAB_HEIGHT, width - 2, 1, Theme.SURFACE);
         } else {
-            Draw.box(graphics, x, topPos + 2, width, TAB_HEIGHT - 2, hovered ? Theme.SURFACE_HOVER : Theme.BAND, Theme.BORDER);
+            // Under the panel, and under its neighbour nearer the chosen tab, which are drawn over it.
+            int left = fromChosen > 0 ? TUCK : 0;
+            int right = fromChosen < 0 ? TUCK : 0;
+            int face = hovered ? Theme.ROW_HOVER : Theme.BAND;
+            behind(graphics, x - left, topPos + 2, width + left + right, TAB_HEIGHT - 2 + TUCK, face);
         }
         int colour = chosen ? Theme.HEADING : Theme.TEXT_DIM;
         int textY = topPos + (chosen ? 0 : 2) + (TAB_HEIGHT - (chosen ? 0 : 2) - font.lineHeight) / 2 + 1;
         Draw.text(graphics, font, title(tab), x + TAB_MARGIN, textY, colour);
+    }
+
+    /**
+     * The order to draw a row of {@code count} tabs or handles in, from the back, without the one at
+     * {@code anchor}, the selected one, or the first when none is: the farthest from it first, so
+     * that of two neighbours the one nearer the anchor covers the other's edge.
+     */
+    private static List<Integer> fromTheBack(int count, int anchor) {
+        return IntStream.range(0, count)
+                .filter(i -> i != anchor)
+                .boxed()
+                .sorted(Comparator.comparingInt((Integer i) -> Math.abs(i - anchor)).reversed())
+                .toList();
+    }
+
+    /**
+     * An unselected tab or handle: the kit's raised box, darker and dimmer than the selected one's,
+     * for a place behind it.
+     */
+    private static void behind(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int face) {
+        Draw.fill(graphics, x, y, width, height, face);
+        Draw.bevel(graphics, x + 1, y + 1, width - 2, height - 2, BEHIND_BEVEL_LIGHT, Theme.BEVEL_DARK);
+        Draw.outline(graphics, x, y, width, height, BEHIND_BORDER);
     }
 
     private static void sunken(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {

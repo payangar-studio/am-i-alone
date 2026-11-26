@@ -1,0 +1,11 @@
+{
+  "attribute": "minecraft:attack_damage",
+  "group": "am_i_alone:combat",
+  "order": 10,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.attack_damage"
+  },
+  "format": "plain",
+  "shown": "always",
+  "colour_threshold": 1
+}

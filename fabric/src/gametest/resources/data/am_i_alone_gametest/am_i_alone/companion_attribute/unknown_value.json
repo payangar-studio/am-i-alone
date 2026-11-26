@@ -1,0 +1,7 @@
+{
+  "value": "am_i_alone_gametest:unknown",
+  "group": "am_i_alone:defence",
+  "order": 16,
+  "format": "plain",
+  "shown": "always"
+}

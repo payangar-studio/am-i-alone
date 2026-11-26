@@ -18,6 +18,7 @@ import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 
 /**
@@ -71,7 +72,13 @@ public final class Companions {
 
     /** Called once when the mod loads. */
     public static void register() {
-        FabricDefaultAttributeRegistry.register(TYPE, LivingEntity.createLivingAttributes());
+        // A player's attack, which vanilla gives no other living entity: its primary weapon's
+        // modifiers apply to it.
+        FabricDefaultAttributeRegistry.register(
+                TYPE,
+                LivingEntity.createLivingAttributes()
+                        .add(Attributes.ATTACK_DAMAGE, 1.0)
+                        .add(Attributes.ATTACK_SPEED));
         DynamicRegistries.registerSynced(CompanionSkin.REGISTRY, CompanionSkin.CODEC);
         DynamicRegistries.register(CompanionNames.REGISTRY, CompanionNames.CODEC);
         DynamicRegistries.registerSynced(CompanionAttributeGroup.REGISTRY, CompanionAttributeGroup.CODEC);

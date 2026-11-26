@@ -4,6 +4,8 @@ import com.payangar.amialone.CommonEntrypoint;
 import com.payangar.amialone.debug.Debug;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -23,6 +25,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -46,7 +50,8 @@ import org.jspecify.annotations.Nullable;
  * Its identity travels as the {@link Companions#IDENTITY} attachment instead.
  *
  * <p>It carries a {@link CompanionInventory} and wears armor in vanilla's equipment slots. It is not
- * a vanilla {@code Container}, so hoppers leave it alone.
+ * a vanilla {@code Container}, so hoppers leave it alone. Its primary designated weapon applies its
+ * attribute modifiers, as a player's main hand does, while its own main hand is empty.
  */
 public class Companion extends Avatar {
     private static final String INVENTORY_KEY = CommonEntrypoint.MOD_ID + ":inventory";
@@ -55,6 +60,8 @@ public class Companion extends Avatar {
             .reduce(0, (a, b) -> a | b);
 
     private final CompanionInventory inventory = new CompanionInventory();
+    /** The primary weapon whose modifiers are applied; empty while none are. */
+    private ItemStack appliedPrimaryWeapon = ItemStack.EMPTY;
 
     public Companion(EntityType<? extends Avatar> type, Level level) {
         super(type, level);
@@ -138,6 +145,56 @@ public class Companion extends Avatar {
      */
     public static boolean isOwner(Entity companion, Player player) {
         return false;
+    }
+
+    /**
+     * The weapon its attack counts: what it holds in its main hand, or else its primary designated
+     * weapon.
+     */
+    public ItemStack attackWeapon() {
+        ItemStack hand = getMainHandItem();
+        return hand.isEmpty() ? inventory.getItem(CompanionInventory.PRIMARY_WEAPON) : hand;
+    }
+
+    /**
+     * Vanilla's detection of equipment changes, run each server tick, wrapped to apply the primary
+     * designated weapon's attribute modifiers as the main hand's, while the main hand is empty: an
+     * item in hand counts instead, through vanilla's own path. Its modifiers often share the
+     * weapon's ids ({@code base_attack_damage}), so ours go before vanilla applies a new hand item,
+     * and come after vanilla removed the previous one.
+     */
+    @Override
+    protected @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges(Map<EquipmentSlot, ItemStack> lastEquipmentItems) {
+        ItemStack wanted = getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()
+                ? inventory.getItem(CompanionInventory.PRIMARY_WEAPON)
+                : ItemStack.EMPTY;
+        if (!ItemStack.matches(wanted, appliedPrimaryWeapon)) {
+            forEachWeaponModifier(appliedPrimaryWeapon, AttributeInstance::removeModifier);
+            appliedPrimaryWeapon = ItemStack.EMPTY;
+        }
+        Map<EquipmentSlot, ItemStack> changes = super.collectEquipmentChanges(lastEquipmentItems);
+        if (appliedPrimaryWeapon.isEmpty() && !wanted.isEmpty() && !wanted.isBroken()) {
+            forEachWeaponModifier(wanted, (instance, modifier) -> {
+                instance.removeModifier(modifier.id());
+                instance.addTransientModifier(modifier);
+            });
+            appliedPrimaryWeapon = wanted.copy();
+        }
+        return changes;
+    }
+
+    /**
+     * {@code weapon}'s modifiers in the main hand, its enchantments' attribute effects included, on
+     * the companion's attributes that have them: vanilla's {@code ItemStack.forEachModifier}. They
+     * are transient, so not saved: a loaded companion applies them at its first tick.
+     */
+    private void forEachWeaponModifier(ItemStack weapon, BiConsumer<AttributeInstance, AttributeModifier> action) {
+        weapon.forEachModifier(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+            AttributeInstance instance = getAttribute(attribute);
+            if (instance != null) {
+                action.accept(instance, modifier);
+            }
+        });
     }
 
     /** Sends its new or changed effect to the clients that see it, for their health bar. */

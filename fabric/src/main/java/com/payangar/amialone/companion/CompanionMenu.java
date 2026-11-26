@@ -132,8 +132,9 @@ public class CompanionMenu extends AbstractContainerMenu {
     private final boolean debug;
     /** On the server, the player it sends the attribute values to; none on the client. */
     private final @Nullable ServerPlayer viewer;
-    /** On the server, the attribute values last sent; on the client, the ones last received. */
+    /** On the server, the attribute and computed values last sent; on the client, the ones last received. */
     private List<CompanionAttributeValues.Value> attributeValues = List.of();
+    private List<CompanionAttributeValues.Computed> computedValues = List.of();
     private boolean attributeValuesSent;
     private Tab tab = Tab.COMPANION;
     private @Nullable Panel panel;
@@ -284,10 +285,20 @@ public class CompanionMenu extends AbstractContainerMenu {
                 .collect(Collectors.toUnmodifiableMap(CompanionAttributeValues.Value::attribute, Function.identity()));
     }
 
+    /**
+     * The companion's computed values that an entry names: on the client, as the server last sent
+     * them; empty until the first message.
+     */
+    public Map<CompanionComputedValue, CompanionAttributeValues.Computed> computedValues() {
+        return computedValues.stream()
+                .collect(Collectors.toUnmodifiableMap(CompanionAttributeValues.Computed::value, Function.identity()));
+    }
+
     /** The client's side: takes the values the server sent for this menu. */
     public void receive(CompanionAttributeValues message) {
         if (message.containerId() == containerId) {
             attributeValues = List.copyOf(message.values());
+            computedValues = List.copyOf(message.computed());
         }
     }
 
@@ -303,21 +314,24 @@ public class CompanionMenu extends AbstractContainerMenu {
     }
 
     /**
-     * Sends the viewer the companion's attribute values, unless they are the ones it already has.
+     * Sends the viewer the companion's attribute and computed values, unless they are the ones it
+     * already has.
      * Without a check of the client's channels: the mod is required on both sides, and the side
      * check refuses a client without it.
      */
     private void sendAttributeValues() {
-        if (viewer == null) {
+        if (viewer == null || !(companion instanceof Companion server)) {
             return;
         }
-        List<CompanionAttributeValues.Value> values = CompanionAttributeValues.of(companion);
-        if (attributeValuesSent && values.equals(attributeValues)) {
+        List<CompanionAttributeValues.Value> values = CompanionAttributeValues.of(server);
+        List<CompanionAttributeValues.Computed> computed = CompanionAttributeValues.computedOf(server);
+        if (attributeValuesSent && values.equals(attributeValues) && computed.equals(computedValues)) {
             return;
         }
         attributeValues = values;
+        computedValues = computed;
         attributeValuesSent = true;
-        ServerPlayNetworking.send(viewer, new CompanionAttributeValues(containerId, values));
+        ServerPlayNetworking.send(viewer, new CompanionAttributeValues(containerId, values, computed));
     }
 
     /**
