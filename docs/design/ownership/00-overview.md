@@ -1,15 +1,19 @@
 # Ownership and modes
 
-Partly decided, not built yet: the first brick is the companion alone
-(`../companion/`).
+Partly decided, not built yet. Its first brick is recruitment
+(`01-recruitment.md`): a player pays a companion without an owner in emeralds,
+and owns it.
 
 ## In game
 
-A player can make a companion their own, the way one tames a wolf, and give it
+A player can make a companion their own by recruiting it, and give it
 an order, its mode.
 
 Decisions so far:
 
+- **Recruitment**: a player makes a companion that has no owner their own by
+  paying its price in emeralds, on its recruitment screen
+  (`01-recruitment.md`). A companion that has an owner cannot be recruited.
 - **Follow**: the companion goes with its owner, into another dimension too.
   It is the only mode decided. Whether a companion follows its owner through a
   portal depends on its mode.
@@ -22,7 +26,9 @@ Decisions so far:
   needed to skip the night. (An earlier decision, that it counted and needed
   its own bed, is withdrawn.)
 
-Open questions: how a player makes a companion their own; the other modes
+Open questions: other conditions to recruit a companion, a price that grows
+with its equipment, an owner giving their companion to another player; the
+other modes
 (stay, wander, stay around its home), which will come later.
 
 ## How it is built

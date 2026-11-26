@@ -117,15 +117,15 @@ Decision: the gestures, whatever the player holds:
 
 | Gesture | What happens |
 |---|---|
-| Right-click | Opens the screen, for its owner only; for anyone else, nothing |
+| Right-click | Opens the screen for its owner; opens the recruitment screen when it has no owner (`../ownership/01-recruitment.md`); for anyone else, nothing |
 | Sneak and right-click | The held item acts as on any entity (a name tag renames it, a splash potion is thrown) |
 | Right-click with the companion debug stick in the clicking hand, as an operator | Opens the screen with the Debug tab, whoever owns the companion; for anyone else, or in the other hand, the stick is any item |
 
 Fact: a companion cannot be leashed, as a villager: only entities that are
 `Leashable` can (`Mob.java:100`), and a companion is not a `Mob`.
 
-Until ownership exists (`../ownership/`), no companion has an owner, so only
-the debug stick opens the screen.
+Until a player recruits it (`../ownership/01-recruitment.md`), a companion
+has no owner, so only the debug stick opens its screen.
 
 Decision: the health and armor bars look and behave exactly as the player's
 own in the HUD: the same hearts (half hearts, rows, hardcore, poisoned,
@@ -189,7 +189,8 @@ those.
 ### Opening
 
 Decision: the companion answers the right-click itself (`interact`), before
-any item: it opens the screen for its owner and lets the click pass when the
+any item: it opens the screen for its owner, the recruitment screen when it
+has no owner, and lets the click pass when the
 player sneaks, or holds the debug stick with the gamemaster permission. The debug stick opens the screen with
 the Debug tab from its own `interactLivingEntity`, which vanilla calls when the
 entity let the click pass (`Player.java:806-842`).

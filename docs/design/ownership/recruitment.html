@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Recruitment</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    --game: #8a5a12; --build: #4b5563;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+      --game: #e0b064; --build: #b7bec8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); max-width: 76rem; margin: 0 auto; }
+  aside.tree { border-right: 1px solid var(--rule); padding: 1.6rem 1rem 2rem 16px; font-size: 0.93rem; }
+  aside.tree .inner { position: sticky; top: 1rem; }
+  .tree-title { font-weight: 700; margin-bottom: 0.6rem; }
+  .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree ul ul { padding-left: 0.9rem; border-left: 1px solid var(--rule); margin: 0.2rem 0 0.3rem 0.35rem; }
+  .tree li { margin: 0.22rem 0; }
+  .tree a { text-decoration: none; }
+  .tree a.here { color: var(--fg); font-weight: 700; }
+  details.tree-mobile { display: none; margin: 0 0 1rem; border: 1px solid var(--rule); border-radius: 6px; padding: 0.4rem 0.8rem; background: var(--panel); }
+  details.tree-mobile summary { cursor: pointer; font-weight: 600; }
+  main { padding: 1.6rem 16px 4rem 2rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .layout { display: block; }
+    aside.tree { display: none; }
+    details.tree-mobile { display: block; }
+    main { padding: 1.2rem 16px 3rem; }
+  }
+  .crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .crumbs a { text-decoration: none; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.4rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.35rem; }
+  h3 { margin: 1.7rem 0 0.5rem; font-size: 1.1rem; }
+  h2.part { display: flex; align-items: center; gap: 0.6rem; }
+  .ptag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 4px; color: var(--bg); }
+  .ptag.game { background: var(--game); }
+  .ptag.build { background: var(--build); }
+  .kind { display: inline-block; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 0.05rem 0.5rem; margin: 0.2rem 0 0.4rem; }
+  p { margin: 0.6rem 0; }
+  .lede { font-size: 1.08rem; }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a><ul><li><a href="../ownership/recruitment.html" class="here">Recruitment</a></li></ul></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<main>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a><ul><li><a href="../ownership/recruitment.html" class="here">Recruitment</a></li></ul></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../ownership/index.html">Ownership and modes</a> › Recruitment</div>
+<h1>Recruitment</h1>
+<p class="lede">How a player makes a companion their own: they pay its price in emeralds.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2>
+<h3>Right-click</h3>
+<figure><svg viewBox="0 0 680 318" role="img"><title>What a right-click on a companion opens, by what the player does and holds, and whether the companion has an owner</title><defs><marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-plain" x="10" y="139" width="104" height="58" rx="8"/>
+<text x="62" y="163" text-anchor="middle" class="title">Right-click</text>
+<text x="62" y="182" text-anchor="middle" class="small">on a companion</text>
+<path class="line" d="M114,168 L138,168" marker-end="url(#o)"/>
+<rect class="box-core" x="140" y="128" width="140" height="80" rx="8"/>
+<text x="210" y="164" text-anchor="middle" class="title">Companion</text>
+<text x="210" y="183" text-anchor="middle" class="small">answers first</text>
+<path class="line" d="M280,142 C304,142 298,33 322,33 L418,33" marker-end="url(#o)"/>
+<text x="412" y="27" text-anchor="end" class="small">sneaks</text>
+<rect class="box-plain" x="420" y="10" width="250" height="46" rx="8"/>
+<circle class="dot" cx="434" cy="24" r="10"/><text x="434" y="28" text-anchor="middle" class="mark">1</text>
+<text x="450" y="30" class="title">Passes: the held item acts</text>
+<text x="450" y="47" class="small">as on any entity: name tag, potion</text>
+<path class="line" d="M280,155 C304,155 298,93 322,93 L418,93" marker-end="url(#o)"/>
+<text x="412" y="87" text-anchor="end" class="small">operator with the stick</text>
+<rect class="box-plain" x="420" y="70" width="250" height="46" rx="8"/>
+<circle class="dot" cx="434" cy="84" r="10"/><text x="434" y="88" text-anchor="middle" class="mark">2</text>
+<text x="450" y="90" class="title">Passes to the debug stick</text>
+<text x="450" y="107" class="small">its screen, Debug tab, owner or not</text>
+<path class="line" d="M280,168 C304,168 298,173 322,173 L418,173" marker-end="url(#o)"/>
+<text x="412" y="167" text-anchor="end" class="small">it has no owner</text>
+<rect class="box-anchor" x="420" y="150" width="250" height="46" rx="8"/>
+<circle class="dot" cx="434" cy="164" r="10"/><text x="434" y="168" text-anchor="middle" class="mark">3</text>
+<text x="450" y="170" class="title">The recruitment screen</text>
+<text x="450" y="187" class="small">for anyone, whatever they hold</text>
+<path class="line" d="M280,181 C304,181 298,233 322,233 L418,233" marker-end="url(#o)"/>
+<text x="412" y="227" text-anchor="end" class="small">its owner</text>
+<rect class="box-plain" x="420" y="210" width="250" height="46" rx="8"/>
+<circle class="dot" cx="434" cy="224" r="10"/><text x="434" y="228" text-anchor="middle" class="mark">4</text>
+<text x="450" y="230" class="title">The companion's screen</text>
+<text x="450" y="247" class="small">Companion tab</text>
+<path class="line" d="M280,194 C304,194 298,290 322,290 L418,290" marker-end="url(#o)"/>
+<text x="412" y="284" text-anchor="end" class="small">anyone else</text>
+<rect class="box-todo" x="420" y="270" width="250" height="40" rx="8"/>
+<circle class="dot" cx="434" cy="290" r="10"/><text x="434" y="294" text-anchor="middle" class="mark">5</text>
+<text x="545" y="295" text-anchor="middle" class="small">nothing: it cannot be recruited</text>
+</svg><figcaption>The first branch that applies, from the top: the companion answers the right-click before any item.</figcaption></figure>
+<ol class="legend">
+<li>Sneaking lets the held item act instead, as on the companion's own screen (<a href="../companion/screen.html">The companion's screen</a>).</li>
+<li>An operator with the companion debug stick in the clicking hand gets the companion's screen with the Debug tab, whether it has an owner or not (<a href="../debug/index.html">Companion debug stick</a>). In anyone else's hand the stick is any item.</li>
+<li>A companion without an owner: anyone who right-clicks it gets its recruitment screen.</li>
+<li>Its owner gets the companion's screen, as before.</li>
+<li>A companion that has an owner cannot be recruited: for anyone but its owner, a right-click does nothing.</li>
+</ol>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A right-click on a companion that has no owner opens its recruitment screen, whatever the player holds, without the companion debug stick. Sneaking lets the held item act instead.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A companion that has an owner cannot be recruited. For anyone but its owner a right-click does nothing, as before.</div>
+<h3>The recruitment screen</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The recruitment screen is its own screen, not a tab of the companion's screen: it is what a stranger sees before the companion is theirs. Everything it shows of the companion is read-only.</div>
+<figure><svg viewBox="0 0 700 470" role="img"><title>The recruitment screen: the companion's equipment as icons and its 3D view at the top left, its name, bars, price and the Recruit button at their right, the player's inventory below, and the drawer out on its only panel, the attributes</title><defs><symbol id="heart" viewBox="0 0 12 11"><path d="M6,10.5 L1.2,5.6 C-0.6,3.6 0.6,0.4 3.3,0.4 C4.7,0.4 5.5,1.3 6,2.2 C6.5,1.3 7.3,0.4 8.7,0.4 C11.4,0.4 12.6,3.6 10.8,5.6 Z"/></symbol><symbol id="armor" viewBox="0 0 12 11"><path d="M0.5,0.5 L4,0.5 L6,2.2 L8,0.5 L11.5,0.5 L11.5,4.5 L9.5,4.5 L9.5,10.5 L2.5,10.5 L2.5,4.5 L0.5,4.5 Z"/></symbol><symbol id="emerald" viewBox="0 0 12 12"><path d="M6,0.5 L11.5,6 L6,11.5 L0.5,6 Z"/></symbol>
+<g id="prow"><rect x="0" y="0" width="28" height="28" rx="3"/><rect x="30" y="0" width="28" height="28" rx="3"/><rect x="60" y="0" width="28" height="28" rx="3"/><rect x="90" y="0" width="28" height="28" rx="3"/><rect x="120" y="0" width="28" height="28" rx="3"/><rect x="150" y="0" width="28" height="28" rx="3"/><rect x="180" y="0" width="28" height="28" rx="3"/><rect x="210" y="0" width="28" height="28" rx="3"/><rect x="240" y="0" width="28" height="28" rx="3"/></g></defs>
+<!-- drawer, out from under the window, on its only panel -->
+<rect class="box-plain" x="370" y="20" width="152" height="300" rx="4"/>
+<!-- window, no tabs -->
+<rect class="box-plain" x="10" y="20" width="370" height="300" rx="4"/>
+<!-- armor, as icons: filled, no slot border -->
+<g style="fill: var(--anchor-bg)"><rect x="22" y="32" width="28" height="28" rx="3"/><rect x="22" y="62" width="28" height="28" rx="3"/><rect x="22" y="92" width="28" height="28" rx="3"/><rect x="22" y="122" width="28" height="28" rx="3"/></g>
+<g style="fill: var(--anchor)"><use href="#armor" x="30" y="41" width="12" height="11"/><use href="#armor" x="30" y="71" width="12" height="11"/><use href="#armor" x="30" y="101" width="12" height="11"/><use href="#armor" x="30" y="131" width="12" height="11"/></g>
+<circle class="dot" cx="36" cy="164" r="9"/><text x="36" y="168" text-anchor="middle" class="mark">1</text>
+<!-- 3D view -->
+<rect x="54" y="32" width="80" height="118" rx="3" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
+<rect class="box-core" x="84" y="40" width="20" height="20" rx="2"/><rect class="box-core" x="80" y="62" width="28" height="38" rx="2"/><rect class="box-core" x="70" y="62" width="8" height="36" rx="2"/><rect class="box-core" x="110" y="62" width="8" height="36" rx="2"/><rect class="box-core" x="81" y="102" width="12" height="40" rx="2"/><rect class="box-core" x="95" y="102" width="12" height="40" rx="2"/>
+<circle class="dot" cx="65" cy="43" r="9"/><text x="65" y="47" text-anchor="middle" class="mark">2</text>
+<!-- designated weapons, as icons -->
+<rect x="138" y="32" width="28" height="28" rx="3" style="fill: var(--anchor-bg)"/><text x="152" y="50" text-anchor="middle" class="small">1st</text>
+<rect x="138" y="62" width="28" height="28" rx="3" style="fill: var(--anchor-bg)"/><text x="152" y="80" text-anchor="middle" class="small">2nd</text>
+<circle class="dot" cx="152" cy="106" r="9"/><text x="152" y="110" text-anchor="middle" class="mark">1</text>
+<!-- name column -->
+<text x="178" y="46" class="title">Its name</text><text x="244" y="46" style="fill: var(--anchor); font-weight: 700">♂</text><text x="260" y="46" class="small">its group</text>
+<g style="fill: var(--anchor)"><use href="#armor" x="178" y="56" width="12" height="11"/><use href="#armor" x="191" y="56" width="12" height="11"/><use href="#armor" x="204" y="56" width="12" height="11"/><use href="#armor" x="217" y="56" width="12" height="11"/><use href="#armor" x="230" y="56" width="12" height="11"/></g>
+<g style="fill: none; stroke: var(--anchor); stroke-width: 1"><use href="#armor" x="243" y="56" width="12" height="11"/><use href="#armor" x="256" y="56" width="12" height="11"/><use href="#armor" x="269" y="56" width="12" height="11"/><use href="#armor" x="282" y="56" width="12" height="11"/><use href="#armor" x="295" y="56" width="12" height="11"/></g>
+<g style="fill: var(--question)"><use href="#heart" x="178" y="71" width="12" height="11"/><use href="#heart" x="191" y="71" width="12" height="11"/><use href="#heart" x="204" y="71" width="12" height="11"/><use href="#heart" x="217" y="71" width="12" height="11"/><use href="#heart" x="230" y="71" width="12" height="11"/><use href="#heart" x="243" y="71" width="12" height="11"/><use href="#heart" x="256" y="71" width="12" height="11"/><use href="#heart" x="269" y="71" width="12" height="11"/><use href="#heart" x="282" y="71" width="12" height="11"/><use href="#heart" x="295" y="71" width="12" height="11"/></g>
+<circle class="dot" cx="358" cy="42" r="9"/><text x="358" y="46" text-anchor="middle" class="mark">3</text>
+<!-- price, Recruit, payment slot -->
+<rect x="176" y="92" width="192" height="70" rx="4" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
+<text x="186" y="111">Price: 24</text><use href="#emerald" x="250" y="101" width="12" height="12" style="fill: var(--anchored)"/>
+<rect class="box-anchored" x="186" y="122" width="86" height="26" rx="3"/><text x="229" y="140" text-anchor="middle" style="font-weight: 700">Recruit</text>
+<rect x="296" y="120" width="28" height="28" rx="3" style="fill: var(--bg); stroke: var(--anchored); stroke-width: 2"/><use href="#emerald" x="304" y="128" width="12" height="12" style="fill: var(--anchored)"/>
+<text x="330" y="138" class="small">*</text>
+<circle class="dot" cx="358" cy="104" r="9"/><text x="358" y="108" text-anchor="middle" class="mark">4</text>
+<!-- the player's inventory, centred -->
+<text x="61" y="188" class="small">Inventory</text>
+<g style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2"><use href="#prow" x="61" y="194"/><use href="#prow" x="61" y="224"/><use href="#prow" x="61" y="254"/><use href="#prow" x="61" y="288"/></g>
+<circle class="dot" cx="36" cy="240" r="9"/><text x="36" y="244" text-anchor="middle" class="mark">5</text>
+<!-- the one handle, open, merged into the drawer -->
+<path d="M522,32 L561,32 L561,68 L522,68" style="fill: var(--panel); stroke: var(--rule); stroke-width: 1.5"/><rect x="519" y="33" width="5" height="34" style="fill: var(--panel)"/>
+<g style="fill: var(--fg)"><rect x="534" y="47" width="4" height="7"/><rect x="540" y="43" width="4" height="11"/><rect x="546" y="38" width="4" height="16"/></g>
+<path d="M538,61 L545,57 L545,65 Z" style="fill: var(--fg)"/>
+<!-- attributes panel -->
+<g style="font-size: 12px"><text x="382" y="46" style="font-weight: 700">Combat</text>
+<text x="382" y="64" style="fill: var(--muted)">Attack</text><text x="510" y="64" text-anchor="end" style="fill: var(--anchored)">7</text>
+<text x="382" y="81" style="fill: var(--muted)">Atk speed</text><text x="510" y="81" text-anchor="end" style="fill: var(--anchored)">1.6</text>
+<text x="382" y="98" style="fill: var(--muted)">Range</text><text x="510" y="98" text-anchor="end">3</text>
+<text x="382" y="122" style="font-weight: 700">Defence</text>
+<text x="382" y="140" style="fill: var(--muted)">Health</text><text x="510" y="140" text-anchor="end">20</text>
+<text x="382" y="157" style="fill: var(--muted)">Armor</text><text x="510" y="157" text-anchor="end" style="fill: var(--anchored)">9</text>
+<text x="382" y="174" style="fill: var(--muted)">Toughness</text><text x="510" y="174" text-anchor="end">0</text>
+<text x="382" y="198" style="font-weight: 700">Movement</text>
+<text x="382" y="216" style="fill: var(--muted)">Speed</text><text x="510" y="216" text-anchor="end">100%</text></g>
+<circle class="dot" cx="578" cy="96" r="9"/><text x="578" y="100" text-anchor="middle" class="mark">6</text>
+<text x="592" y="100" class="small">the drawer: one</text><text x="592" y="114" class="small">panel, its attributes;</text><text x="592" y="128" class="small">its storage is</text><text x="592" y="142" class="small">not shown</text>
+<!-- key -->
+<rect x="20" y="346" width="30" height="18" rx="3" style="fill: var(--anchor-bg)"/><text x="58" y="359" class="small">an icon of its equipment: nothing can be taken or put there; hovering shows the item's tooltip</text>
+<rect class="box-anchored" x="20" y="374" width="30" height="18" rx="3"/><text x="58" y="387" class="small">Recruit, active: the player can pay the price</text>
+<rect class="box-plain" x="20" y="402" width="30" height="18" rx="3"/><text x="58" y="415" class="small">Recruit, greyed: fewer emeralds than the price</text>
+<rect x="20" y="430" width="30" height="18" rx="3" style="fill: var(--bg); stroke: var(--anchored); stroke-width: 2"/><text x="58" y="443" class="small">* the payment slot, emeralds only: on the screen only while that way to pay is tried</text>
+</svg><figcaption>A companion whose price is 24 emeralds, drawer out. The price, Recruit and the payment slot sit under the hearts, where the companion's screen shows the content of its tab.</figcaption></figure>
+<ol class="legend">
+<li>Its armor and its two designated weapons, as icons: nothing can be taken or put there; hovering one shows the item's tooltip.</li>
+<li>Its view in 3D, as on the companion's screen.</li>
+<li>Its name with the icon of its group, its health and armor bars, as on the companion's screen (<a href="../companion/screen.html">The companion's screen</a>).</li>
+<li>Its price and the Recruit button, plus the payment slot while that way to pay is tried (see below).</li>
+<li>The inventory of the player who opened the screen.</li>
+<li>The drawer, whose only panel is the attributes one, with its one handle. Its storage is not shown.</li>
+</ol>
+<h3>The price</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The price is a number of emeralds, drawn once when the companion is created, uniformly between 12 and 36, saved with it and never drawn again. It has no cap, unlike a villager's offers (64 at most): once the equipment counts, a price may pass a stack. It does not depend on the equipment yet: a scale of what each piece of equipment adds comes with the equipment companions spawn with.</div>
+<p>For example, a companion drawn at 24 costs 24 emeralds for as long as it has no owner, whatever it is given to wear.</p>
+<h3>Two ways to pay</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Two ways to pay are built, to be tried in game; one is kept, the other removed.</div>
+<div class="table"><table><tr><th>Way</th><th>What the player does</th></tr><tr><td>Button</td><td>Clicks Recruit; the emeralds are taken from their inventory. The button is greyed while they have fewer than the price.</td></tr><tr><td>Payment slot</td><td>Puts emeralds in a slot of the screen, as in a beacon; Recruit becomes active once the slot holds the price, and takes exactly the price from it. What is left in the slot goes back to the inventory when the screen closes, or drops if it does not fit or the player is dead or gone, as in a villager's screen.</td></tr></table></div>
+<div class="stmt is-question"><span class="tag question">Question</span>Which way to pay is kept, once both are tried in game. A price above 64 would need more than one payment slot.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A player in creative mode pays too, as with villagers.</div>
+<h3>Once paid</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Once the player has paid, the companion is theirs, and that is all: it does not follow them, it has no mode yet (<a href="index.html">Ownership and modes</a>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Right after the payment, the recruitment screen closes and the companion's screen opens, now that the player is its owner.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>When two players have the screen of the same companion open, the first to pay recruits it; the other's screen closes.</div>
+<h2 class="part"><span class="ptag build">How it is built</span></h2>
+<figure><svg viewBox="0 0 680 540" role="img"><title>A recruitment across the sides: the right-click, the opening data, the Recruit click, the server's checks, the owner set and synced, and the companion's screen opening</title><defs><marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-client" x="30" y="10" width="170" height="44" rx="8"/><text x="115" y="30" text-anchor="middle" class="lane">Client</text><text x="115" y="46" text-anchor="middle" class="small">of the player who pays</text>
+<rect class="box-core" x="275" y="10" width="170" height="44" rx="8"/><text x="360" y="37" text-anchor="middle" class="lane">Server</text>
+<rect class="box-client" x="500" y="10" width="170" height="44" rx="8"/><text x="585" y="30" text-anchor="middle" class="lane">Another client</text><text x="585" y="46" text-anchor="middle" class="small">same screen open</text>
+<path class="lifeline" d="M115,54 L115,530"/><path class="lifeline" d="M360,54 L360,530"/><path class="lifeline" d="M585,54 L585,530"/>
+<circle class="dot" cx="14" cy="82" r="10"/><text x="14" y="86" text-anchor="middle" class="mark">1</text>
+<text x="123" y="72" class="small">right-click, predicted</text><text x="123" y="85" class="small">from the synced owner</text>
+<path class="line" d="M115,110 L358,110" marker-end="url(#s)"/><text x="236" y="104" text-anchor="middle" class="small">interact</text>
+<circle class="dot" cx="14" cy="136" r="10"/><text x="14" y="140" text-anchor="middle" class="mark">2</text>
+<text x="368" y="128" class="small">Companion.interact: no owner,</text><text x="368" y="141" class="small">opens RecruitMenu</text>
+<path class="line" d="M360,154 L117,154" marker-end="url(#s)"/><text x="236" y="148" text-anchor="middle" class="small">opening data</text>
+<text x="236" y="170" text-anchor="middle" class="small">entity id, price, way to pay,</text><text x="236" y="183" text-anchor="middle" class="small">copy of armor and weapons</text>
+<circle class="dot" cx="14" cy="210" r="10"/><text x="14" y="214" text-anchor="middle" class="mark">3</text>
+<path class="line" d="M360,212 L117,212" marker-end="url(#s)"/><text x="236" y="206" text-anchor="middle" class="small">attributes, again on a change</text>
+<text x="123" y="232" class="small">Recruit greyed with</text><text x="123" y="245" class="small">the server's own test</text>
+<circle class="dot" cx="14" cy="276" r="10"/><text x="14" y="280" text-anchor="middle" class="mark">4</text>
+<path class="line" d="M115,278 L358,278" marker-end="url(#s)"/><text x="236" y="272" text-anchor="middle" class="small">menu button: Recruit</text>
+<text x="368" y="282" class="small">clickMenuButton: open menu,</text><text x="368" y="295" class="small">still valid</text>
+<circle class="dot" cx="14" cy="326" r="10"/><text x="14" y="330" text-anchor="middle" class="mark">5</text>
+<rect class="box-core" x="290" y="310" width="140" height="34" rx="6"/><text x="360" y="331" text-anchor="middle" class="small">checks, takes emeralds</text>
+<circle class="dot" cx="14" cy="372" r="10"/><text x="14" y="376" text-anchor="middle" class="mark">6</text>
+<rect class="box-core" x="290" y="356" width="140" height="34" rx="6"/><text x="360" y="377" text-anchor="middle" class="small">sets the owner</text>
+<path class="line" d="M360,404 L117,404" marker-end="url(#s)"/><path class="line" d="M360,404 L583,404" marker-end="url(#s)"/>
+<text x="236" y="398" text-anchor="middle" class="small">owner attachment, synced</text><text x="472" y="398" text-anchor="middle" class="small">owner attachment</text>
+<circle class="dot" cx="14" cy="444" r="10"/><text x="14" y="448" text-anchor="middle" class="mark">7</text>
+<path class="line" d="M360,446 L583,446" marker-end="url(#s)"/><text x="472" y="440" text-anchor="middle" class="small">closes its menu, no longer valid</text>
+<text x="577" y="466" text-anchor="end" class="small">its screen closes</text>
+<circle class="dot" cx="14" cy="494" r="10"/><text x="14" y="498" text-anchor="middle" class="mark">8</text>
+<path class="line" d="M360,496 L117,496" marker-end="url(#s)"/><text x="236" y="490" text-anchor="middle" class="small">opens the companion's screen</text>
+<text x="123" y="516" class="small">the recruitment screen closes</text>
+</svg><figcaption>Time goes down. Each arrow crosses from one side to the other.</figcaption></figure>
+<ol class="legend">
+<li>The client predicts what a right-click does from the synced owner (<code>ClientCompanion.interact</code>): here, no owner.</li>
+<li>The server's <code>Companion.interact</code> finds no owner and opens <code>RecruitMenu</code> through Fabric's <code>ExtendedMenuType</code>. The opening data carry the companion's entity id, its price, the way to pay, and a copy of its armor and designated weapons, taken when the screen opens.</li>
+<li>While the screen is open, the server sends the attributes, as for the companion's screen. The client greys Recruit with the same test as the server.</li>
+<li>Recruit is a menu button: vanilla calls <code>clickMenuButton</code> only for the open menu, still valid.</li>
+<li>The server checks the emeralds again, and takes them.</li>
+<li>It sets the owner, which every client that sees the companion receives.</li>
+<li>Another player's recruitment menu is no longer valid, since the companion has an owner: their screen closes.</li>
+<li>The server opens the companion's screen for the player who paid, which closes the recruitment one.</li>
+</ol>
+<h3>The owner</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The owner is a persistent attachment of the companion, synced to every client that sees it, as its identity (<a href="../companion/identity.html">Identity, names and skins</a>): the owner's UUID and their name at the time of recruitment. The client needs it to predict a right-click (recruitment screen, companion's screen or nothing) and to show the owner on the companion's screen. <code>Companion.isOwner</code> reads it.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Today no owner is stored: <code>Companion.isOwner</code> always answers no (<code>Companion.java:142-148</code>), and the screen's owner line always says none (<code>CompanionScreen.java:672-675</code>).</div>
+<div class="stmt is-question"><span class="tag question">Question</span>The owner's name when they change it on their account.</div>
+<h3>The price</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The price is a persistent attachment, drawn in the constructor on the server through <code>getAttachedOrCreate</code>, as the identity (<code>Companion.java:72-80</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Fabric keeps the constructor's attachments when the saved entity has none, and replaces them by the saved ones otherwise (<code>AttachmentTargetsMixin</code>, read in the bytecode of fabric-data-attachment-api 2.2.35), so a companion keeps its price through <code>/summon</code> and through saving.</div>
+<h3>The screen</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Its own container menu (<code>RecruitMenu</code>) and screen, opened with Fabric's <code>ExtendedMenuType</code>. The opening data carry the companion's entity id, its price, the way to pay, and a copy of the armor and designated weapons: vanilla sends a client the armor of an entity it sees, but not the designated weapons, which are inventory slots (<a href="../companion/inventory.html">Inventory</a>). The copy is taken when the screen opens.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The pieces both screens show are shared rather than copied: the 3D view, the name heading, the health and armor bars, the drawer and its attributes panel, and the server's attributes message, which today runs from <code>CompanionMenu.broadcastChanges</code> (<code>CompanionMenu.java:317-347</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The menu's slots are the player's inventory, plus the payment slot when that way is tried, which accepts emeralds only. Its validity: the companion alive, within 4 blocks as the companion's screen, and still without an owner.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Recruit is a menu button (<code>clickMenuButton</code>), which vanilla calls only for the open menu, still valid (<code>ServerGamePacketListenerImpl.<wbr>java:2046-2058</code>). The server checks the emeralds again, takes them, sets the owner, then opens the companion's screen for the player, which closes the recruitment one. The client greys the button with the same test, as the enchanting table does (<code>EnchantmentMenu.java:135-148</code>, <code>EnchantmentScreen.java:112</code>). With the button, emeralds are counted and taken from the player's 36 inventory slots, the ones the menu shows, so that client and server count the same.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>While both ways are tried, the server picks the way from a development switch and sends it in the opening data; the client only follows.</div>
+<h3>Right-click</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span><code>Companion.interact</code> opens the recruitment screen for anyone when the companion has no owner, the companion's screen for its owner, and does nothing for anyone else; sneaking, and the debug stick in an operator's hand, let the click pass as today. <code>ClientCompanion.interact</code> predicts the same from the synced owner.</div>
+<h3>Ruled out</h3>
+<div class="table"><table><tr><th>Option</th><th>Why it is ruled out</th></tr><tr><td>Drawing the price at the first tick</td><td>Needed only for a price that depends on the equipment: the constructor runs before <code>/summon</code> or the code give the equipment (<code>EntityType.java:312-317</code>)</td></tr><tr><td>A recruitment mode of the companion's menu</td><td>It would make the companion's slots read-only, which means blocking every way vanilla moves an item (pick up, place, number-key swap, throw, shift-click, double-click gathering, <code>AbstractContainerMenu.<wbr>java:422-547</code>), and it would make the recruitment part of the companion's management screen, which it is not</td></tr></table></div>
+</main>
+</div>
+</body>
+</html>

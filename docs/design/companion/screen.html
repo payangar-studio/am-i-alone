@@ -105,9 +105,9 @@
 </head>
 <body>
 <div class="layout">
-<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html" class="here">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html" class="here">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a><ul><li><a href="../ownership/recruitment.html">Recruitment</a></li></ul></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
 <main>
-<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html" class="here">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html" class="here">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a><ul><li><a href="../ownership/recruitment.html">Recruitment</a></li></ul></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
 <div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › The companion's screen</div>
 <h1>The companion's screen</h1>
 <p class="lede">What a right-click on a companion opens: one window, with a drawer for its storage and its attributes, through which goes everything a player does with it.</p>
@@ -235,9 +235,9 @@
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The mode is a list: a click opens the possible modes, one is picked (<a href="../ownership/index.html">Ownership and modes</a>). The modes themselves are not designed yet.</div>
 <h3>Gestures</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The gestures, whatever the player holds:</div>
-<div class="table"><table><tr><th>Gesture</th><th>What happens</th></tr><tr><td>Right-click</td><td>Opens the screen, for its owner only; for anyone else, nothing</td></tr><tr><td>Sneak and right-click</td><td>The held item acts as on any entity (a name tag renames it, a splash potion is thrown)</td></tr><tr><td>Right-click with the companion debug stick in the clicking hand, as an operator</td><td>Opens the screen with the Debug tab, whoever owns the companion; for anyone else, or in the other hand, the stick is any item</td></tr></table></div>
+<div class="table"><table><tr><th>Gesture</th><th>What happens</th></tr><tr><td>Right-click</td><td>Opens the screen for its owner; opens the recruitment screen when it has no owner (<a href="../ownership/recruitment.html">Recruitment</a>); for anyone else, nothing</td></tr><tr><td>Sneak and right-click</td><td>The held item acts as on any entity (a name tag renames it, a splash potion is thrown)</td></tr><tr><td>Right-click with the companion debug stick in the clicking hand, as an operator</td><td>Opens the screen with the Debug tab, whoever owns the companion; for anyone else, or in the other hand, the stick is any item</td></tr></table></div>
 <div class="stmt is-fact"><span class="tag fact">Fact</span>A companion cannot be leashed, as a villager: only entities that are <code>Leashable</code> can (<code>Mob.java:100</code>), and a companion is not a <code>Mob</code>.</div>
-<p>Until ownership exists (<a href="../ownership/index.html">Ownership and modes</a>), no companion has an owner, so only the debug stick opens the screen.</p>
+<p>Until a player recruits it (<a href="../ownership/recruitment.html">Recruitment</a>), a companion has no owner, so only the debug stick opens its screen.</p>
 <h3>Health and armor bars</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The health and armor bars look and behave exactly as the player's own in the HUD: the same hearts (half hearts, rows, hardcore, poisoned, withered, frozen, absorption, the blink when hit and the bounce of regeneration) and the same armor icons. They follow the companion live: a hit while the screen is open takes the hearts away as on the player's bar. A resource pack that retextures them applies.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Mods that change how the HUD draws hearts or armor (Overflowing Bars, Colorful Hearts) do not apply to the companion's bars. A compatibility with Overflowing Bars comes later, as an optional adapter.</div>
@@ -252,22 +252,22 @@
 <div class="stmt is-fact"><span class="tag fact">Fact</span>On the client a companion is a player (<a href="facade.html">Client facade</a>), so its attribute map is a player's (<code>Player.<wbr>createAttributes</code>), with attributes the companion does not have and other defaults: the panel never reads the client's map. Vanilla sends only the syncable attributes (<code>Clientbound<wbr>Update<wbr>Attributes<wbr>Packet</code>); knockback resistance is not syncable (<code>Attributes.java:61</code>), nor may be the attributes of other mods, and the equipment's modifiers are applied on the server only.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>While its screen is open, the server sends the client the current and base values of every attribute that has an entry and that the companion has, in one message of the mod, again when one changes. The panel shows only those.</div>
 <h3>Opening</h3>
-<figure><svg viewBox="0 0 680 256" role="img"><title>Where a right-click on a companion goes, by what the player does and holds</title><defs><marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
-<rect class="box-plain" x="10" y="113" width="104" height="58" rx="8"/>
-<text x="62" y="137" text-anchor="middle" class="title">Right-click</text>
-<text x="62" y="156" text-anchor="middle" class="small">on a companion</text>
-<path class="line" d="M114,142 L138,142" marker-end="url(#o)"/>
-<rect class="box-core" x="140" y="104" width="140" height="76" rx="8"/>
-<circle class="dot" cx="156" cy="120" r="10"/><text x="156" y="124" text-anchor="middle" class="mark">1</text>
-<text x="214" y="138" text-anchor="middle" class="title">Companion</text>
-<text x="210" y="157" text-anchor="middle" class="small">answers first</text>
-<path class="line" d="M280,128 C304,128 298,33 322,33 L418,33" marker-end="url(#o)"/>
+<figure><svg viewBox="0 0 680 318" role="img"><title>Where a right-click on a companion goes, by what the player does and holds, and whether the companion has an owner</title><defs><marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-plain" x="10" y="139" width="104" height="58" rx="8"/>
+<text x="62" y="163" text-anchor="middle" class="title">Right-click</text>
+<text x="62" y="182" text-anchor="middle" class="small">on a companion</text>
+<path class="line" d="M114,168 L138,168" marker-end="url(#o)"/>
+<rect class="box-core" x="140" y="128" width="140" height="80" rx="8"/>
+<circle class="dot" cx="156" cy="144" r="10"/><text x="156" y="148" text-anchor="middle" class="mark">1</text>
+<text x="214" y="164" text-anchor="middle" class="title">Companion</text>
+<text x="210" y="183" text-anchor="middle" class="small">answers first</text>
+<path class="line" d="M280,142 C304,142 298,33 322,33 L418,33" marker-end="url(#o)"/>
 <text x="412" y="27" text-anchor="end" class="small">sneaks</text>
 <rect class="box-plain" x="420" y="10" width="250" height="46" rx="8"/>
 <circle class="dot" cx="434" cy="24" r="10"/><text x="434" y="28" text-anchor="middle" class="mark">2</text>
 <text x="450" y="30" class="title">The held item acts</text>
 <text x="450" y="47" class="small">as on any entity: name tag, potion</text>
-<path class="line" d="M280,137 C304,137 298,93 322,93 L418,93" marker-end="url(#o)"/>
+<path class="line" d="M280,155 C304,155 298,93 322,93 L418,93" marker-end="url(#o)"/>
 <text x="412" y="87" text-anchor="end" class="small">operator with the stick</text>
 <rect class="box-anchored" x="420" y="70" width="140" height="46" rx="8"/>
 <circle class="dot" cx="434" cy="84" r="10"/><text x="434" y="88" text-anchor="middle" class="mark">3</text>
@@ -278,24 +278,31 @@
 <text x="625" y="89" text-anchor="middle" class="small">screen with</text>
 <text x="625" y="104" text-anchor="middle" class="small">the Debug tab</text>
 <text x="424" y="134" class="small">whoever owns it</text>
-<path class="line" d="M280,148 C304,148 298,169 322,169 L418,169" marker-end="url(#o)"/>
-<text x="412" y="163" text-anchor="end" class="small">its owner</text>
-<rect class="box-plain" x="420" y="146" width="250" height="46" rx="8"/>
-<circle class="dot" cx="434" cy="160" r="10"/><text x="434" y="164" text-anchor="middle" class="mark">4</text>
-<text x="450" y="166" class="title">Opens the screen</text>
-<text x="450" y="183" class="small">Companion tab</text>
-<path class="line" d="M280,158 C304,158 298,226 322,226 L418,226" marker-end="url(#o)"/>
-<text x="412" y="220" text-anchor="end" class="small">anyone else</text>
-<rect class="box-todo" x="420" y="206" width="250" height="40" rx="8"/>
-<text x="545" y="231" text-anchor="middle" class="small">nothing</text>
+<path class="line" d="M280,168 C304,168 298,173 322,173 L418,173" marker-end="url(#o)"/>
+<text x="412" y="167" text-anchor="end" class="small">it has no owner</text>
+<rect class="box-anchor" x="420" y="150" width="250" height="46" rx="8"/>
+<circle class="dot" cx="434" cy="164" r="10"/><text x="434" y="168" text-anchor="middle" class="mark">4</text>
+<text x="450" y="170" class="title">The recruitment screen</text>
+<text x="450" y="187" class="small">for anyone: its price in emeralds</text>
+<path class="line" d="M280,181 C304,181 298,233 322,233 L418,233" marker-end="url(#o)"/>
+<text x="412" y="227" text-anchor="end" class="small">its owner</text>
+<rect class="box-plain" x="420" y="210" width="250" height="46" rx="8"/>
+<circle class="dot" cx="434" cy="224" r="10"/><text x="434" y="228" text-anchor="middle" class="mark">5</text>
+<text x="450" y="230" class="title">Opens the screen</text>
+<text x="450" y="247" class="small">Companion tab</text>
+<path class="line" d="M280,194 C304,194 298,290 322,290 L418,290" marker-end="url(#o)"/>
+<text x="412" y="284" text-anchor="end" class="small">anyone else</text>
+<rect class="box-todo" x="420" y="270" width="250" height="40" rx="8"/>
+<text x="545" y="295" text-anchor="middle" class="small">nothing</text>
 </svg><figcaption>The first branch that applies, from the top: the companion answers the right-click before any item.</figcaption></figure>
 <ol class="legend">
 <li>The companion is asked first, whatever the player holds (<code>interact</code>).</li>
 <li>When the player sneaks, it lets the click pass: the held item acts as on any entity, a name tag renames it, a splash potion is thrown.</li>
 <li>When an operator holds the companion debug stick in the clicking hand, it lets the click pass to the stick, which opens the screen with the Debug tab, whoever owns the companion. In anyone else's hand, or in the other hand, the stick is any item, and the branches below apply (<a href="../debug/index.html">Companion debug stick</a>).</li>
-<li>Its owner gets the screen. Until ownership exists, no companion has one, so only the debug stick opens it.</li>
+<li>When it has no owner, anyone gets its recruitment screen, to pay its price in emeralds (<a href="../ownership/recruitment.html">Recruitment</a>).</li>
+<li>Its owner gets the screen. Until a player recruits it, a companion has no owner, so only the debug stick opens this screen.</li>
 </ol>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion answers the right-click itself (<code>interact</code>), before any item: it opens the screen for its owner and lets the click pass when the player sneaks, or holds the debug stick with the gamemaster permission. The debug stick opens the screen with the Debug tab from its own <code>interactLivingEntity</code>, which vanilla calls when the entity let the click pass (<code>Player.java:806-842</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion answers the right-click itself (<code>interact</code>), before any item: it opens the screen for its owner, the recruitment screen when it has no owner, and lets the click pass when the player sneaks, or holds the debug stick with the gamemaster permission. The debug stick opens the screen with the Debug tab from its own <code>interactLivingEntity</code>, which vanilla calls when the entity let the click pass (<code>Player.java:806-842</code>).</div>
 <h3>Health and armor bars</h3>
 <div class="stmt is-fact"><span class="tag fact">Fact</span>Read in the 26.3 code: vanilla draws the player's hearts and armor in private methods of <code>Hud</code> (<code>extractHearts</code>, <code>extractArmor</code>, <code>Hud.java:817-896</code>), tied to the camera player and to the HUD's position. Fabric API wraps their call sites in the HUD (<code>HudMixin</code>); Overflowing Bars and Colorful Hearts replace those HUD elements and draw for the camera player only.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The screen draws the bars itself, with vanilla's sprites (<code>minecraft:hud/heart/*</code>, <code>minecraft:hud/armor_*</code>) and vanilla's rules (rows, row height, absorption, heart types, hardcore, low-health wobble, regeneration bounce, blink), its own blink state kept by the screen.</div>
