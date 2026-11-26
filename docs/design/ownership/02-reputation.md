@@ -35,8 +35,8 @@ Decision: what a companion's opinion hears:
 It cannot trade, but trading rumours reach it by word of mouth, as any other.
 
 Decision: one event is the companion's own, which a villager does not have:
-**a player who heals it** gets a minor positive rumour, +1 for each heart (2
-health) actually restored. Healing a companion at full health brings nothing,
+**a player who heals it** gets a minor positive rumour, +1 for each half heart (1
+health) actually restored; a rumour per heart, tried in game, grew too slowly. Healing a companion at full health brings nothing,
 so potions thrown for nothing buy no opinion. Only a player's heal counts: a
 witch's potion, or one a dispenser throws, credits no one.
 
@@ -105,14 +105,16 @@ close.
 
 Decision: a heal is credited in the companion's `heal`: the health restored
 (after minus before), added up for each player, +1 minor positive for every
-2. Who healed comes from the effect behind the heal:
+point, held back while the rumour would be under 2, which vanilla drops
+(`GossipContainer.java:211-213`). Who healed comes from the effect behind the heal:
 
-- regeneration, and instant health on a tipped arrow: vanilla gives the
-  companion whoever applied the effect (`onEffectAdded`, `onEffectUpdated`,
-  `LivingEntity.java:1066,1082`); the companion remembers it for that effect,
-  resolving a lingering cloud or an ownerless projectile to its owner, and
-  never lets the periodic update without a source (`LivingEntity.java:846`)
-  forget it;
+- regeneration, and instant health on a tipped arrow: vanilla gives
+  `addEffect` whoever applied the effect (`LivingEntity.java:1005-1023`); the
+  companion remembers them for that effect, resolving a lingering cloud or an
+  ownerless projectile to its owner, but only when their effect is the one now
+  acting. Vanilla keeps a weaker effect aside behind a stronger one
+  (`MobEffectInstance.update`) and may still report its source: the effect
+  that heals keeps the credit;
 - instant health from a thrown or lingering potion: vanilla heals directly,
   without telling anyone who threw it (`HealOrHarmMobEffect.java:28-38`).
 
@@ -123,6 +125,13 @@ events receive the thrower there. Ruled out: crediting the nearest player
 after a heal (a witch's potion would credit a player who did nothing),
 looking for the potion or cloud close by (two potions at once, another mod's
 heal credited wrongly), and not counting it (the most common heal of all).
+
+Decision: two limits are accepted. While a tipped arrow's instant health is
+on the companion, the regeneration that heals in the same tick is credited to
+the arrow's shooter, or to no one (vanilla does not say which effect heals).
+Who applied an effect, and a first half heart held back, are not saved: after
+the companion is saved and loaded again, its ongoing regeneration credits no
+one.
 
 Fact: the client never receives rumours; the server computes the price and
 sends the drawn price and the price to pay with the screen's opening data.

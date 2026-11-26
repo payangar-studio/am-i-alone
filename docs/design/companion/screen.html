@@ -195,8 +195,9 @@
 <text x="10" y="374" class="small">the same window, on the Debug tab:</text>
 <rect x="10" y="384" width="330" height="96" rx="6" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
 <text x="22" y="406" class="title">Debug tab</text>
-<text x="22" y="430" class="small">owner</text><text x="62" y="430">current owner</text>
-<rect class="box-todo" x="22" y="442" width="170" height="26" rx="4"/><text x="107" y="459" text-anchor="middle" class="small">change the owner, later</text>
+<text x="22" y="428" class="small">owner</text><text x="72" y="428">current owner</text>
+<text x="22" y="447" class="small">opinion</text><text x="72" y="447">+25 of you, live</text>
+<rect class="box-todo" x="22" y="454" width="170" height="22" rx="4"/><text x="107" y="469" text-anchor="middle" class="small">change the owner, later</text>
 <text x="208" y="430" class="small">under the hearts, in</text><text x="208" y="444" class="small">place of the Companion</text><text x="208" y="458" class="small">tab's content; the</text><text x="208" y="472" class="small">drawer goes in</text>
 <!-- key -->
 <rect x="20" y="510" width="30" height="18" rx="3" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/><text x="58" y="523" class="small">changes with the tab</text>
@@ -228,10 +229,11 @@
 <div class="stmt is-decision"><span class="tag decision">Decision</span>When the drawer out does not fit on the screen, the whole screen moves left to make room, as vanilla's recipe book moves the inventory; if even that is not enough, the drawer covers part of the window.</div>
 <h3>Tabs</h3>
 <p>Tabs above the window, for real changes of page only:</p>
-<div class="table"><table><tr><th>Tab</th><th>The content on the right shows</th><th>Who sees it</th></tr><tr><td>Companion</td><td>Its owner, and its mode (a list to pick from) once the modes exist</td><td>Whoever opens the screen</td></tr><tr><td>Debug</td><td>Debug options: its owner, later changing it</td><td>An operator holding the companion debug stick (<a href="../debug/index.html">Companion debug stick</a>)</td></tr></table></div>
+<div class="table"><table><tr><th>Tab</th><th>The content on the right shows</th><th>Who sees it</th></tr><tr><td>Companion</td><td>Its owner, and its mode (a list to pick from) once the modes exist</td><td>Whoever opens the screen</td></tr><tr><td>Debug</td><td>Debug options: its owner, later changing it; its opinion of the player looking (<a href="../ownership/reputation.html">Reputation</a>), live</td><td>An operator holding the companion debug stick (<a href="../debug/index.html">Companion debug stick</a>)</td></tr></table></div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The drawer belongs to the Companion tab; switching to Debug puts it away.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Tabs and handles are drawn as a stack, as vanilla's creative and recipe book tabs: the selected one on top, with its full border and relief, merged into its panel; the others underneath, tucked under it and under the panel, nearer ones in front of farther ones, with a darker face and a dimmer border and relief. Their raised relief stays: only what covers them shows they are behind.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The screen shows only what works. Until the modes exist, the Companion tab has no mode list; until the owner can be changed, the Debug tab only shows the current owner.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The screen shows only what works. Until the modes exist, the Companion tab has no mode list; until the owner can be changed, the Debug tab only shows the current owner and the companion's opinion of the player looking at it.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The opinion reaches the client through a data slot of the menu, synced each tick while the Debug tab exists: rumours never reach clients otherwise (<a href="../ownership/reputation.html">Reputation</a>).</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The mode is a list: a click opens the possible modes, one is picked (<a href="../ownership/index.html">Ownership and modes</a>). The modes themselves are not designed yet.</div>
 <h3>Gestures</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The gestures, whatever the player holds:</div>

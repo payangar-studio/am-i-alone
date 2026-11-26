@@ -113,7 +113,7 @@
 <h2 class="part"><span class="ptag game">In game</span></h2><p>An item, the companion debug stick, that only operators can use: in anyone else's hand it does nothing. It is obtained by <code>/give</code> only, in no creative tab. It looks like vanilla's debug stick, glint included; its name tells them apart.</p>
 <div class="table"><table><tr><th>Id</th><th>What it does</th><th>How it is obtained</th><th>Notable properties</th></tr><tr><td><code>am_i_alone:debug_stick</code></td><td>Its actions, below, for operators; nothing for anyone else</td><td><code>/give</code> only, in no creative tab</td><td>Named &quot;Companion Debug Stick&quot; (&quot;Bâton de débogage des compagnons&quot; in French); vanilla's debug stick look, glint included</td></tr></table></div>
 <div class="table"><table><tr><th>Action</th><th>What it does</th><th>Removed when</th></tr><tr><td>Right-click on a companion</td><td>Opens the companion's screen with its Debug tab (<a href="../companion/screen.html">The companion's screen</a>), whoever owns it</td><td>Stays</td></tr></table></div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The Debug tab of the companion's screen carries the debug actions (its owner, later changing it), rather than more gestures on the item.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The Debug tab of the companion's screen carries the debug actions (its owner, later changing it, and its opinion of the operator: <a href="../ownership/reputation.html">Reputation</a>), rather than more gestures on the item.</div>
 <div class="stmt is-question"><span class="tag question">Question</span>Whether the stick ships in published versions of the mod (one build, harmless since only operators use it and only <code>/give</code> gives it) or only in development (the debug code kept apart from the rest).</div>
 <h2 class="part"><span class="ptag build">How it is built</span></h2>
 <figure><svg viewBox="0 0 680 196" role="img"><title>A right-click with the companion debug stick on a companion</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
@@ -150,7 +150,7 @@
 <ol class="legend">
 <li>The companion is asked first and answers the right-click itself. It lets the click pass to the stick only in an operator's hand; for anyone else the stick is any item, and the companion's usual gestures apply (<a href="../companion/screen.html">The companion's screen</a>).</li>
 <li>The companion debug stick gets the click next.</li>
-<li>It opens the companion's screen with its Debug tab, whoever owns the companion.</li>
+<li>It opens the companion's screen with its Debug tab, whoever owns the companion: its owner, and its opinion of the operator, live.</li>
 </ol>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>&quot;Operator&quot; is the gamemaster permission, the one vanilla's debug stick checks (<code>Permissions.COMMANDS_GAMEMASTER</code>, <code>Player.java:1823-1825</code>), without vanilla's creative mode requirement, so it can be tested in survival. It is checked on the server.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The item handles the click itself (<code>Item.interactLivingEntity</code>).</div>

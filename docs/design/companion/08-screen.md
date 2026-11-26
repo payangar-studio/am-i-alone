@@ -90,7 +90,7 @@ Tabs above the window, for real changes of page only:
 | Tab | The content on the right shows | Who sees it |
 |---|---|---|
 | Companion | Its owner, and its mode (a list to pick from) once the modes exist | Whoever opens the screen |
-| Debug | Debug options: its owner, later changing it | An operator holding the companion debug stick (`../debug/00-overview.md`) |
+| Debug | Debug options: its owner, later changing it; its opinion of the player looking (`../ownership/02-reputation.md`), live | An operator holding the companion debug stick (`../debug/00-overview.md`) |
 
 Decision: the drawer belongs to the Companion tab; switching to Debug puts it
 away.
@@ -108,7 +108,11 @@ even that is not enough, the drawer covers part of the window.
 
 Decision: the screen shows only what works. Until the modes exist, the
 Companion tab has no mode list; until the owner can be changed, the Debug tab
-only shows the current owner.
+only shows the current owner and the companion's opinion of the player looking at it.
+
+Decision: the opinion reaches the client through a data slot of the menu,
+synced each tick while the Debug tab exists: rumours never reach clients
+otherwise (`../ownership/02-reputation.md`).
 
 Decision: the mode is a list: a click opens the possible modes, one is picked
 (`../ownership/`). The modes themselves are not designed yet.

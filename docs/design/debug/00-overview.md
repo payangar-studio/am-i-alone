@@ -16,7 +16,8 @@ included; its name tells them apart.
 | Right-click on a companion | Opens the companion's screen with its Debug tab (`../companion/08-screen.md`), whoever owns it | Stays |
 
 Decision: the Debug tab of the companion's screen carries the debug actions
-(its owner, later changing it), rather than more gestures on the item.
+(its owner, later changing it, and its opinion of the operator), rather than
+more gestures on the item.
 
 Question: whether the stick ships in published versions of the mod (one build,
 harmless since only operators use it and only `/give` gives it) or only in
