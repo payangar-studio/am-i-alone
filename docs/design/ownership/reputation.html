@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Am I Alone? · Reputation</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d1c1a; --muted: #5f5b53; --rule: #d9d5cc; --panel: #efede7;
+    --accent: #3f7d3a;
+    --anchored: #3f7d3a; --anchored-bg: #e3efe0;
+    --anchor: #2f62a8; --anchor-bg: #e1e9f5;
+    --core: #8a5a12; --core-bg: #f4e8d3;
+    --client: #6b4aa0; --client-bg: #ece5f6;
+    --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
+    --game: #8a5a12; --build: #4b5563;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --fg: #ecebe6; --muted: #a39f96; --rule: #34322e; --panel: #201f1c;
+      --accent: #7cc36f;
+      --anchored: #7cc36f; --anchored-bg: #1f2e1c;
+      --anchor: #7aa7ea; --anchor-bg: #1b2433;
+      --core: #e0b064; --core-bg: #2e2516;
+      --client: #b79be6; --client-bg: #261f33;
+      --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
+      --game: #e0b064; --build: #b7bec8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); max-width: 76rem; margin: 0 auto; }
+  aside.tree { border-right: 1px solid var(--rule); padding: 1.6rem 1rem 2rem 16px; font-size: 0.93rem; }
+  aside.tree .inner { position: sticky; top: 1rem; }
+  .tree-title { font-weight: 700; margin-bottom: 0.6rem; }
+  .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree ul ul { padding-left: 0.9rem; border-left: 1px solid var(--rule); margin: 0.2rem 0 0.3rem 0.35rem; }
+  .tree li { margin: 0.22rem 0; }
+  .tree a { text-decoration: none; }
+  .tree a.here { color: var(--fg); font-weight: 700; }
+  details.tree-mobile { display: none; margin: 0 0 1rem; border: 1px solid var(--rule); border-radius: 6px; padding: 0.4rem 0.8rem; background: var(--panel); }
+  details.tree-mobile summary { cursor: pointer; font-weight: 600; }
+  main { padding: 1.6rem 16px 4rem 2rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .layout { display: block; }
+    aside.tree { display: none; }
+    details.tree-mobile { display: block; }
+    main { padding: 1.2rem 16px 3rem; }
+  }
+  .crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .crumbs a { text-decoration: none; }
+  h1 { margin: 0 0 0.3rem; font-size: 1.9rem; }
+  h2 { margin: 2.4rem 0 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); font-size: 1.35rem; }
+  h3 { margin: 1.7rem 0 0.5rem; font-size: 1.1rem; }
+  h2.part { display: flex; align-items: center; gap: 0.6rem; }
+  .ptag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 4px; color: var(--bg); }
+  .ptag.game { background: var(--game); }
+  .ptag.build { background: var(--build); }
+  .kind { display: inline-block; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 0.05rem 0.5rem; margin: 0.2rem 0 0.4rem; }
+  p { margin: 0.6rem 0; }
+  .lede { font-size: 1.08rem; }
+  .id, code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em; }
+  .id { color: var(--muted); }
+  .table { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+  th { background: var(--panel); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 3px; margin-right: 0.35rem;
+    vertical-align: 0.1em; color: var(--bg); }
+  .fact { background: var(--fact); } .decision { background: var(--decision); } .question { background: var(--question); }
+  .stmt { margin: 0.75rem 0; padding: 0.6rem 0.9rem; border-left: 4px solid var(--rule); background: var(--panel); }
+  .stmt.is-question { border-left-color: var(--question); }
+  .stmt.is-decision { border-left-color: var(--decision); }
+  .stmt.is-fact { border-left-color: var(--fact); }
+  figure { margin: 1rem 0; overflow-x: auto; }
+  svg { width: 100%; min-width: 600px; height: auto; display: block; }
+  svg text { fill: var(--fg); font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .small { font-size: 11px; fill: var(--muted); }
+  svg .title { font-weight: 700; font-size: 14px; }
+  svg .lane { font-weight: 700; font-size: 13px; }
+  svg .mark { font-weight: 700; font-size: 12px; fill: var(--bg); }
+  svg .box-anchored { fill: var(--anchored-bg); stroke: var(--anchored); stroke-width: 2; }
+  svg .box-anchor { fill: var(--anchor-bg); stroke: var(--anchor); stroke-width: 2; }
+  svg .box-core { fill: var(--core-bg); stroke: var(--core); stroke-width: 2; }
+  svg .box-client { fill: var(--client-bg); stroke: var(--client); stroke-width: 2; }
+  svg .box-plain { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; }
+  svg .box-todo { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .line { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .lifeline { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  svg .ignored { stroke: var(--question); stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; }
+  svg .dot { fill: var(--fg); }
+  figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 0.4rem; }
+  ol.legend { padding-left: 1.4rem; } ol.legend li { margin: 0.35rem 0; }
+  ul.map { padding-left: 1.2rem; } ul.map li { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="tree"><div class="inner"><div class="tree-title">Design wiki</div><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a><ul><li><a href="../ownership/recruitment.html">Recruitment</a></li><li><a href="../ownership/reputation.html" class="here">Reputation</a></li></ul></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></aside>
+<main>
+<details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a><ul><li><a href="../ownership/recruitment.html">Recruitment</a></li><li><a href="../ownership/reputation.html" class="here">Reputation</a></li></ul></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
+<div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../ownership/index.html">Ownership and modes</a> › Reputation</div>
+<h1>Reputation</h1>
+<p class="lede">What a companion thinks of a player, and how it lowers or raises the price of its recruitment (<a href="recruitment.html">Recruitment</a>).</p>
+<h2 class="part"><span class="ptag game">In game</span></h2>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A companion has its own opinion of each player, made of the same rumours as a villager's, with the same numbers, the same forgetting and the same word of mouth. The rumour system is taken as it is, unchanged.</div>
+<h3>The rumours</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>How a villager's opinion works, in vanilla 26.3: five kinds of rumour, each held per player with a value, weighed, capped, forgotten a little each day, and losing some of its value when passed on.</div>
+<div class="table"><table><tr><th>Rumour</th><th>What adds it</th><th>Weight</th><th>Cap</th><th>Forgotten per day</th><th>Lost when passed on</th></tr><tr><td>Major positive</td><td>Curing this zombie villager (+20)</td><td>×5</td><td>20</td><td>never</td><td>20, so it never spreads</td></tr><tr><td>Minor positive</td><td>The same cure (+25)</td><td>×1</td><td>25</td><td>1</td><td>5</td></tr><tr><td>Trading</td><td>Each trade with it (+2)</td><td>×1</td><td>25</td><td>2</td><td>20, so at most 5 spreads</td></tr><tr><td>Minor negative</td><td>Hitting it (+25)</td><td>×−1</td><td>200</td><td>20</td><td>20</td></tr><tr><td>Major negative</td><td>Killing a villager in front of it (+25 for each witness)</td><td>×−5</td><td>100</td><td>10</td><td>10</td></tr></table></div>
+<p>The opinion is the sum of each rumour's value times its weight, from −700 to +150. Two villagers who meet pass rumours on, one way, at most once a minute each, in the morning, the late afternoon and around the bell; the good spreads badly and the bad spreads well.</p>
+<h3>What a companion hears</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>What a companion's opinion hears:</div>
+<div class="table"><table><tr><th>Event</th><th>Rumour, as for a villager</th></tr><tr><td>A player hits it</td><td>Minor negative +25</td></tr><tr><td>A player kills a villager or a companion in front of it</td><td>Major negative +25</td></tr><tr><td>A villager passes rumours on to it</td><td>As between two villagers: up to 10, with their losses</td></tr></table></div>
+<p>It cannot trade, but trading rumours reach it by word of mouth, as any other.</p>
+<figure><svg viewBox="0 0 680 360" role="img"><title>How a companion's opinion of a player is fed: hits, killings it sees and villagers passing rumours on add to it, every day it forgets a little, and the opinion moves the price of its recruitment for that player</title><defs><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-plain" x="10" y="16" width="230" height="58" rx="8"/>
+<circle class="dot" cx="26" cy="32" r="10"/><text x="26" y="36" text-anchor="middle" class="mark">1</text>
+<text x="132" y="40" text-anchor="middle" class="title">A player hits it</text>
+<text x="132" y="60" text-anchor="middle" class="small">minor negative +25</text>
+<rect class="box-plain" x="10" y="92" width="230" height="72" rx="8"/>
+<circle class="dot" cx="26" cy="108" r="10"/><text x="26" y="112" text-anchor="middle" class="mark">2</text>
+<text x="132" y="116" text-anchor="middle" class="title">A player kills a villager</text>
+<text x="132" y="135" text-anchor="middle" class="small">or a companion in front of it</text>
+<text x="132" y="152" text-anchor="middle" class="small">major negative +25</text>
+<rect class="box-plain" x="10" y="182" width="230" height="72" rx="8"/>
+<circle class="dot" cx="26" cy="198" r="10"/><text x="26" y="202" text-anchor="middle" class="mark">3</text>
+<text x="132" y="206" text-anchor="middle" class="title">A villager close by</text>
+<text x="132" y="225" text-anchor="middle" class="small">passes up to 10 rumours on,</text>
+<text x="132" y="242" text-anchor="middle" class="small">each minus its loss</text>
+<rect class="box-plain" x="10" y="286" width="230" height="64" rx="8"/>
+<circle class="dot" cx="26" cy="302" r="10"/><text x="26" y="306" text-anchor="middle" class="mark">6</text>
+<text x="132" y="310" text-anchor="middle" class="title">A companion killed</text>
+<text x="132" y="328" text-anchor="middle" class="small">villagers who see it count it</text>
+<text x="132" y="343" text-anchor="middle" class="small">as a villager killed</text>
+<path class="line" d="M125,286 L125,256" marker-end="url(#r)"/>
+<text x="133" y="275" class="small">they pass it on</text>
+<rect class="box-anchor" x="300" y="16" width="190" height="238" rx="8"/>
+<text x="395" y="42" text-anchor="middle" class="title">Its opinion</text>
+<text x="395" y="60" text-anchor="middle" class="small">one per player, here of Alex</text>
+<text x="314" y="92">minor positive</text><text x="476" y="92" text-anchor="end">20 × 1</text>
+<text x="314" y="114">trading</text><text x="476" y="114" text-anchor="end">5 × 1</text>
+<path d="M314,128 L476,128" style="stroke: var(--anchor); stroke-width: 1"/>
+<text x="314" y="150" style="font-weight: 700">opinion</text><text x="476" y="150" text-anchor="end" style="font-weight: 700">+25</text>
+<text x="395" y="198" text-anchor="middle" class="small">kept per player,</text>
+<text x="395" y="214" text-anchor="middle" class="small">saved with the companion</text>
+<path class="line" d="M240,45 C270,45 270,70 298,70" marker-end="url(#r)"/>
+<path class="line" d="M240,128 L298,128" marker-end="url(#r)"/>
+<path class="line" d="M240,218 C270,218 270,190 298,190" marker-end="url(#r)"/>
+<rect class="box-plain" x="300" y="286" width="190" height="64" rx="8"/>
+<circle class="dot" cx="316" cy="302" r="10"/><text x="316" y="306" text-anchor="middle" class="mark">4</text>
+<text x="402" y="310" text-anchor="middle" class="title">Every day</text>
+<text x="402" y="328" text-anchor="middle" class="small">each rumour loses</text>
+<text x="402" y="343" text-anchor="middle" class="small">its daily amount</text>
+<path class="line" d="M395,286 L395,256" marker-end="url(#r)"/>
+<text x="403" y="275" class="small">forgets</text>
+<text x="600" y="70" text-anchor="middle" class="small">when the screen opens</text>
+<rect class="box-anchored" x="530" y="80" width="140" height="126" rx="8"/>
+<circle class="dot" cx="546" cy="96" r="10"/><text x="546" y="100" text-anchor="middle" class="mark">5</text>
+<text x="608" y="102" text-anchor="middle" class="title">Its price</text>
+<text x="600" y="122" text-anchor="middle" class="small">for that player</text>
+<text x="600" y="146" text-anchor="middle" class="small">the drawn price</text>
+<text x="600" y="162" text-anchor="middle" class="small">− opinion × 0.1</text>
+<text x="600" y="178" text-anchor="middle" class="small">− Hero of the Village</text>
+<text x="600" y="194" text-anchor="middle" class="small">at least 1</text>
+<path class="line" d="M490,135 L528,135" marker-end="url(#r)"/>
+</svg><figcaption>Alex cured a zombie villager and traded with it, then that villager met the companion. The companion holds less than the villager does: the good spreads badly.</figcaption></figure>
+<ol class="legend">
+<li>A player who hits the companion adds a minor negative rumour of 25 against them, as on a villager.</li>
+<li>A player who kills a villager or a companion in front of it adds a major negative rumour of 25: it is a witness as a villager is.</li>
+<li>A villager close by passes rumours on to it as to another villager: up to 10, each losing its amount for being passed on (see the table of rumours). This is the only way trading rumours, and the cure's minor positive one, reach a companion; the cure's major positive one never spreads.</li>
+<li>Every day, each rumour loses its daily amount, until it is gone. A major positive rumour is never forgotten.</li>
+<li>When a player opens its recruitment screen, the price they pay is computed from the companion's opinion of them (see the price below).</li>
+<li>A companion killed in front of villagers counts for them as a villager killed: their own prices go up for the killer, and they pass the rumour on, to companions too.</li>
+</ol>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Killing a companion in front of villagers counts for them as killing a villager: their own prices go up for the killer.</div>
+<h3>The price</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The price of a recruitment follows the opinion as a villager's offer does, with a coefficient of 0.1, between the villagers' 0.05 (most offers) and 0.2 (armour, tools, books): the opinion × 0.1, rounded down, comes off the price. At +150 the price drops by 15; a bad opinion raises it, by at least 1, as a villager's.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Hero of the Village lowers it too, as at a villager: by 30 % (level I) to 55 % (level V) of the drawn price, at least 1, on top of the opinion.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The price never drops below 1, and has no cap (<a href="recruitment.html">Recruitment</a>). It is computed when the recruitment screen opens.</div>
+<p>For example, a companion whose drawn price is 24 emeralds, opened by different players:</p>
+<div class="table"><table><tr><th>Player</th><th>Its opinion of them</th><th>What changes the price</th><th>Price to pay</th></tr><tr><td>Never met</td><td>0</td><td>nothing</td><td>24</td></tr><tr><td>Alex, who cured a zombie villager and traded with it; that villager then met the companion</td><td>minor positive 20 + trading 5 = +25</td><td>25 × 0.1 = 2.5, rounded down: −2</td><td>22</td></tr><tr><td>Alex, with Hero of the Village I</td><td>+25</td><td>−2, then 30 % of 24 = 7.2, rounded down: −7</td><td>15</td></tr><tr><td>Steve, who hit it once today</td><td>minor negative 25 × −1 = −25</td><td>−2.5, rounded down: −3, so +3</td><td>27</td></tr><tr><td>Steve, the next day</td><td>25 − 20 = 5, so −5</td><td>−0.5, rounded down: −1, so +1</td><td>25</td></tr><tr><td>Steve, the day after</td><td>forgotten: 0</td><td>nothing</td><td>24</td></tr><tr><td>Kai, who killed a villager in front of it</td><td>major negative 25 × −5 = −125</td><td>−12.5, rounded down: −13, so +13</td><td>37</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The screen shows a lowered or raised price as a villager's offer does: the drawn price struck through in red, the price to pay beside it (<a href="recruitment.html">Recruitment</a>).</div>
+<h2 class="part"><span class="ptag build">How it is built</span></h2>
+<figure><svg viewBox="0 0 680 372" role="img"><title>The pieces of a companion's opinion: vanilla's own rumour pieces, the two rules copied from the villager, and what the client receives</title><defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<rect class="box-anchor" x="10" y="20" width="190" height="62" rx="8"/>
+<circle class="dot" cx="26" cy="36" r="10"/><text x="26" y="40" text-anchor="middle" class="mark">1</text>
+<text x="42" y="42" class="title" style="font-size: 12px">ReputationEventHandler</text>
+<text x="105" y="62" text-anchor="middle" class="small">a death, a hit, told to it</text>
+<path class="line" d="M200,51 L278,51" marker-end="url(#b)"/>
+<rect class="box-core" x="280" y="20" width="180" height="62" rx="8"/>
+<circle class="dot" cx="296" cy="36" r="10"/><text x="296" y="40" text-anchor="middle" class="mark">2</text>
+<text x="312" y="42" class="title" style="font-size: 12px">onReputationEventFrom</text>
+<text x="370" y="62" text-anchor="middle" class="small">which rumour an event adds</text>
+<path class="line" d="M370,82 L370,118" marker-end="url(#b)"/>
+<text x="378" y="104" class="small">add</text>
+<rect class="box-anchor" x="10" y="120" width="190" height="86" rx="8"/>
+<circle class="dot" cx="26" cy="136" r="10"/><text x="26" y="140" text-anchor="middle" class="mark">3</text>
+<text x="42" y="142" class="title">A villager</text>
+<text x="105" y="162" text-anchor="middle" class="small">within √5 blocks,</text>
+<text x="105" y="177" text-anchor="middle" class="small">idle or meeting,</text>
+<text x="105" y="192" text-anchor="middle" class="small">at most once a minute</text>
+<path class="line" d="M200,163 L278,163" marker-end="url(#b)"/>
+<text x="239" y="155" text-anchor="middle" class="small">transferFrom</text>
+<rect class="box-anchor" x="280" y="120" width="180" height="86" rx="8"/>
+<text x="370" y="142" text-anchor="middle" class="title">GossipContainer</text>
+<text x="370" y="162" text-anchor="middle" class="small">its own, with the GossipType</text>
+<text x="370" y="177" text-anchor="middle" class="small">values, saved with</text>
+<text x="370" y="192" text-anchor="middle" class="small">GossipContainer.CODEC</text>
+<path class="line" d="M460,163 L498,163" marker-end="url(#b)"/>
+<rect class="box-core" x="500" y="120" width="170" height="86" rx="8"/>
+<circle class="dot" cx="516" cy="136" r="10"/><text x="516" y="140" text-anchor="middle" class="mark">5</text>
+<text x="532" y="142" class="title" style="font-size: 12px">updateSpecialPrices</text>
+<text x="585" y="162" text-anchor="middle" class="small">the price for that player:</text>
+<text x="585" y="177" text-anchor="middle" class="small">opinion × 0.1,</text>
+<text x="585" y="192" text-anchor="middle" class="small">Hero of the Village</text>
+<rect class="box-anchor" x="280" y="246" width="180" height="50" rx="8"/>
+<circle class="dot" cx="296" cy="262" r="10"/><text x="296" y="266" text-anchor="middle" class="mark">4</text>
+<text x="312" y="268" class="title" style="font-size: 12px">decay</text>
+<text x="370" y="288" text-anchor="middle" class="small">once a day of game time</text>
+<path class="line" d="M370,246 L370,208" marker-end="url(#b)"/>
+<path class="line" d="M585,206 L585,244" marker-end="url(#b)"/>
+<text x="593" y="230" class="small">opening data</text>
+<rect class="box-client" x="500" y="246" width="170" height="64" rx="8"/>
+<circle class="dot" cx="516" cy="262" r="10"/><text x="516" y="266" text-anchor="middle" class="mark">6</text>
+<text x="532" y="268" class="title">Client</text>
+<text x="585" y="288" text-anchor="middle" class="small">drawn price and price to pay,</text>
+<text x="585" y="303" text-anchor="middle" class="small">never the rumours</text>
+<rect class="box-anchor" x="10" y="326" width="30" height="18" rx="3"/><text x="48" y="339" class="small">vanilla's own piece: a mod that changes it changes the companions too</text>
+<rect class="box-core" x="10" y="350" width="30" height="18" rx="3"/><text x="48" y="363" class="small">copied from the villager: a mod that changes the villager's does not reach the companions</text>
+</svg><figcaption>Everything but the client runs on the server.</figcaption></figure>
+<ol class="legend">
+<li>The companion is a <code>ReputationEventHandler</code>, the interface through which a dying villager tells its witnesses (<code>Villager.java:597-606</code>). Hitting the companion (<code>setLastHurtByMob</code>) and its death tell itself and its witnesses (villagers and companions within 16 blocks that see it) through the same interface, with vanilla's event types.</li>
+<li>The rumour an event adds is the villager's rule, copied (<code>Villager.onReputationEventFrom</code>, <code>Villager.java:858-868</code>).</li>
+<li>It hears a villager standing within √5 blocks of it, as two villagers do, while that villager is idle or meeting, at most once a minute, through <code>transferFrom</code>.</li>
+<li><code>decay</code> runs once a day of game time.</li>
+<li>The price is the villager's rule, copied (<code>Villager.updateSpecialPrices</code>, <code>Villager.java:409-424</code>), computed by the server when the recruitment screen opens.</li>
+<li>The client receives the drawn price and the price to pay with the screen's opening data, never the rumours.</li>
+</ol>
+<h3>What follows other mods, what is copied</h3>
+<div class="table"><table><tr><th>Piece</th><th>Where it comes from</th><th>A mod that changes it</th></tr><tr><td>The rumour types: weights, caps, forgetting, losses (<code>GossipType</code>)</td><td>Vanilla's own</td><td>Changes the companions too</td></tr><tr><td>The store of rumours, word of mouth, daily forgetting, saving (<code>GossipContainer</code>, <code>transferFrom</code>, <code>decay</code>, <code>GossipContainer.CODEC</code>)</td><td>Vanilla's own</td><td>Changes the companions too</td></tr><tr><td>How a death or a hit is told (<code>ReputationEventHandler</code>)</td><td>Vanilla's own</td><td>Changes the companions too</td></tr><tr><td>When a villager passes rumours on: its brain's activity, idle or meeting</td><td>Vanilla's own</td><td>Changes when companions hear</td></tr><tr><td>The rumour an event adds (<code>Villager.onReputationEventFrom</code>)</td><td>Copied</td><td>Does not reach the companions</td></tr><tr><td>The price of an offer (<code>Villager.updateSpecialPrices</code>)</td><td>Copied</td><td>Does not reach the companions</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion uses vanilla's rumour pieces themselves, so that a mod changing them changes the companions too: a <code>GossipContainer</code> of its own, saved with the entity as a villager saves its own (<code>GossipContainer.CODEC</code>), the <code>GossipType</code> values, <code>transferFrom</code> to hear a villager, <code>decay</code> once a day of game time, and <code>ReputationEventHandler</code>, the interface through which a dying villager tells its witnesses (<code>Villager.java:597-606</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Two of a villager's rules are private code, and the companion copies them, so a mod changing them does not reach the companions: the rumour an event adds (<code>Villager.<wbr>onReputationEventFrom</code>, <code>Villager.java:858-868</code>) and the price of an offer (<code>Villager.<wbr>updateSpecialPrices</code>, <code>Villager.java:409-424</code>).</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>This is accepted.</div>
+<h3>Events</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion is a <code>ReputationEventHandler</code>. A villager dying in front of it tells it as it tells a villager, with nothing more in the mod. Hitting it (<code>setLastHurtByMob</code>) and its death tell itself and its witnesses (villagers and companions within 16 blocks that see it) through the same interface, with vanilla's event types.</div>
+<h3>Hearing a villager</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>It hears a villager standing within √5 blocks of it, as two villagers do (<code>TradeWithVillager.java:48-50</code>), while that villager is idle or meeting (its brain's activity, so a mod changing the villagers' schedule changes when companions hear), at most once a minute (1200 ticks, <code>Villager.java:813-815</code>).</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>A companion does not move yet, so it hears only the villagers who come close.</div>
+<h3>The client</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>The client never receives rumours; the server computes the price and sends the drawn price and the price to pay with the screen's opening data.</div>
+</main>
+</div>
+</body>
+</html>

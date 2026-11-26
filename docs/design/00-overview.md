@@ -41,6 +41,7 @@ server, and what crosses between them).
 | Facade | What a client sees of a companion: a remote player, which the player animation mods animate. |
 | Owner | The player a companion belongs to. A companion may have none. |
 | Recruitment | How a player makes a companion without an owner their own: they pay its price in emeralds on its recruitment screen. |
+| Opinion | What a companion thinks of a player: the villagers' rumours, heard and kept as a villager does. It lowers or raises the price of its recruitment. |
 | Mode | The order an owner gives their companion. Only follow is decided so far. |
 | Home | The place a companion stays around when its mode says so. |
 | Designated weapon | One of a companion's two weapon slots, primary and secondary: what it reaches for to fight, not what it holds. |
@@ -83,7 +84,7 @@ where possible. Taken from the modpack grimoire-et-sortileges.
 - Disconnection at server stop, and an owner who never comes back
   (`companion/05-saving.md`).
 - Recruitment: the owner's name when they change it, which way to pay is
-  kept (`ownership/01-recruitment.md`).
+  kept, its own sound (`ownership/01-recruitment.md`).
 - Other conditions to recruit, a price that grows with the equipment, the
   other modes (`ownership/00-overview.md`).
 - The motor (`behaviour/00-overview.md`).

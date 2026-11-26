@@ -14,6 +14,8 @@ Decisions so far:
 - **Recruitment**: a player makes a companion that has no owner their own by
   paying its price in emeralds, on its recruitment screen
   (`01-recruitment.md`). A companion that has an owner cannot be recruited.
+  Its price follows its opinion of the player, made of the villagers' rumours
+  (`02-reputation.md`).
 - **Follow**: the companion goes with its owner, into another dimension too.
   It is the only mode decided. Whether a companion follows its owner through a
   portal depends on its mode.

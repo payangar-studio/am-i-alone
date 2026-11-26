@@ -22,8 +22,8 @@ theirs. It shows, read-only:
   bars, as on the companion's screen;
 - its attributes, in the drawer, whose only panel is the attributes one; its
   storage is not shown;
-- its price and the Recruit button, under the hearts, where the companion's
-  screen shows the content of its tab;
+- the Recruit button, under the hearts, where the companion's screen shows
+  the content of its tab, which carries the price;
 - the player's inventory, below.
 
 Decision: the price is a number of emeralds, drawn once when the companion
@@ -31,6 +31,18 @@ is created, uniformly between 12 and 36, saved with it and never drawn again.
 It has no cap, unlike a villager's offers (64 at most): once the equipment
 counts, a price may pass a stack. It does not depend on the equipment yet: a scale of what each
 piece of equipment adds comes with the equipment companions spawn with.
+
+Decision: the player pays the drawn price lowered or raised by the
+companion's opinion of them and by Hero of the Village, as at a villager
+(`02-reputation.md`).
+
+Decision: Recruit is the mod's own button, in the screen's colours (the
+accent, as the screen's main action), not vanilla's: the label on the left,
+the price on the right, drawn as a villager's offer draws it, an emerald with
+the count over its bottom right corner. A lowered or raised price shows the
+drawn price struck through in red and the price to pay beside it, as a
+villager's offer does (`MerchantScreen.java:224-238`). Ruled out: a price line
+under the hearts, which did not read as the main information.
 
 Decision: two ways to pay are built, to be tried in game; one is kept, the
 other removed:
@@ -44,6 +56,13 @@ Question: which way to pay is kept. A price above 64 would need more than
 one payment slot.
 
 Decision: a player in creative mode pays too, as with villagers.
+
+Decision: recruiting plays no sound yet; it will get a sound of the mod's own.
+Fact: vanilla plays none when a villager's trade concludes (the "yes" sounds
+when the payment is placed, `MerchantContainer.java:122`; the "ting" is the
+experience orb dropped after it). Ruled out, heard in game: the experience
+orb, level up, challenge complete, the villager's and the wandering trader's
+"yes", item pickup and bundle insert.
 
 Decision: once the player has paid, the companion is theirs, and that is
 all: it does not follow them, it has no mode yet (`00-overview.md`).
