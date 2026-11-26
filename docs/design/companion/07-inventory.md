@@ -33,8 +33,8 @@ alone.
 
 Decision: the inventory is managed from the companion's screen
 (`08-screen.md`): its armor and designated weapons on every tab, its 36 slots
-on the Inventory tab, above the inventory of the player who opened it; items
-move both ways. It is drawn
+in a drawer that slides out of the window's edge, beside the inventory of the
+player who opened it; items move both ways. It is drawn
 with the kit of the mod's config screens (part of the socle, the base code
 `mod update` maintains), with no texture of the mod: a scaffolding
 look, which may change while testing.

@@ -108,91 +108,124 @@
 <details class="tree-mobile"><summary>Pages</summary><div class="tree"><ul><li><a href="../index.html">Am I Alone?</a><ul><li><a href="../companion/index.html">Companion</a><ul><li><a href="../companion/entity.html">The entity</a></li><li><a href="../companion/facade.html">Client facade</a></li><li><a href="../companion/loading.html">World loading</a></li><li><a href="../companion/identity.html">Identity, names and skins</a></li><li><a href="../companion/saving.html">Saving</a></li><li><a href="../companion/death.html">Death</a></li><li><a href="../companion/inventory.html">Inventory</a></li><li><a href="../companion/screen.html" class="here">The companion's screen</a></li></ul></li><li><a href="../ownership/index.html">Ownership and modes</a></li><li><a href="../behaviour/index.html">Behaviour</a></li><li><a href="../places/index.html">Where companions live</a></li><li><a href="../debug/index.html">Companion debug stick</a></li><li><a href="../sides.html">Sides</a></li></ul></li></ul></div></details>
 <div class="crumbs"><a href="../index.html">Am I Alone?</a> › <a href="../companion/index.html">Companion</a> › The companion's screen</div>
 <h1>The companion's screen</h1>
-<p class="lede">What a right-click on a companion opens: one window with tabs, through which goes everything a player does with it.</p>
-<h2 class="part"><span class="ptag game">In game</span></h2><p>A right-click on a companion opens its screen: everything a player does with it goes through there. One window with tabs: the companion's view, armor and designated weapons, and the player's inventory below, stay in place on every tab; only the area on the right changes.</p>
-<figure><svg viewBox="0 0 680 620" role="img"><title>The companion's screen: a fixed part, and an area on the right that changes with the tab</title><defs><symbol id="heart" viewBox="0 0 12 11"><path d="M6,10.5 L1.2,5.6 C-0.6,3.6 0.6,0.4 3.3,0.4 C4.7,0.4 5.5,1.3 6,2.2 C6.5,1.3 7.3,0.4 8.7,0.4 C11.4,0.4 12.6,3.6 10.8,5.6 Z"/></symbol><symbol id="armor" viewBox="0 0 12 11"><path d="M0.5,0.5 L4,0.5 L6,2.2 L8,0.5 L11.5,0.5 L11.5,4.5 L9.5,4.5 L9.5,10.5 L2.5,10.5 L2.5,4.5 L0.5,4.5 Z"/></symbol></defs>
-<circle class="dot" cx="20" cy="24" r="10"/><text x="20" y="28" text-anchor="middle" class="mark">1</text>
-<rect class="box-anchored" x="36" y="10" width="98" height="30" rx="4"/><text x="85" y="30" text-anchor="middle">Companion</text>
-<rect class="box-plain" x="138" y="10" width="98" height="30" rx="4"/><text x="187" y="30" text-anchor="middle">Inventory</text>
-<rect class="box-plain" x="240" y="10" width="98" height="30" rx="4"/><text x="289" y="30" text-anchor="middle">Debug</text>
-<text x="348" y="30" class="small">Debug: only when opened with the debug stick</text>
-<rect class="box-plain" x="10" y="40" width="660" height="414" rx="8"/>
-<circle class="dot" cx="32" cy="66" r="10"/><text x="32" y="70" text-anchor="middle" class="mark">2</text>
-<text x="46" y="70" class="small">armor</text>
-<rect class="box-anchor" x="24" y="86" width="44" height="32" rx="3"/><text x="46" y="106" text-anchor="middle" class="small">head</text>
-<rect class="box-anchor" x="24" y="122" width="44" height="32" rx="3"/><text x="46" y="142" text-anchor="middle" class="small">chest</text>
-<rect class="box-anchor" x="24" y="158" width="44" height="32" rx="3"/><text x="46" y="178" text-anchor="middle" class="small">legs</text>
-<rect class="box-anchor" x="24" y="194" width="44" height="32" rx="3"/><text x="46" y="214" text-anchor="middle" class="small">feet</text>
-<circle class="dot" cx="104" cy="66" r="10"/><text x="104" y="70" text-anchor="middle" class="mark">3</text>
-<text x="118" y="70" class="small">3D view</text>
-<rect x="90" y="86" width="110" height="140" rx="4" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
-<rect class="box-core" x="135" y="98" width="20" height="20" rx="2"/>
-<rect class="box-core" x="131" y="120" width="28" height="42" rx="2"/>
-<rect class="box-core" x="121" y="120" width="8" height="40" rx="2"/>
-<rect class="box-core" x="161" y="120" width="8" height="40" rx="2"/>
-<rect class="box-core" x="132" y="164" width="12" height="44" rx="2"/>
-<rect class="box-core" x="146" y="164" width="12" height="44" rx="2"/>
-<text x="145" y="220" text-anchor="middle" class="small">follows the mouse</text>
-<circle class="dot" cx="220" cy="66" r="10"/><text x="220" y="70" text-anchor="middle" class="mark">4</text>
-<rect class="box-core" x="216" y="86" width="32" height="32" rx="3"/><text x="232" y="106" text-anchor="middle" class="small">1st</text>
-<rect class="box-core" x="216" y="122" width="32" height="32" rx="3"/><text x="232" y="142" text-anchor="middle" class="small">2nd</text>
-<text x="232" y="172" text-anchor="middle" class="small">weapons</text>
-<rect x="268" y="52" width="392" height="190" rx="6" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
-<circle class="dot" cx="286" cy="70" r="10"/><text x="286" y="74" text-anchor="middle" class="mark">5</text>
-<text x="302" y="74" class="small">changes with the tab; here the Companion tab</text>
-<text x="284" y="104" class="title">Its name</text>
-<text x="284" y="132" class="small">health</text>
-<g style="fill: var(--question)"><use href="#heart" x="332" y="122" width="12" height="11"/><use href="#heart" x="347" y="122" width="12" height="11"/><use href="#heart" x="362" y="122" width="12" height="11"/><use href="#heart" x="377" y="122" width="12" height="11"/><use href="#heart" x="392" y="122" width="12" height="11"/><use href="#heart" x="407" y="122" width="12" height="11"/><use href="#heart" x="422" y="122" width="12" height="11"/><use href="#heart" x="437" y="122" width="12" height="11"/></g>
-<g style="fill: none; stroke: var(--question); stroke-width: 1"><use href="#heart" x="452" y="122" width="12" height="11"/><use href="#heart" x="467" y="122" width="12" height="11"/></g>
-<text x="284" y="158" class="small">armor</text>
-<g style="fill: var(--anchor)"><use href="#armor" x="332" y="148" width="12" height="11"/><use href="#armor" x="347" y="148" width="12" height="11"/><use href="#armor" x="362" y="148" width="12" height="11"/><use href="#armor" x="377" y="148" width="12" height="11"/><use href="#armor" x="392" y="148" width="12" height="11"/></g>
-<g style="fill: none; stroke: var(--anchor); stroke-width: 1"><use href="#armor" x="407" y="148" width="12" height="11"/><use href="#armor" x="422" y="148" width="12" height="11"/><use href="#armor" x="437" y="148" width="12" height="11"/><use href="#armor" x="452" y="148" width="12" height="11"/><use href="#armor" x="467" y="148" width="12" height="11"/></g>
-<text x="496" y="138" class="small">the HUD's hearts and armor,</text>
-<text x="496" y="152" class="small">following it live</text>
-<text x="284" y="186" class="small">owner</text>
-<text x="332" y="186">its owner's name, or none</text>
-<rect class="box-todo" x="284" y="200" width="140" height="28" rx="4"/><text x="296" y="219" class="small">mode ▾</text>
-<text x="434" y="219" class="small">a list, once the modes exist</text>
-<circle class="dot" cx="286" cy="268" r="10"/><text x="286" y="272" text-anchor="middle" class="mark">6</text>
-<text x="302" y="272" class="small">the inventory of the player who opened it</text>
-<g transform="translate(0,236)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
-<g transform="translate(0,272)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
-<g transform="translate(0,308)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
-<g transform="translate(0,352)"><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="296" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="332" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="368" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="404" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="440" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="476" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="512" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="548" y="50" width="32" height="32" rx="3"/><rect style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2" x="584" y="50" width="32" height="32" rx="3"/></g>
-<text x="626" y="422" class="small">hotbar</text>
-<text x="268" y="478" class="small">the same area on the other tabs:</text>
-<rect x="268" y="488" width="200" height="124" rx="6" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
-<text x="280" y="508" class="title">Inventory tab</text>
-<g><rect class="box-core" style="stroke-width: 1" x="280" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="300" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="320" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="340" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="360" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="380" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="400" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="420" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="440" y="518" width="18" height="18" rx="2"/></g>
-<g transform="translate(0,20)"><rect class="box-core" style="stroke-width: 1" x="280" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="300" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="320" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="340" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="360" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="380" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="400" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="420" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="440" y="518" width="18" height="18" rx="2"/></g>
-<g transform="translate(0,40)"><rect class="box-core" style="stroke-width: 1" x="280" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="300" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="320" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="340" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="360" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="380" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="400" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="420" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="440" y="518" width="18" height="18" rx="2"/></g>
-<g transform="translate(0,60)"><rect class="box-core" style="stroke-width: 1" x="280" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="300" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="320" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="340" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="360" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="380" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="400" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="420" y="518" width="18" height="18" rx="2"/><rect class="box-core" style="stroke-width: 1" x="440" y="518" width="18" height="18" rx="2"/></g>
-<rect x="480" y="488" width="180" height="124" rx="6" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
-<text x="492" y="508" class="title">Debug tab</text>
-<text x="492" y="534" class="small">owner</text>
-<text x="532" y="534">current owner</text>
-<rect class="box-todo" x="492" y="546" width="156" height="28" rx="4"/><text x="570" y="565" text-anchor="middle" class="small">change the owner, later</text>
-<text x="492" y="598" class="small">only with the debug stick</text>
-<rect x="20" y="494" width="30" height="18" rx="3" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/><text x="58" y="507" class="small">changes with the tab</text>
-<rect class="box-todo" x="20" y="522" width="30" height="18" rx="3"/><text x="58" y="535" class="small">shown once it exists</text>
-<rect class="box-anchor" x="20" y="550" width="30" height="18" rx="3"/><text x="58" y="563" class="small">its equipment</text>
-<rect class="box-core" x="20" y="578" width="30" height="18" rx="3"/><text x="58" y="591" class="small">its own container</text>
-</svg><figcaption>One window: the tab strip, the fixed part on the left and the player's inventory below, and on the right the area that each tab fills.</figcaption></figure>
+<p class="lede">What a right-click on a companion opens: one window, with a drawer for its storage and its attributes, through which goes everything a player does with it.</p>
+<h2 class="part"><span class="ptag game">In game</span></h2><p>A right-click on a companion opens its screen: everything a player does with it goes through there.</p>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The layout, on every tab, as drawn below. The same padding on all four sides of the window, as vanilla's containers (7 pixels), and between the left part and the name column. The window stays whole, drawer out or not.</div>
+<figure><svg viewBox="0 0 700 690" role="img"><title>The companion's screen: tabs above the window, its equipment and 3D view at the top left, the name column at their right, the player's inventory centred below, and the drawer out on the right with its two handles and its two panels</title><defs><symbol id="heart" viewBox="0 0 12 11"><path d="M6,10.5 L1.2,5.6 C-0.6,3.6 0.6,0.4 3.3,0.4 C4.7,0.4 5.5,1.3 6,2.2 C6.5,1.3 7.3,0.4 8.7,0.4 C11.4,0.4 12.6,3.6 10.8,5.6 Z"/></symbol><symbol id="armor" viewBox="0 0 12 11"><path d="M0.5,0.5 L4,0.5 L6,2.2 L8,0.5 L11.5,0.5 L11.5,4.5 L9.5,4.5 L9.5,10.5 L2.5,10.5 L2.5,4.5 L0.5,4.5 Z"/></symbol>
+<g id="prow"><rect x="0" y="0" width="28" height="28" rx="3"/><rect x="30" y="0" width="28" height="28" rx="3"/><rect x="60" y="0" width="28" height="28" rx="3"/><rect x="90" y="0" width="28" height="28" rx="3"/><rect x="120" y="0" width="28" height="28" rx="3"/><rect x="150" y="0" width="28" height="28" rx="3"/><rect x="180" y="0" width="28" height="28" rx="3"/><rect x="210" y="0" width="28" height="28" rx="3"/><rect x="240" y="0" width="28" height="28" rx="3"/></g>
+<g id="srow"><rect x="0" y="0" width="28" height="28" rx="3"/><rect x="30" y="0" width="28" height="28" rx="3"/><rect x="60" y="0" width="28" height="28" rx="3"/><rect x="90" y="0" width="28" height="28" rx="3"/></g></defs>
+<!-- tabs: the Debug tab sits behind the window, the open Companion tab merges into it -->
+<rect x="130" y="24" width="76" height="27" rx="3" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/><text x="168" y="42" text-anchor="middle" class="small">Debug</text>
+<text x="214" y="42" class="small">Debug: only when opened with the debug stick</text>
+<!-- drawer, out from under the window -->
+<rect class="box-plain" x="370" y="50" width="152" height="292" rx="4"/>
+<!-- window -->
+<rect class="box-plain" x="10" y="50" width="370" height="292" rx="4"/>
+<path d="M30,52 L30,20 L130,20 L130,52" style="fill: var(--panel); stroke: var(--rule); stroke-width: 1.5"/><rect x="31" y="47" width="98" height="6" style="fill: var(--panel)"/><text x="80" y="40" text-anchor="middle">Companion</text>
+<circle class="dot" cx="16" cy="34" r="9"/><text x="16" y="38" text-anchor="middle" class="mark">1</text>
+<!-- armor -->
+<rect class="box-anchor" x="22" y="62" width="28" height="28" rx="3"/><rect class="box-anchor" x="22" y="92" width="28" height="28" rx="3"/><rect class="box-anchor" x="22" y="122" width="28" height="28" rx="3"/><rect class="box-anchor" x="22" y="152" width="28" height="28" rx="3"/><circle class="dot" cx="36" cy="192" r="9"/><text x="36" y="196" text-anchor="middle" class="mark">2</text>
+<!-- 3D view -->
+<rect x="54" y="62" width="80" height="118" rx="3" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
+<rect class="box-core" x="84" y="70" width="20" height="20" rx="2"/><rect class="box-core" x="80" y="92" width="28" height="38" rx="2"/><rect class="box-core" x="70" y="92" width="8" height="36" rx="2"/><rect class="box-core" x="110" y="92" width="8" height="36" rx="2"/><rect class="box-core" x="81" y="132" width="12" height="40" rx="2"/><rect class="box-core" x="95" y="132" width="12" height="40" rx="2"/>
+<circle class="dot" cx="65" cy="73" r="9"/><text x="65" y="77" text-anchor="middle" class="mark">3</text>
+<!-- designated weapons -->
+<rect class="box-core" x="138" y="62" width="28" height="28" rx="3"/><text x="152" y="80" text-anchor="middle" class="small">1st</text>
+<rect class="box-core" x="138" y="92" width="28" height="28" rx="3"/><text x="152" y="110" text-anchor="middle" class="small">2nd</text>
+<circle class="dot" cx="152" cy="136" r="9"/><text x="152" y="140" text-anchor="middle" class="mark">4</text>
+<!-- name column -->
+<text x="178" y="76" class="title">Its name</text><text x="244" y="76" style="fill: var(--anchor); font-weight: 700">♂</text><text x="260" y="76" class="small">its group</text>
+<g style="fill: var(--anchor)"><use href="#armor" x="178" y="86" width="12" height="11"/><use href="#armor" x="191" y="86" width="12" height="11"/><use href="#armor" x="204" y="86" width="12" height="11"/><use href="#armor" x="217" y="86" width="12" height="11"/><use href="#armor" x="230" y="86" width="12" height="11"/><use href="#armor" x="243" y="86" width="12" height="11"/><use href="#armor" x="256" y="86" width="12" height="11"/></g>
+<g style="fill: none; stroke: var(--anchor); stroke-width: 1"><use href="#armor" x="269" y="86" width="12" height="11"/><use href="#armor" x="282" y="86" width="12" height="11"/><use href="#armor" x="295" y="86" width="12" height="11"/></g>
+<g style="fill: var(--question)"><use href="#heart" x="178" y="101" width="12" height="11"/><use href="#heart" x="191" y="101" width="12" height="11"/><use href="#heart" x="204" y="101" width="12" height="11"/><use href="#heart" x="217" y="101" width="12" height="11"/><use href="#heart" x="230" y="101" width="12" height="11"/><use href="#heart" x="243" y="101" width="12" height="11"/><use href="#heart" x="256" y="101" width="12" height="11"/><use href="#heart" x="269" y="101" width="12" height="11"/></g>
+<g style="fill: none; stroke: var(--question); stroke-width: 1"><use href="#heart" x="282" y="101" width="12" height="11"/><use href="#heart" x="295" y="101" width="12" height="11"/></g>
+<rect x="176" y="120" width="192" height="60" rx="4" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
+<text x="186" y="140">Owner: none</text>
+<rect class="box-todo" x="186" y="150" width="112" height="22" rx="3"/><text x="196" y="165" class="small">mode ▾, later</text>
+<circle class="dot" cx="358" cy="72" r="9"/><text x="358" y="76" text-anchor="middle" class="mark">5</text>
+<!-- the player's inventory, centred -->
+<text x="61" y="200" class="small">Inventory</text>
+<g style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2"><use href="#prow" x="61" y="206"/><use href="#prow" x="61" y="236"/><use href="#prow" x="61" y="266"/><use href="#prow" x="61" y="302"/></g>
+<circle class="dot" cx="36" cy="252" r="9"/><text x="36" y="256" text-anchor="middle" class="mark">6</text>
+<!-- storage panel -->
+<g style="fill: var(--core-bg); stroke: var(--core); stroke-width: 1.2"><use href="#srow" x="392" y="62"/><use href="#srow" x="392" y="92"/><use href="#srow" x="392" y="122"/><use href="#srow" x="392" y="152"/><use href="#srow" x="392" y="182"/><use href="#srow" x="392" y="212"/><use href="#srow" x="392" y="242"/><use href="#srow" x="392" y="272"/><use href="#srow" x="392" y="302"/></g>
+<circle class="dot" cx="578" cy="196" r="9"/><text x="578" y="200" text-anchor="middle" class="mark">7</text>
+<text x="592" y="200" class="small">its storage, 4 × 9:</text><text x="592" y="214" class="small">the player's</text><text x="592" y="228" class="small">inventory turned</text><text x="592" y="242" class="small">on its side</text>
+<!-- handles: chest open (merged, 3 px further out), bars closed -->
+<path d="M522,62 L561,62 L561,98 L522,98" style="fill: var(--panel); stroke: var(--rule); stroke-width: 1.5"/><rect x="519" y="63" width="5" height="34" style="fill: var(--panel)"/>
+<g style="fill: none; stroke: var(--fg); stroke-width: 1.4"><rect x="534" y="68" width="16" height="12" rx="1"/><path d="M534,73 L550,73"/></g><rect x="540" y="71" width="4" height="5" style="fill: var(--fg)"/>
+<path d="M538,90 L545,86 L545,94 Z" style="fill: var(--fg)"/>
+<rect x="522" y="98" width="36" height="36" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
+<g style="fill: var(--fg)"><rect x="532" y="117" width="4" height="7"/><rect x="538" y="113" width="4" height="11"/><rect x="544" y="108" width="4" height="16"/></g>
+<circle class="dot" cx="578" cy="46" r="9"/><text x="578" y="50" text-anchor="middle" class="mark">8</text><text x="592" y="50" class="small">the handles</text>
+<text x="570" y="72" class="small">open panel: drawer's</text><text x="570" y="86" class="small">colour, 2 px further</text><text x="570" y="100" class="small">out; ◂ puts it away</text>
+<text x="570" y="120" class="small">the other panel:</text><text x="570" y="134" class="small">shows it at once</text>
+<!-- the same drawer on its attributes panel -->
+<text x="380" y="374" class="small">the same drawer, on its attributes panel:</text>
+<rect class="box-plain" x="370" y="384" width="152" height="292" rx="4"/>
+<path class="lifeline" d="M370,384 L370,676"/>
+<rect x="522" y="396" width="36" height="36" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
+<g style="fill: none; stroke: var(--fg); stroke-width: 1.4"><rect x="532" y="408" width="16" height="12" rx="1"/><path d="M532,413 L548,413"/></g><rect x="538" y="411" width="4" height="5" style="fill: var(--fg)"/>
+<path d="M522,432 L561,432 L561,468 L522,468" style="fill: var(--panel); stroke: var(--rule); stroke-width: 1.5"/><rect x="519" y="433" width="5" height="34" style="fill: var(--panel)"/>
+<g style="fill: var(--fg)"><rect x="534" y="447" width="4" height="7"/><rect x="540" y="443" width="4" height="11"/><rect x="546" y="438" width="4" height="16"/></g>
+<path d="M538,461 L545,457 L545,465 Z" style="fill: var(--fg)"/>
+<g style="font-size: 12px"><text x="382" y="410" style="font-weight: 700">Defence</text>
+<text x="382" y="428" style="fill: var(--muted)">Health</text><text x="510" y="428" text-anchor="end">20</text>
+<text x="382" y="445" style="fill: var(--muted)">Armor</text><text x="510" y="445" text-anchor="end" style="fill: var(--anchored)">15</text>
+<text x="382" y="462" style="fill: var(--muted)">Toughness</text><text x="510" y="462" text-anchor="end">0</text>
+<text x="382" y="479" style="fill: var(--muted)">Knockback</text><text x="510" y="479" text-anchor="end" style="fill: var(--anchored)">4</text>
+<text x="382" y="503" style="font-weight: 700">Movement</text>
+<text x="382" y="521" style="fill: var(--muted)">Speed</text><text x="510" y="521" text-anchor="end" style="fill: var(--anchored)">140%</text>
+<text x="382" y="545" style="font-weight: 700">Hazards</text>
+<text x="382" y="563" style="fill: var(--muted)">Oxygen</text><text x="510" y="563" text-anchor="end" style="fill: var(--anchored)">1</text>
+<text x="382" y="580" style="fill: var(--muted)">Safe fall</text><text x="510" y="580" text-anchor="end" style="fill: var(--question)">2</text></g>
+<text x="382" y="644" class="small">rows that overflow</text><text x="382" y="658" class="small">scroll with the wheel</text>
+<circle class="dot" cx="578" cy="490" r="9"/><text x="578" y="494" text-anchor="middle" class="mark">9</text>
+<text x="592" y="494" class="small">its attributes,</text><text x="592" y="508" class="small">in three groups</text>
+<text x="570" y="532" class="small" style="fill: var(--anchored)">green: a gain</text><text x="570" y="546" class="small" style="fill: var(--question)">red: a loss</text><text x="570" y="560" class="small">plain: its default</text>
+<text x="570" y="584" class="small">hover: full name,</text><text x="570" y="598" class="small">value and base</text>
+<!-- the Debug tab -->
+<text x="10" y="374" class="small">the same window, on the Debug tab:</text>
+<rect x="10" y="384" width="330" height="96" rx="6" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
+<text x="22" y="406" class="title">Debug tab</text>
+<text x="22" y="430" class="small">owner</text><text x="62" y="430">current owner</text>
+<rect class="box-todo" x="22" y="442" width="170" height="26" rx="4"/><text x="107" y="459" text-anchor="middle" class="small">change the owner, later</text>
+<text x="208" y="430" class="small">under the hearts, in</text><text x="208" y="444" class="small">place of the Companion</text><text x="208" y="458" class="small">tab's content; the</text><text x="208" y="472" class="small">drawer goes in</text>
+<!-- key -->
+<rect x="20" y="510" width="30" height="18" rx="3" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/><text x="58" y="523" class="small">changes with the tab</text>
+<rect class="box-todo" x="20" y="538" width="30" height="18" rx="3"/><text x="58" y="551" class="small">shown once it exists</text>
+<rect class="box-anchor" x="20" y="566" width="30" height="18" rx="3"/><text x="58" y="579" class="small">its equipment</text>
+<rect class="box-core" x="20" y="594" width="30" height="18" rx="3"/><text x="58" y="607" class="small">its own container</text>
+<rect x="20" y="622" width="30" height="18" rx="3" style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2"/><text x="58" y="635" class="small">the player's inventory</text>
+</svg><figcaption>The Companion tab with the drawer out on its storage panel; below, the drawer on its attributes panel, and what the Debug tab puts under the hearts.</figcaption></figure>
 <ol class="legend">
-<li>The tabs. Companion and Inventory for whoever opens the screen; Debug only when an operator opened it with the companion debug stick.</li>
-<li>Its four armor slots, on every tab (<a href="inventory.html">Inventory</a>).</li>
-<li>The companion in 3D, turning to follow the mouse, on every tab.</li>
-<li>Its two designated weapon slots, primary and secondary, on every tab.</li>
-<li>The area that changes with the tab. On the Companion tab: its name, its health and armor bars, its owner, and its mode once the modes exist. On the Inventory tab: its 36 storage slots. On the Debug tab: its current owner, and later a way to change it.</li>
-<li>The inventory of the player who opened the screen, on every tab.</li>
+<li>The tabs, above the window, sharing their border: Companion for whoever opens the screen; Debug only when an operator opened it with the companion debug stick.</li>
+<li>Its four armor slots, head to feet (<a href="inventory.html">Inventory</a>).</li>
+<li>Its view in 3D. The armor slots, the view and the weapon slots have the same sizes as in the first inventory screen.</li>
+<li>Its two designated weapon slots.</li>
+<li>The name column. Its name as the main heading, with an icon of its group: pink for a woman, blue for a man; a name too long for the column ends with "…". Right under the name, its armor and health bars; under the last row of hearts, the content of the tab: on the Companion tab its owner, and its mode once the modes exist.</li>
+<li>The inventory of the player who opened the screen, centred below.</li>
+<li>The drawer, sliding out from under the window on the right, as tall as the window. Its storage panel is the player's inventory turned on its side: 4 columns of 9 rows.</li>
+<li>The handles, one per panel, stacked on the drawer's edge and sharing their border: a monochrome icon (a chest, bars), an arrow that points where the drawer will go, and a tooltip.</li>
+<li>The attributes panel: three groups (Defence, Movement, Hazards), the headings in white, each row a short label and its value aligned right.</li>
 </ol>
-<div class="table"><table><tr><th>Tab</th><th>The area on the right shows</th><th>Who sees it</th></tr><tr><td>Companion</td><td>Its name, its health and armor bars, its owner, and its mode (a list to pick from) once the modes exist</td><td>Whoever opens the screen</td></tr><tr><td>Inventory</td><td>Its 36 storage slots (<a href="inventory.html">Inventory</a>)</td><td>Whoever opens the screen</td></tr><tr><td>Debug</td><td>Debug options: its owner, later changing it</td><td>An operator holding the companion debug stick (<a href="../debug/index.html">Companion debug stick</a>)</td></tr></table></div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The armor and the designated weapons are managed from every tab, the Companion tab included; the Inventory tab only adds the storage.</div>
+<h3>The drawer</h3>
+<div class="table"><table><tr><th>Click</th><th>What happens</th></tr><tr><td>A handle, drawer in</td><td>The drawer slides out on that panel</td></tr><tr><td>The open panel's handle</td><td>The drawer slides back in</td></tr><tr><td>The other handle, drawer out</td><td>The drawer shows that panel at once, without going in</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The open panel's handle takes the drawer's colour and stands 2 pixels further out, merged into the drawer; the tooltip names the panel, or the action ("Put its inventory away") on the open one. Drawer in, both handles show an arrow pointing out; drawer out, only the open panel's handle does, pointing back. The handles are buttons: they take the keyboard focus and are read by the narrator. The drawer remembers its panel: the screen opens again with the drawer out on it. When the drawer covers the window (a narrow screen), Escape puts it away first.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The storage panel is the player's inventory turned on its side: 4 columns of 9 rows.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The attributes panel lists its attributes in three groups (Defence, Movement, Hazards), the headings in white, each row a short label and its value aligned right; hovering a row shows the attribute's full name, its current value and its base. Not "statistics": that is vanilla's screen of the player's counters.</div>
+<div class="table"><table><tr><th>Attributes</th><th>Shown</th></tr><tr><td>Max health, armor, armor toughness, knockback resistance, movement speed</td><td>Always</td></tr><tr><td>Max absorption, water and ground movement efficiency, jump, step height, oxygen, burning time, explosion knockback resistance, safe fall distance, fall damage multiplier</td><td>Only when gear or an effect changes them from their default</td></tr><tr><td>Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback</td><td>Never: they mean nothing to a player looking at a companion</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Values as vanilla writes them (<code>#.##</code>); knockback resistance ×10 as item tooltips show it, movement speed as a percentage of normal, burning time and fall damage as percentages. A value that differs from its default takes the colour of its effect: green for a gain, red for a loss. Rows that overflow the panel scroll with the wheel.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>When the drawer out does not fit on the screen, the whole screen moves left to make room, as vanilla's recipe book moves the inventory; if even that is not enough, the drawer covers part of the window.</div>
+<h3>Tabs</h3>
+<p>Tabs above the window, for real changes of page only:</p>
+<div class="table"><table><tr><th>Tab</th><th>The content on the right shows</th><th>Who sees it</th></tr><tr><td>Companion</td><td>Its owner, and its mode (a list to pick from) once the modes exist</td><td>Whoever opens the screen</td></tr><tr><td>Debug</td><td>Debug options: its owner, later changing it</td><td>An operator holding the companion debug stick (<a href="../debug/index.html">Companion debug stick</a>)</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The drawer belongs to the Companion tab; switching to Debug puts it away. The tabs share their border with each other, as the handles do.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The screen shows only what works. Until the modes exist, the Companion tab has no mode list; until the owner can be changed, the Debug tab only shows the current owner.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The mode is a list: a click opens the possible modes, one is picked (<a href="../ownership/index.html">Ownership and modes</a>). The modes themselves are not designed yet.</div>
 <h3>Gestures</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The gestures, whatever the player holds:</div>
-<div class="table"><table><tr><th>Gesture</th><th>What happens</th></tr><tr><td>Right-click</td><td>Opens the screen, for its owner only; for anyone else, nothing</td></tr><tr><td>Sneak and right-click</td><td>The held item acts as on any entity (a name tag renames it, a splash potion is thrown)</td></tr><tr><td>Right-click holding the companion debug stick, as an operator</td><td>Opens the screen with the Debug tab, whoever owns the companion; for anyone else the stick is any item</td></tr></table></div>
+<div class="table"><table><tr><th>Gesture</th><th>What happens</th></tr><tr><td>Right-click</td><td>Opens the screen, for its owner only; for anyone else, nothing</td></tr><tr><td>Sneak and right-click</td><td>The held item acts as on any entity (a name tag renames it, a splash potion is thrown)</td></tr><tr><td>Right-click with the companion debug stick in the clicking hand, as an operator</td><td>Opens the screen with the Debug tab, whoever owns the companion; for anyone else, or in the other hand, the stick is any item</td></tr></table></div>
 <div class="stmt is-fact"><span class="tag fact">Fact</span>A companion cannot be leashed, as a villager: only entities that are <code>Leashable</code> can (<code>Mob.java:100</code>), and a companion is not a <code>Mob</code>.</div>
 <p>Until ownership exists (<a href="../ownership/index.html">Ownership and modes</a>), no companion has an owner, so only the debug stick opens the screen.</p>
 <h3>Health and armor bars</h3>
@@ -200,10 +233,14 @@
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Mods that change how the HUD draws hearts or armor (Overflowing Bars, Colorful Hearts) do not apply to the companion's bars. A compatibility with Overflowing Bars comes later, as an optional adapter.</div>
 <h2 class="part"><span class="ptag build">How it is built</span></h2>
 <h3>One menu, tabs on the client</h3>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The screen is one container menu, the one of the inventory screen grown (<a href="inventory.html">Inventory</a>): armor, designated weapons, storage and the player's inventory are its slots from the first tab. Switching tabs closes nothing: the item held on the cursor stays, and the view does not move.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The server knows the open tab. The client tells it with vanilla's menu button packet (<code>Serverbound<wbr>Container<wbr>Button<wbr>Click<wbr>Packet</code>, which the server checks against the open menu and its validity before calling <code>clickMenuButton</code>, <code>ServerGamePacketListenerImpl.<wbr>java:2046-2059</code>). Outside the Inventory tab, the storage slots take and give nothing on the server.</div>
-<div class="stmt is-fact"><span class="tag fact">Fact</span>Hiding a slot (<code>Slot.isActive</code>) only acts on the client's drawing and hover (<code>Slot.java:92-94</code>, <code>AbstractContainerScreen.<wbr>java:133,223,268</code>); the server's clicks, shift-click and double-click gathering ignore it. Without the check above, a modified client would reach the storage from any tab.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The screen is one container menu, the one of the inventory screen grown (<a href="inventory.html">Inventory</a>): armor, designated weapons, storage and the player's inventory are its slots. Switching tabs or moving the drawer closes nothing: the item held on the cursor stays, and the view does not move.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The server knows the open tab and the drawer's open panel. The client tells it with vanilla's menu button packet (<code>Serverbound<wbr>Container<wbr>Button<wbr>Click<wbr>Packet</code>, which the server checks against the open menu and its validity before calling <code>clickMenuButton</code>, <code>ServerGamePacketListenerImpl.<wbr>java:2046-2059</code>). Unless the storage panel is the open one, the storage slots take and give nothing on the server.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Hiding a slot (<code>Slot.isActive</code>) only acts on the client's drawing and hover (<code>Slot.java:92-94</code>, <code>AbstractContainerScreen.<wbr>java:133,223,268</code>); the server's clicks, shift-click and double-click gathering ignore it. Without the check above, a modified client would reach the storage with the drawer in.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>Slot positions are fixed once the menu is built, so the storage slots sit at the drawer's open position and show only once it is fully out; the player's inventory cannot move either. The name column has room for the hearts up to 200 health; from 221 the owner line reaches the player's inventory label, from about 380 the hearts cover its slots. Companions do not get that much health for now.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The Debug tab exists only when the server opened the screen with the debug stick: the server decides it when it opens the menu and sends it with the companion's entity id (Fabric's <code>ExtendedMenuType</code>). The menu's validity adds: whoever opened it without the stick must still be the owner.</div>
+<h3>Attributes on the client</h3>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>On the client a companion is a player (<a href="facade.html">Client facade</a>), so its attribute map is a player's (<code>Player.<wbr>createAttributes</code>), with attributes the companion does not have and other defaults: the panel lists a fixed set of the companion's attributes (<code>LivingEntity.<wbr>createLivingAttributes</code>), never the client's map. The values of the syncable ones arrive by vanilla (<code>Clientbound<wbr>Update<wbr>Attributes<wbr>Packet</code>); knockback resistance is not syncable (<code>Attributes.java:61</code>), and the equipment's modifiers are applied on the server only.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Knockback resistance travels through the menu's data (<code>ContainerData</code>, ×1000, sent each time it changes), like a furnace's progress.</div>
 <h3>Opening</h3>
 <figure><svg viewBox="0 0 680 256" role="img"><title>Where a right-click on a companion goes, by what the player does and holds</title><defs><marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
 <rect class="box-plain" x="10" y="113" width="104" height="58" rx="8"/>
@@ -225,7 +262,7 @@
 <rect class="box-anchored" x="420" y="70" width="140" height="46" rx="8"/>
 <circle class="dot" cx="434" cy="84" r="10"/><text x="434" y="88" text-anchor="middle" class="mark">3</text>
 <text x="450" y="90" class="title" style="font-size: 13px">Debug stick</text>
-<text x="450" y="107" class="small">gets the click</text>
+<text x="450" y="107" class="small">in the clicking hand</text>
 <path class="line" d="M560,93 L578,93" marker-end="url(#o)"/>
 <rect class="box-plain" x="580" y="70" width="90" height="46" rx="8"/>
 <text x="625" y="89" text-anchor="middle" class="small">screen with</text>
@@ -236,7 +273,7 @@
 <rect class="box-plain" x="420" y="146" width="250" height="46" rx="8"/>
 <circle class="dot" cx="434" cy="160" r="10"/><text x="434" y="164" text-anchor="middle" class="mark">4</text>
 <text x="450" y="166" class="title">Opens the screen</text>
-<text x="450" y="183" class="small">Companion and Inventory tabs</text>
+<text x="450" y="183" class="small">Companion tab</text>
 <path class="line" d="M280,158 C304,158 298,226 322,226 L418,226" marker-end="url(#o)"/>
 <text x="412" y="220" text-anchor="end" class="small">anyone else</text>
 <rect class="box-todo" x="420" y="206" width="250" height="40" rx="8"/>
@@ -245,7 +282,7 @@
 <ol class="legend">
 <li>The companion is asked first, whatever the player holds (<code>interact</code>).</li>
 <li>When the player sneaks, it lets the click pass: the held item acts as on any entity, a name tag renames it, a splash potion is thrown.</li>
-<li>When an operator holds the companion debug stick, it lets the click pass to the stick, which opens the screen with the Debug tab, whoever owns the companion. In anyone else's hand the stick is any item, and the branches below apply (<a href="../debug/index.html">Companion debug stick</a>).</li>
+<li>When an operator holds the companion debug stick in the clicking hand, it lets the click pass to the stick, which opens the screen with the Debug tab, whoever owns the companion. In anyone else's hand, or in the other hand, the stick is any item, and the branches below apply (<a href="../debug/index.html">Companion debug stick</a>).</li>
 <li>Its owner gets the screen. Until ownership exists, no companion has one, so only the debug stick opens it.</li>
 </ol>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The companion answers the right-click itself (<code>interact</code>), before any item: it opens the screen for its owner and lets the click pass when the player sneaks, or holds the debug stick with the gamemaster permission. The debug stick opens the screen with the Debug tab from its own <code>interactLivingEntity</code>, which vanilla calls when the entity let the click pass (<code>Player.java:806-842</code>).</div>
@@ -258,7 +295,7 @@
 <div class="stmt is-fact"><span class="tag fact">Fact</span>The client applies them to any living entity (<code>ClientPacketListener.java:1746-1758</code>, <code>1902-1906</code>).</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Its absorption travels as a Fabric synced attachment, as its identity does (<a href="identity.html">Identity, names and skins</a>).</div>
 <h3>Ruled out</h3>
-<div class="table"><table><tr><th>Option</th><th>Why it is ruled out</th></tr><tr><td>A hub screen whose Inventory button opens another screen</td><td>Each switch goes through the server and recentres the cursor; the item held on the cursor goes back to the inventory</td></tr><tr><td>The inventory first, with the orders as buttons beside the slots (most companion mods)</td><td>The screen must welcome modes and other features; the inventory is one part of it</td></tr><tr><td>Drawing the HUD's own health and armor elements for the companion</td><td>Only possible as a workaround: swapping the camera entity at each frame, Fabric's internal classes, vanilla's private methods by reflection. Overflowing Bars and Colorful Hearts keep their blink and displayed health in one shared object, so the companion's bar and the player's own would disturb each other</td></tr><tr><td>Mode buttons (Follow, Stay)</td><td>Replaced by a list: the modes will grow</td></tr></table></div>
+<div class="table"><table><tr><th>Option</th><th>Why it is ruled out</th></tr><tr><td>A hub screen whose Inventory button opens another screen</td><td>Each switch goes through the server and recentres the cursor; the item held on the cursor goes back to the inventory</td></tr><tr><td>The inventory first, with the orders as buttons beside the slots (most companion mods)</td><td>The screen must welcome modes and other features; the inventory is one part of it</td></tr><tr><td>Drawing the HUD's own health and armor elements for the companion</td><td>Only possible as a workaround: swapping the camera entity at each frame, Fabric's internal classes, vanilla's private methods by reflection. Overflowing Bars and Colorful Hearts keep their blink and displayed health in one shared object, so the companion's bar and the player's own would disturb each other</td></tr><tr><td>Mode buttons (Follow, Stay)</td><td>Replaced by a list: the modes will grow</td></tr><tr><td>The storage as an Inventory tab, the right-hand area switching between its info and its 36 slots</td><td>Tabs are kept for real changes of page; the storage is a part of the same page, which the drawer adds without hiding anything</td></tr><tr><td>The storage as a second window beside the first, or as a panel replacing the info</td><td>The window must stay whole; the storage comes out of it, not next to it</td></tr><tr><td>A tall 3D view over the whole height, or the bars in the right column</td><td>Tried on mockups: the view out of proportion with the rest, the bars misaligned</td></tr></table></div>
 </main>
 </div>
 </body>
