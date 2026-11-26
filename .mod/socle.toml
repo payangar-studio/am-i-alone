@@ -1,6 +1,6 @@
 # Managed by mc-cli. `mod update` rewrites the version and keeps the values.
 
-version = "0.6.0"
+version = "0.8.0"
 
 [init]
 minecraft = "26.3"

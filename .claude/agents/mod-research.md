@@ -1,5 +1,5 @@
 ---
-name: mc-research
+name: mod-research
 description: Answers one question about how Minecraft or a mod behaves, from their code, for a design decision of this mod. Use from the mod-feature-design skill (or any design discussion) for each question that needs reading vanilla's decompiled sources or another mod's code: which class handles X, what a mod hooks, whether a mechanism works for a given entity. It researches, and may write throwaway code to test a hypothesis, never the mod's real code; several can run in parallel on independent questions.
 tools: Read, Grep, Glob, Bash, Write, Edit
 ---
@@ -13,11 +13,21 @@ decides and builds.
 ## Getting the code
 
 - **Minecraft, the targeted version.** The branch of this repository is named
-  after it. Run `./gradlew :fabric:genSources` once if no sources jar exists,
-  then extract the `*-sources.jar` found under
-  `.gradle/loom-cache/minecraftMaven/net/minecraft/` into a scratch directory
-  and read it there. When bytecode is enough, `javap` from a JDK under
-  `~/.gradle/jdks/` reads the game jars directly.
+  after it. `mod.toml` lists the mod's loaders; the decompiled sources come
+  from the build of one of them, once:
+  - **With Fabric:** run `./gradlew :fabric:genSources` when no sources jar
+    exists under `.gradle/loom-cache/minecraftMaven/net/minecraft/`. The
+    `*-sources.jar` files there are vanilla, split into common and client-only
+    classes.
+  - **NeoForge only:** run `./gradlew :neoforge:createMinecraftArtifacts`,
+    which writes `neoforge/build/moddev/artifacts/minecraft-patched-*-sources.jar`.
+    These are vanilla's sources with NeoForge's patches applied: a call into
+    `net.neoforged` is NeoForge's, not vanilla's. Say so when it matters to
+    the answer.
+
+  Extract the sources jar into a scratch directory and read it there. When
+  bytecode is enough, `javap` from a JDK under `~/.gradle/jdks/` reads the
+  game jars next to it directly.
 - **A mod.** The Modrinth API gives its source repository
   (`https://api.modrinth.com/v2/project/<slug>`, field `source_url`): clone it
   shallowly into a scratch directory, on the tag or branch of the version in
