@@ -135,9 +135,10 @@ Decision: an empty primary weapon slot shows vanilla's sword outline, an
 empty secondary one vanilla's shield outline, as the player's offhand slot.
 
 Decision: the 3D view shows no name tag; the screen's title already names the
-companion. Fact: a player always shows their name, and vanilla's view has no
-option to hide it, so the screen draws the view itself with the same steps,
-without the name tag.
+companion. Fact: vanilla's view has no option to hide the name, and a
+companion shows it while the crosshair is on it, which it is when its owner
+opens the screen by right-clicking it (inferred), so the screen draws the view
+itself with the same steps, without the name tag.
 
 Decision: the menu stays valid while the companion is alive and the player
 within 4 blocks of reach, as the horse's (`AbstractMountInventoryMenu.java:27-32`).

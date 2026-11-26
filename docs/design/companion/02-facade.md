@@ -49,6 +49,21 @@ it does not have:
 | `getSkin()` | The default skin for the UUID (`AbstractClientPlayer.java:59`) | The skin variant's texture and model (`04-identity.md`) |
 | `getName()` | The name given at construction (`Player.java:1610`) | The companion's name |
 | `getScoreboardName()` | The profile name | Its UUID, as on the server, so the client finds its team (name colour) |
+| `shouldShowName()` | Always true (`Player.java:1597`): a player's name shows at all times | Its custom name's visibility, or whether the local crosshair is on it (`04-identity.md`) |
+
+Fact, read in the 26.3 code: the player renderer applies the mob rule
+(`AvatarRenderer.java:186-188`, as `MobRenderer.java:14-16`): the name shows
+when `shouldShowName()` is true, or when the entity has a custom name and is
+under the crosshair. Only `Player`'s answer makes a player's name permanent;
+the Mannequin, drawn by the same renderer, keeps `LivingEntity`'s answer and
+behaves as a mob. Only the renderers call `shouldShowName()`. The crosshair
+target is computed every frame (`Minecraft.java:3088-3097`) within the entity
+interaction range (`LocalPlayer.java:1222-1261`).
+
+Question, to check in game: the crosshair can target a companion.
+`Player.isPickable` refuses a spectator (`Player.java:1640`); a client player's
+game mode comes from its profile, which a companion lacks, so it should not
+count as one (inferred).
 
 Fact: on the client, `getType()` answers `minecraft:player`, which `Player`'s
 constructor sets (`Player.java:177`). Rendering does not read it; only code on
@@ -80,3 +95,5 @@ Ruled out:
 | Option | Why |
 |---|---|
 | A client entity extending `Avatar` (like the Mannequin), or a mob drawn with the player model | Not Enough Animations, ETF, EMF Compat and Touch'n Motion check for `Player` or `AbstractClientPlayer`: they would not animate it |
+| A renderer of our own for the companion type, to show its name as a mob's | The dispatcher sends every `AbstractClientPlayer` to the player renderers before looking up the type (`EntityRenderDispatcher.java:90-95`); it would also lose the animation mods' hooks |
+| A mixin on the player renderer's name rule | Not needed: overriding the entity's `shouldShowName()` is enough |

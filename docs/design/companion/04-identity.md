@@ -11,6 +11,13 @@ matches the skin: each skin belongs to a group (woman or man), first names are
 listed per group, last names are shared by all. A name tag renames a
 companion, as for any vanilla mob.
 
+Decision: its name shows above it only while a player's crosshair is on
+it, as for a renamed vanilla mob, and even without a name tag (a vanilla mob
+without one shows no name). The crosshair reaches it within the player's reach
+to hit an entity: 3 blocks in survival, 5 in creative. The name hides for the
+same reasons as any mob's: hidden HUD (F1), the team's name tag rule,
+invisibility, a sneaking companion beyond 32 blocks.
+
 ## How it is built
 
 Decision: the identity is the companion's UUID (its entity UUID), its name and
