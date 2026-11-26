@@ -71,7 +71,7 @@ import org.jspecify.annotations.Nullable;
  * does: its own {@link GossipContainer}, the rumours villagers pass on to it, the ones it gets when
  * hit or when it sees a villager or a companion killed ({@link ReputationEventHandler}), and the
  * daily forgetting. A mod changing those vanilla pieces changes the companions too. One event is
- * its own: a player who heals it gets a minor positive rumour, +1 for each heart restored.
+ * its own: a player who heals it gets a minor positive rumour, +1 for each half heart restored.
  */
 public class Companion extends Avatar implements ReputationEventHandler {
     private static final String INVENTORY_KEY = CommonEntrypoint.MOD_ID + ":inventory";
@@ -98,7 +98,7 @@ public class Companion extends Avatar implements ReputationEventHandler {
     /** While a thrown potion heals it at once: whether, and the player who threw it, if one did. */
     private boolean healingAtOnce;
     private @Nullable UUID healingAtOnceBy;
-    /** The health each player restored that is not yet a whole heart, so not yet a rumour. */
+    /** The health each player restored that is not yet a rumour: a fraction, or a first half heart alone. */
     private final Map<UUID, Float> healthRestored = new HashMap<>();
 
     public Companion(EntityType<? extends Avatar> type, Level level) {
@@ -172,7 +172,8 @@ public class Companion extends Avatar implements ReputationEventHandler {
     /**
      * Heals it, and credits the health actually restored to the player behind the heal: the one who
      * threw the potion healing it at once, otherwise the one who applied its instant health (a
-     * tipped arrow) or its regeneration. Every 2 health, a heart, is a minor positive rumour of +1.
+     * tipped arrow) or its regeneration. Every point of health, a half heart, is a minor positive
+     * rumour of +1.
      */
     @Override
     public void heal(float amount) {
@@ -185,12 +186,12 @@ public class Companion extends Avatar implements ReputationEventHandler {
         UUID healer = healingAtOnce ? healingAtOnceBy : effectHealer();
         if (healer != null) {
             float total = healthRestored.getOrDefault(healer, 0.0F) + restored;
-            int hearts = (int) (total / 2.0F);
-            // Vanilla drops a rumour worth less than 2: the first heart waits for the second.
+            int halfHearts = (int) total;
+            // Vanilla drops a rumour worth less than 2: the first half heart waits for the second.
             int known = gossips.getReputation(healer, type -> type == GossipType.MINOR_POSITIVE);
-            if (hearts > 0 && known + hearts >= GossipContainer.DISCARD_THRESHOLD) {
-                gossips.add(healer, GossipType.MINOR_POSITIVE, hearts);
-                total -= hearts * 2.0F;
+            if (halfHearts > 0 && known + halfHearts >= GossipContainer.DISCARD_THRESHOLD) {
+                gossips.add(healer, GossipType.MINOR_POSITIVE, halfHearts);
+                total -= halfHearts;
             }
             healthRestored.put(healer, total);
         }

@@ -201,9 +201,9 @@ public class ReputationServerGameTest {
         potion.setPos(companion.getX(), companion.getY() + 2.5, companion.getZ());
         potion.setDeltaMovement(0.0, -0.5, 0.0);
         helper.getLevel().addFreshEntity(potion);
-        // Instant health I restores 4 at the centre of the splash: 2 hearts.
+        // Instant health I restores 4 at the centre of the splash: 4 half hearts.
         helper.succeedWhen(() -> {
-            helper.assertValueEqual(companion.opinionOf(player), 2, "opinion of the thrower");
+            helper.assertValueEqual(companion.opinionOf(player), 4, "opinion of the thrower");
             helper.getLevel().getServer().getPlayerList().remove(player);
         });
     }
@@ -238,10 +238,10 @@ public class ReputationServerGameTest {
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
         companion.setHealth(10.0F);
         ServerPlayer player = connectPlayer(helper, "healer");
-        // Regeneration II heals 1 every 25 ticks.
+        // Regeneration II heals 1, a half heart, every 25 ticks: 8 in 200 ticks.
         companion.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1), player);
         helper.succeedWhen(() -> {
-            helper.assertTrue(companion.opinionOf(player) >= 2, "opinion of the healer: " + companion.opinionOf(player) + ", health " + companion.getHealth() + ", regeneration " + companion.hasEffect(MobEffects.REGENERATION));
+            helper.assertTrue(companion.opinionOf(player) >= 6, "opinion of the healer: " + companion.opinionOf(player) + ", health " + companion.getHealth() + ", regeneration " + companion.hasEffect(MobEffects.REGENERATION));
             helper.getLevel().getServer().getPlayerList().remove(player);
         });
     }
