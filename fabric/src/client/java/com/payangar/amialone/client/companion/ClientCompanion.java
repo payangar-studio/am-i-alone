@@ -78,7 +78,7 @@ public class ClientCompanion extends RemotePlayer {
      */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
-        if (Companion.letsClickPass(player)) {
+        if (Companion.letsClickPass(player, hand)) {
             return super.interact(player, hand, location);
         }
         return Companion.isOwner(this, player)

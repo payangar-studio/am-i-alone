@@ -51,6 +51,35 @@ public class DebugStickServerGameTest {
         helper.succeed();
     }
 
+    /**
+     * The stick acts only in the hand that clicks: in the off hand, it does not let a main-hand
+     * name tag act, and opens nothing.
+     */
+    @GameTest
+    public void actsOnlyInTheClickingHand(GameTestHelper helper) {
+        PlayerList players = helper.getLevel().getServer().getPlayerList();
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        String name = companion.getName().getString();
+        ServerPlayer operator = CompanionInventoryServerGameTest.connectPlayer(helper, "operator");
+        players.op(operator.nameAndId(), Optional.of(LevelBasedPermissionSet.GAMEMASTER), Optional.empty());
+        ItemStack nameTag = CompanionServerGameTest.namedTag("Bob");
+        boolean opened;
+        try {
+            operator.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
+            operator.setItemInHand(InteractionHand.MAIN_HAND, nameTag);
+            operator.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Debug.DEBUG_STICK));
+            operator.interactOn(companion, InteractionHand.MAIN_HAND, companion.position());
+            opened = operator.containerMenu != operator.inventoryMenu;
+        } finally {
+            players.deop(operator.nameAndId());
+            players.remove(operator);
+        }
+        helper.assertValueEqual(companion.getName().getString(), name, "name after a click with the stick in the off hand");
+        helper.assertTrue(!nameTag.isEmpty(), "the main-hand name tag was used");
+        helper.assertTrue(!opened, "a menu opened with the stick in the off hand");
+        helper.succeed();
+    }
+
     private static InteractionResult rightClick(GameTestHelper helper, ServerPlayer player, Companion companion) {
         player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Debug.DEBUG_STICK));

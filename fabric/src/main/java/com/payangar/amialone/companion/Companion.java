@@ -108,7 +108,7 @@ public class Companion extends Avatar {
      */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
-        if (letsClickPass(player)) {
+        if (letsClickPass(player, hand)) {
             return super.interact(player, hand, location);
         }
         if (!isOwner(this, player)) {
@@ -121,12 +121,14 @@ public class Companion extends Avatar {
     }
 
     /**
-     * Whether a right-click on a companion goes on to the held item: when the player sneaks, or
-     * holds the debug stick with the gamemaster permission, which the client knows too.
+     * Whether a right-click with {@code hand} on a companion goes on to the held item: when the
+     * player sneaks, or clicks with the debug stick in that hand and has the gamemaster permission,
+     * which the client knows too. A stick in the other hand does not count: the clicking hand's
+     * item would act instead.
      */
-    public static boolean letsClickPass(Player player) {
+    public static boolean letsClickPass(Player player, InteractionHand hand) {
         return player.isSecondaryUseActive()
-                || player.isHolding(Debug.DEBUG_STICK)
+                || player.getItemInHand(hand).is(Debug.DEBUG_STICK)
                         && player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 

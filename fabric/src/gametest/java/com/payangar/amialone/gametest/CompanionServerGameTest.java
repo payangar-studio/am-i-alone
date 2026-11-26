@@ -132,7 +132,7 @@ public class CompanionServerGameTest {
         helper.succeed();
     }
 
-    private static ItemStack namedTag(String name) {
+    static ItemStack namedTag(String name) {
         ItemStack nameTag = new ItemStack(Items.NAME_TAG);
         nameTag.set(DataComponents.CUSTOM_NAME, Component.literal(name));
         return nameTag;

@@ -27,8 +27,9 @@ public class DebugStickItem extends Item {
      * gives the same answer: it knows its gamemaster permission (the server sends it with the
      * player's permission level), and knows a companion by its synced identity, since it builds
      * companions as players. A success stops it from going on to use the stick; anyone else's click
-     * passes, as with a plain stick. The companion lets an operator's click with the stick reach
-     * it ({@code Companion.letsClickPass}).
+     * passes, as with a plain stick, though a companion takes such a click first unless the player
+     * sneaks. The companion lets an operator's click with the stick reach it ({@code
+     * Companion.letsClickPass}).
      */
     @Override
     public InteractionResult interactLivingEntity(
