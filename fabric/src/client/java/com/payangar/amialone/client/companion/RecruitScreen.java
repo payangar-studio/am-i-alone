@@ -4,11 +4,8 @@ import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.companion.CompanionMenu.Panel;
 import com.payangar.amialone.companion.Recruitment.Payment;
 import com.payangar.amialone.companion.RecruitMenu;
-import com.payangar.amialone.vendor.gui.Draw;
-import com.payangar.amialone.vendor.gui.Theme;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -21,8 +18,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * A companion's recruitment screen: the companion's screen read-only, under a Recruitment tab. Its
  * armor and designated weapons are icons with their tooltips, where the companion's screen has
- * slots; its drawer has its attributes only; under its bars, its price and Recruit, with the
- * payment slot left of Recruit when that is the way to pay. Recruit is greyed while the player
+ * slots; its drawer has its attributes only; under its bars, Recruit, which carries the price,
+ * with the payment slot left of it when that is the way to pay. Recruit is greyed while the player
  * cannot pay.
  */
 public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
@@ -35,13 +32,12 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
             InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
     /** Recruit, level with the payment slot's box, right of it when there is one. */
     private static final int BUTTON_Y = RecruitMenu.PAYMENT_Y - 1;
-    private static final int BUTTON_HEIGHT = 18;
     private static final int BUTTON_GAP = 4;
 
     /** The drawer's panel left open when a recruitment screen last closed, for the session. */
     private static @Nullable Panel remembered;
 
-    private @Nullable Button recruit;
+    private @Nullable RecruitButton recruit;
     /** Whether Recruit was last made active; none before the first frame. */
     private @Nullable Boolean shownCanPay;
 
@@ -52,9 +48,9 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
     @Override
     protected void init() {
         super.init();
-        recruit = addRenderableWidget(Button.builder(Component.translatable(KEY + "recruit"), button -> pressRecruit())
-                .bounds(0, 0, buttonWidth(), BUTTON_HEIGHT)
-                .build());
+        // No discount yet: the base price is the price.
+        recruit = addRenderableWidget(new RecruitButton(
+                buttonWidth(), Component.translatable(KEY + "recruit"), menu.price(), menu.price(), this::pressRecruit));
         shownCanPay = null;
         placeRecruit();
     }
@@ -130,11 +126,9 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
         remembered = panel;
     }
 
-    /** Its price, under the hearts. */
+    /** No lines: Recruit carries the price. */
     @Override
-    protected void extractLines(GuiGraphicsExtractor graphics, int x, int y) {
-        Draw.text(graphics, font, Component.translatable(KEY + "recruit.price", menu.price()), x, y, INFO_WIDTH, Theme.TEXT);
-    }
+    protected void extractLines(GuiGraphicsExtractor graphics, int x, int y) {}
 
     /**
      * Its armor and designated weapons as the companion's screen places its slots, in sunken boxes:
