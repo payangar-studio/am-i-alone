@@ -7,7 +7,6 @@ import com.payangar.amialone.companion.CompanionMenu.Panel;
 import com.payangar.amialone.companion.CompanionOwner;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.companion.RecruitMenu;
-import com.payangar.amialone.companion.Recruitment.Payment;
 import java.util.UUID;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -22,10 +21,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * A companion's recruitment seen from a client: its screen with the button, with its drawer out on
- * the attributes, then with the payment slot, each compared with a reference render of
- * src/gametest/resources/templates/ (recruit_screen.png, recruit_screen_attributes.png,
- * recruit_screen_slot.png), then with a price the companion's opinion lowered
+ * A companion's recruitment seen from a client: its screen, then with its drawer out on the
+ * attributes, each compared with a reference render of src/gametest/resources/templates/
+ * (recruit_screen.png, recruit_screen_attributes.png), then with a price the companion's opinion lowered
  * (recruit_screen_discount.png); then Recruit, after which the companion's screen opens and the client
  * knows its owner and predicts the right-clicks from it.
  */
@@ -49,7 +47,7 @@ public class RecruitmentClientGameTest implements FabricClientGameTest {
             context.waitTicks(20);
             boolean compare = System.getProperty("mod.testProfile") == null;
 
-            open(context, world, id, Payment.BUTTON);
+            open(context, world, id);
             check(context.computeOnClient(client -> screen(client).recruitActive()), "Recruit is greyed with 30 emeralds");
             screenshot(context, compare, "recruit_screen");
 
@@ -62,21 +60,13 @@ public class RecruitmentClientGameTest implements FabricClientGameTest {
             context.waitFor(client -> !(client.gui.screen() instanceof RecruitScreen));
             waitForServerClose(context, world);
 
-            // With an empty payment slot, Recruit is greyed whatever the inventory holds.
-            open(context, world, id, Payment.SLOT);
-            check(!context.computeOnClient(client -> screen(client).recruitActive()), "Recruit is active with an empty slot");
-            screenshot(context, compare, "recruit_screen_slot");
-            context.runOnClient(client -> screen(client).onClose());
-            context.waitFor(client -> !(client.gui.screen() instanceof RecruitScreen));
-            waitForServerClose(context, world);
-
             // Cured by the player: the companion thinks 100 of them, so 10 off at 0.1; the drawn
             // price is struck through, the price to pay beside it.
             world.getServer().runOnServer(server -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 ((Companion) player.level().getEntity(id)).gossips().add(player.getUUID(), GossipType.MAJOR_POSITIVE, 20);
             });
-            open(context, world, id, Payment.BUTTON);
+            open(context, world, id);
             check(context.computeOnClient(client -> screen(client).getMenu().price()) == PRICE - 10, "the lowered price");
             screenshot(context, compare, "recruit_screen_discount");
 
@@ -104,10 +94,10 @@ public class RecruitmentClientGameTest implements FabricClientGameTest {
         }
     }
 
-    private static void open(ClientGameTestContext context, TestSingleplayerContext world, UUID id, Payment payment) {
+    private static void open(ClientGameTestContext context, TestSingleplayerContext world, UUID id) {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
-            RecruitMenu.open(player, (Companion) player.level().getEntity(id), payment);
+            RecruitMenu.open(player, (Companion) player.level().getEntity(id));
         });
         context.waitForScreen(RecruitScreen.class);
         // The 3D view follows the mouse: a fixed cursor, in the tabs' row, over nothing.

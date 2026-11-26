@@ -2,7 +2,6 @@ package com.payangar.amialone.client.companion;
 
 import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.companion.CompanionMenu.Panel;
-import com.payangar.amialone.companion.Recruitment.Payment;
 import com.payangar.amialone.companion.RecruitMenu;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -18,9 +17,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * A companion's recruitment screen: the companion's screen read-only, under a Recruitment tab. Its
  * armor and designated weapons are icons with their tooltips, where the companion's screen has
- * slots; its drawer has its attributes only; under its bars, Recruit, which carries the price,
- * with the payment slot left of it when that is the way to pay. Recruit is greyed while the player
- * cannot pay.
+ * slots; its drawer has its attributes only; under its bars, Recruit, which carries the price.
+ * Recruit is greyed while the player has fewer emeralds than the price.
  */
 public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
     private static final List<Identifier> EQUIPMENT_ICONS = List.of(
@@ -30,9 +28,8 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
             CompanionMenu.ARMOR_ICONS.get(3),
             CompanionMenu.PRIMARY_WEAPON_ICON,
             InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
-    /** Recruit, centred on the payment slot's box, right of it when there is one. */
-    private static final int BUTTON_Y = RecruitMenu.PAYMENT_Y - 2;
-    private static final int BUTTON_GAP = 4;
+    /** Recruit, at the bottom of the column, centred on the boots' row. */
+    private static final int BUTTON_Y = CompanionMenu.COMPANION_Y + 3 * 18 - 2;
 
     /** The drawer's panel left open when a recruitment screen last closed, for the session. */
     private static @Nullable Panel remembered;
@@ -49,7 +46,7 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
     protected void init() {
         super.init();
         recruit = addRenderableWidget(new RecruitButton(
-                buttonWidth(), Component.translatable(KEY + "recruit"), menu.price(), menu.basePrice(), this::pressRecruit));
+                INFO_WIDTH, Component.translatable(KEY + "recruit"), menu.price(), menu.basePrice(), this::pressRecruit));
         shownCanPay = null;
         placeRecruit();
     }
@@ -61,26 +58,18 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
         }
     }
 
-    private int buttonX() {
-        return menu.payment() == Payment.SLOT ? INFO_X + 18 + BUTTON_GAP : INFO_X;
-    }
-
-    private int buttonWidth() {
-        return INFO_X + INFO_WIDTH - buttonX();
-    }
 
     /** Follows the screen, which moves as the drawer slides, and greys Recruit while it cannot pay. */
     private void placeRecruit() {
         if (recruit == null) {
             return;
         }
-        recruit.setPosition(leftPos + buttonX(), topPos + BUTTON_Y);
+        recruit.setPosition(leftPos + INFO_X, topPos + BUTTON_Y);
         boolean canPay = menu.canPay(minecraft.player);
         if (shownCanPay == null || shownCanPay != canPay) {
             shownCanPay = canPay;
             recruit.active = canPay;
-            String need = menu.payment() == Payment.SLOT ? "recruit.need_slot" : "recruit.need";
-            recruit.setTooltip(canPay ? null : Tooltip.create(Component.translatable(KEY + need, menu.price())));
+            recruit.setTooltip(canPay ? null : Tooltip.create(Component.translatable(KEY + "recruit.need", menu.price())));
         }
     }
 

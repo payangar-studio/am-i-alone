@@ -6,7 +6,6 @@ import com.payangar.amialone.companion.Companion;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.companion.RecruitMenu;
 import com.payangar.amialone.companion.Recruitment;
-import com.payangar.amialone.companion.Recruitment.Payment;
 import java.util.UUID;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -141,7 +140,7 @@ public class ReputationServerGameTest {
             helper.assertValueEqual(Recruitment.priceFor(companion, disliked), base + 3, "price when disliked");
 
             liked.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
-            RecruitMenu.open(liked, companion, Payment.BUTTON);
+            RecruitMenu.open(liked, companion);
             RecruitMenu menu = (RecruitMenu) liked.containerMenu;
             helper.assertValueEqual(menu.price(), Math.max(base - 10, 1), "the screen's price to pay");
             helper.assertValueEqual(menu.basePrice(), base, "the screen's drawn price");

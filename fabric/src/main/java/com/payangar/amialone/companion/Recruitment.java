@@ -1,6 +1,5 @@
 package com.payangar.amialone.companion;
 
-import java.util.Locale;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -19,28 +18,6 @@ public final class Recruitment {
      * between their 0.05 (most offers) and 0.2 (armour, tools, books).
      */
     public static final double OPINION_MULTIPLIER = 0.1;
-
-    /**
-     * The development switch that picks the way to pay while both are tried: the system property
-     * {@code am_i_alone.recruit.payment}, {@code slot} for the payment slot, the button otherwise.
-     * Read by the server, which sends the way to the client.
-     */
-    public static final String PAYMENT_PROPERTY = "am_i_alone.recruit.payment";
-
-    /**
-     * How a player pays: with a button that takes the emeralds from their inventory, or by putting
-     * them in a payment slot first.
-     */
-    public enum Payment {
-        BUTTON,
-        SLOT;
-
-        /** The way the server picks, from {@link #PAYMENT_PROPERTY}. */
-        public static Payment current() {
-            String value = System.getProperty(PAYMENT_PROPERTY, "");
-            return value.toLowerCase(Locale.ROOT).equals("slot") ? SLOT : BUTTON;
-        }
-    }
 
     private Recruitment() {}
 
