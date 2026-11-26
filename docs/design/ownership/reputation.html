@@ -119,66 +119,80 @@
 <div class="stmt is-decision"><span class="tag decision">Decision</span>What a companion's opinion hears:</div>
 <div class="table"><table><tr><th>Event</th><th>Rumour, as for a villager</th></tr><tr><td>A player hits it</td><td>Minor negative +25</td></tr><tr><td>A player kills a villager or a companion in front of it</td><td>Major negative +25</td></tr><tr><td>A villager passes rumours on to it</td><td>As between two villagers: up to 10, with their losses</td></tr></table></div>
 <p>It cannot trade, but trading rumours reach it by word of mouth, as any other.</p>
-<figure><svg viewBox="0 0 680 360" role="img"><title>How a companion's opinion of a player is fed: hits, killings it sees and villagers passing rumours on add to it, every day it forgets a little, and the opinion moves the price of its recruitment for that player</title><defs><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
+<figure><svg viewBox="0 0 680 440" role="img"><title>How a companion's opinion of a player is fed: hits, heals, killings it sees and villagers passing rumours on add to it, every day it forgets a little, and the opinion moves the price of its recruitment for that player</title><defs><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--fg)"/></marker></defs>
 <rect class="box-plain" x="10" y="16" width="230" height="58" rx="8"/>
 <circle class="dot" cx="26" cy="32" r="10"/><text x="26" y="36" text-anchor="middle" class="mark">1</text>
 <text x="132" y="40" text-anchor="middle" class="title">A player hits it</text>
-<text x="132" y="60" text-anchor="middle" class="small">minor negative +25</text>
-<rect class="box-plain" x="10" y="92" width="230" height="72" rx="8"/>
-<circle class="dot" cx="26" cy="108" r="10"/><text x="26" y="112" text-anchor="middle" class="mark">2</text>
-<text x="132" y="116" text-anchor="middle" class="title">A player kills a villager</text>
-<text x="132" y="135" text-anchor="middle" class="small">or a companion in front of it</text>
-<text x="132" y="152" text-anchor="middle" class="small">major negative +25</text>
-<rect class="box-plain" x="10" y="182" width="230" height="72" rx="8"/>
-<circle class="dot" cx="26" cy="198" r="10"/><text x="26" y="202" text-anchor="middle" class="mark">3</text>
-<text x="132" y="206" text-anchor="middle" class="title">A villager close by</text>
-<text x="132" y="225" text-anchor="middle" class="small">passes up to 10 rumours on,</text>
-<text x="132" y="242" text-anchor="middle" class="small">each minus its loss</text>
-<rect class="box-plain" x="10" y="286" width="230" height="64" rx="8"/>
-<circle class="dot" cx="26" cy="302" r="10"/><text x="26" y="306" text-anchor="middle" class="mark">6</text>
-<text x="132" y="310" text-anchor="middle" class="title">A companion killed</text>
-<text x="132" y="328" text-anchor="middle" class="small">villagers who see it count it</text>
-<text x="132" y="343" text-anchor="middle" class="small">as a villager killed</text>
-<path class="line" d="M125,286 L125,256" marker-end="url(#r)"/>
-<text x="133" y="275" class="small">they pass it on</text>
-<rect class="box-anchor" x="300" y="16" width="190" height="238" rx="8"/>
+<text x="132" y="59" text-anchor="middle" class="small">minor negative +25</text>
+<rect class="box-plain" x="10" y="88" width="230" height="72" rx="8"/>
+<circle class="dot" cx="26" cy="104" r="10"/><text x="26" y="108" text-anchor="middle" class="mark">2</text>
+<text x="132" y="112" text-anchor="middle" class="title">A player heals it</text>
+<text x="132" y="131" text-anchor="middle" class="small">minor positive +1</text>
+<text x="132" y="148" text-anchor="middle" class="small">per heart actually restored</text>
+<rect class="box-plain" x="10" y="174" width="230" height="72" rx="8"/>
+<circle class="dot" cx="26" cy="190" r="10"/><text x="26" y="194" text-anchor="middle" class="mark">3</text>
+<text x="132" y="198" text-anchor="middle" class="title">A player kills a villager</text>
+<text x="132" y="217" text-anchor="middle" class="small">or a companion in front of it:</text>
+<text x="132" y="234" text-anchor="middle" class="small">major negative +25</text>
+<rect class="box-plain" x="10" y="260" width="230" height="72" rx="8"/>
+<circle class="dot" cx="26" cy="276" r="10"/><text x="26" y="280" text-anchor="middle" class="mark">4</text>
+<text x="132" y="284" text-anchor="middle" class="title">A villager close by</text>
+<text x="132" y="303" text-anchor="middle" class="small">passes up to 10 rumours on,</text>
+<text x="132" y="320" text-anchor="middle" class="small">each minus its loss</text>
+<rect class="box-plain" x="10" y="364" width="230" height="64" rx="8"/>
+<circle class="dot" cx="26" cy="380" r="10"/><text x="26" y="384" text-anchor="middle" class="mark">5</text>
+<text x="132" y="388" text-anchor="middle" class="title">A companion killed</text>
+<text x="132" y="407" text-anchor="middle" class="small">villagers who see it count it</text>
+<text x="132" y="424" text-anchor="middle" class="small">as a villager killed</text>
+<path class="line" d="M125,364 L125,334" marker-end="url(#r)"/>
+<text x="133" y="353" class="small">they pass it on</text>
+<path class="line" d="M240,45 L298,45" marker-end="url(#r)"/>
+<path class="line" d="M240,124 L298,124" marker-end="url(#r)"/>
+<path class="line" d="M240,210 L298,210" marker-end="url(#r)"/>
+<path class="line" d="M240,296 L298,296" marker-end="url(#r)"/>
+<rect class="box-anchor" x="300" y="16" width="190" height="316" rx="8"/>
 <text x="395" y="42" text-anchor="middle" class="title">Its opinion</text>
 <text x="395" y="60" text-anchor="middle" class="small">one per player, here of Alex</text>
-<text x="314" y="92">minor positive</text><text x="476" y="92" text-anchor="end">20 × 1</text>
-<text x="314" y="114">trading</text><text x="476" y="114" text-anchor="end">5 × 1</text>
-<path d="M314,128 L476,128" style="stroke: var(--anchor); stroke-width: 1"/>
-<text x="314" y="150" style="font-weight: 700">opinion</text><text x="476" y="150" text-anchor="end" style="font-weight: 700">+25</text>
-<text x="395" y="198" text-anchor="middle" class="small">kept per player,</text>
-<text x="395" y="214" text-anchor="middle" class="small">saved with the companion</text>
-<path class="line" d="M240,45 C270,45 270,70 298,70" marker-end="url(#r)"/>
-<path class="line" d="M240,128 L298,128" marker-end="url(#r)"/>
-<path class="line" d="M240,218 C270,218 270,190 298,190" marker-end="url(#r)"/>
-<rect class="box-plain" x="300" y="286" width="190" height="64" rx="8"/>
-<circle class="dot" cx="316" cy="302" r="10"/><text x="316" y="306" text-anchor="middle" class="mark">4</text>
-<text x="402" y="310" text-anchor="middle" class="title">Every day</text>
-<text x="402" y="328" text-anchor="middle" class="small">each rumour loses</text>
-<text x="402" y="343" text-anchor="middle" class="small">its daily amount</text>
-<path class="line" d="M395,286 L395,256" marker-end="url(#r)"/>
-<text x="403" y="275" class="small">forgets</text>
-<text x="600" y="70" text-anchor="middle" class="small">when the screen opens</text>
-<rect class="box-anchored" x="530" y="80" width="140" height="126" rx="8"/>
-<circle class="dot" cx="546" cy="96" r="10"/><text x="546" y="100" text-anchor="middle" class="mark">5</text>
-<text x="608" y="102" text-anchor="middle" class="title">Its price</text>
-<text x="600" y="122" text-anchor="middle" class="small">for that player</text>
-<text x="600" y="146" text-anchor="middle" class="small">the drawn price</text>
-<text x="600" y="162" text-anchor="middle" class="small">− opinion × 0.1</text>
-<text x="600" y="178" text-anchor="middle" class="small">− Hero of the Village</text>
-<text x="600" y="194" text-anchor="middle" class="small">at least 1</text>
-<path class="line" d="M490,135 L528,135" marker-end="url(#r)"/>
+<text x="314" y="140">minor positive</text><text x="476" y="140" text-anchor="end">20 × 1</text>
+<text x="314" y="162">trading</text><text x="476" y="162" text-anchor="end">5 × 1</text>
+<path d="M314,176 L476,176" style="stroke: var(--anchor); stroke-width: 1"/>
+<text x="314" y="198" style="font-weight: 700">opinion</text><text x="476" y="198" text-anchor="end" style="font-weight: 700">+25</text>
+<text x="395" y="300" text-anchor="middle" class="small">kept per player,</text>
+<text x="395" y="316" text-anchor="middle" class="small">saved with the companion</text>
+<rect class="box-plain" x="300" y="364" width="190" height="64" rx="8"/>
+<circle class="dot" cx="316" cy="380" r="10"/><text x="316" y="384" text-anchor="middle" class="mark">6</text>
+<text x="402" y="388" text-anchor="middle" class="title">Every day</text>
+<text x="402" y="406" text-anchor="middle" class="small">each rumour loses</text>
+<text x="402" y="421" text-anchor="middle" class="small">its daily amount</text>
+<path class="line" d="M395,364 L395,334" marker-end="url(#r)"/>
+<text x="403" y="353" class="small">forgets</text>
+<text x="600" y="110" text-anchor="middle" class="small">when the screen opens</text>
+<rect class="box-anchored" x="530" y="120" width="140" height="126" rx="8"/>
+<circle class="dot" cx="546" cy="136" r="10"/><text x="546" y="140" text-anchor="middle" class="mark">7</text>
+<text x="608" y="142" text-anchor="middle" class="title">Its price</text>
+<text x="600" y="162" text-anchor="middle" class="small">for that player</text>
+<text x="600" y="186" text-anchor="middle" class="small">the drawn price</text>
+<text x="600" y="202" text-anchor="middle" class="small">− opinion × 0.1</text>
+<text x="600" y="218" text-anchor="middle" class="small">− Hero of the Village</text>
+<text x="600" y="234" text-anchor="middle" class="small">at least 1</text>
+<path class="line" d="M490,183 L528,183" marker-end="url(#r)"/>
 </svg><figcaption>Alex cured a zombie villager and traded with it, then that villager met the companion. The companion holds less than the villager does: the good spreads badly.</figcaption></figure>
 <ol class="legend">
 <li>A player who hits the companion adds a minor negative rumour of 25 against them, as on a villager.</li>
+<li>A player who heals it gets a minor positive rumour, +1 for each heart (2 health) actually restored. This one is the companion's own: a villager has no such event (see healing below).</li>
 <li>A player who kills a villager or a companion in front of it adds a major negative rumour of 25: it is a witness as a villager is.</li>
 <li>A villager close by passes rumours on to it as to another villager: up to 10, each losing its amount for being passed on (see the table of rumours). This is the only way trading rumours, and the cure's minor positive one, reach a companion; the cure's major positive one never spreads.</li>
+<li>A companion killed in front of villagers counts for them as a villager killed: their own prices go up for the killer, and they pass the rumour on, to companions too.</li>
 <li>Every day, each rumour loses its daily amount, until it is gone. A major positive rumour is never forgotten.</li>
 <li>When a player opens its recruitment screen, the price they pay is computed from the companion's opinion of them (see the price below).</li>
-<li>A companion killed in front of villagers counts for them as a villager killed: their own prices go up for the killer, and they pass the rumour on, to companions too.</li>
 </ol>
+<h3>Healing it</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>One event is the companion's own, which a villager does not have: <strong>a player who heals it</strong> gets a minor positive rumour, +1 for each heart (2 health) actually restored. Healing a companion at full health brings nothing, so potions thrown for nothing buy no opinion. Only a player's heal counts: a witch's potion, or one a dispenser throws, credits no one.</div>
+<p>For example, a splash potion of healing that brings a companion from 8 to 20 health restores 6 hearts: +6 minor positive for the player who threw it. The same potion on a companion at 18 health restores only 1 heart: +1.</p>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>In vanilla, a player heals another creature only with potion effects: healing and regeneration, drunk by no one but thrown, lingering, or on a tipped arrow (beacons and conduits reach players only; no item heals any creature). A tipped arrow also deals damage, so its hit counts as any hit.</div>
+<div class="table"><table><tr><th>Effect</th><th>How a player gets it onto a companion</th><th>Also</th></tr><tr><td>Healing (instant health)</td><td>Splash potion, lingering potion, tipped arrow</td><td>The arrow's hit counts as a hit: minor negative +25</td></tr><tr><td>Regeneration</td><td>Splash potion, lingering potion, tipped arrow</td><td>The same for the arrow's hit</td></tr><tr><td>Beacon, conduit</td><td>Never: they reach players only</td><td></td></tr><tr><td>An item</td><td>Never: no item heals a creature</td><td></td></tr></table></div>
+<div class="stmt is-question"><span class="tag question">Question</span>Heals from magic mods, handled later as a compatibility of their own.</div>
+<h3>Killing a companion</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Killing a companion in front of villagers counts for them as killing a villager: their own prices go up for the killer.</div>
 <h3>The price</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The price of a recruitment follows the opinion as a villager's offer does, with a coefficient of 0.1, between the villagers' 0.05 (most offers) and 0.2 (armour, tools, books): the opinion × 0.1, rounded down, comes off the price. A bad opinion raises it, by at least 1, as a villager's.</div>
@@ -255,6 +269,11 @@
 <h3>Hearing a villager</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>It hears a villager standing within √5 blocks of it, as two villagers do (<code>TradeWithVillager.java:48-50</code>), while that villager is idle or meeting (its brain's activity, so a mod changing the villagers' schedule changes when companions hear), at most once a minute (1200 ticks, <code>Villager.java:813-815</code>).</div>
 <div class="stmt is-fact"><span class="tag fact">Fact</span>A companion does not move yet, so it hears only the villagers who come close.</div>
+<h3>Crediting a heal</h3>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>A heal is credited in the companion's <code>heal</code>: the health restored (after minus before), added up for each player, +1 minor positive for every 2. Who healed comes from the effect behind the heal:</div>
+<div class="table"><table><tr><th>Effect, how it arrives</th><th>How the companion knows the healer</th></tr><tr><td>Regeneration, any way; instant health on a tipped arrow</td><td>From the effect's source: vanilla gives the companion whoever applied the effect (<code>onEffectAdded</code>, <code>onEffectUpdated</code>, <code>LivingEntity.java:1066,1082</code>). The companion remembers it for that effect, resolving a lingering cloud or an ownerless projectile to its owner, and never lets the periodic update without a source (<code>LivingEntity.java:846</code>) forget it.</td></tr><tr><td>Instant health from a thrown or lingering potion</td><td>From the mod's mixin: vanilla heals directly, without telling anyone who threw it (<code>HealOrHarmMobEffect.java:28-38</code>).</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>One mixin, the mod's first, on <code>HealOrHarmMobEffect.<wbr>applyInstantaneousEffect</code>: it tells a companion target the thrower before vanilla heals it. Its reason: it is the only exact way, since neither the companion nor Fabric API's effect events receive the thrower there.</div>
+<div class="table"><table><tr><th>Ruled out</th><th>Why</th></tr><tr><td>Crediting the nearest player after a heal</td><td>A witch's potion would credit a player who did nothing</td></tr><tr><td>Looking for the potion or cloud close by</td><td>Two potions at once, or another mod's heal, would be credited wrongly</td></tr><tr><td>Not counting it</td><td>It is the most common heal of all</td></tr></table></div>
 <h3>The client</h3>
 <div class="stmt is-fact"><span class="tag fact">Fact</span>The client never receives rumours; the server computes the price and sends the drawn price and the price to pay with the screen's opening data.</div>
 </main>

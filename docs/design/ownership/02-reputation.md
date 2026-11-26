@@ -34,6 +34,20 @@ Decision: what a companion's opinion hears:
 
 It cannot trade, but trading rumours reach it by word of mouth, as any other.
 
+Decision: one event is the companion's own, which a villager does not have:
+**a player who heals it** gets a minor positive rumour, +1 for each heart (2
+health) actually restored. Healing a companion at full health brings nothing,
+so potions thrown for nothing buy no opinion. Only a player's heal counts: a
+witch's potion, or one a dispenser throws, credits no one.
+
+Fact: in vanilla, a player heals another creature only with potion effects:
+healing and regeneration, drunk by no one but thrown, lingering, or on a
+tipped arrow (beacons and conduits reach players only; no item heals any
+creature). A tipped arrow also deals damage, so its hit counts as any hit.
+
+Question: heals from magic mods, handled later as a compatibility of their
+own.
+
 Decision: killing a companion in front of villagers counts for them as killing
 a villager: their own prices go up for the killer.
 
@@ -88,6 +102,27 @@ do (`TradeWithVillager.java:48-50`), while that villager is idle or meeting
 companions hear), at most once a minute (1200 ticks, `Villager.java:813-815`).
 Fact: a companion does not move yet, so it hears only the villagers who come
 close.
+
+Decision: a heal is credited in the companion's `heal`: the health restored
+(after minus before), added up for each player, +1 minor positive for every
+2. Who healed comes from the effect behind the heal:
+
+- regeneration, and instant health on a tipped arrow: vanilla gives the
+  companion whoever applied the effect (`onEffectAdded`, `onEffectUpdated`,
+  `LivingEntity.java:1066,1082`); the companion remembers it for that effect,
+  resolving a lingering cloud or an ownerless projectile to its owner, and
+  never lets the periodic update without a source (`LivingEntity.java:846`)
+  forget it;
+- instant health from a thrown or lingering potion: vanilla heals directly,
+  without telling anyone who threw it (`HealOrHarmMobEffect.java:28-38`).
+
+Decision: one mixin, the mod's first, on `HealOrHarmMobEffect.applyInstantaneousEffect`:
+it tells a companion target the thrower before vanilla heals it. Its reason:
+it is the only exact way, since neither the companion nor Fabric API's effect
+events receive the thrower there. Ruled out: crediting the nearest player
+after a heal (a witch's potion would credit a player who did nothing),
+looking for the potion or cloud close by (two potions at once, another mod's
+heal credited wrongly), and not counting it (the most common heal of all).
 
 Fact: the client never receives rumours; the server computes the price and
 sends the drawn price and the price to pay with the screen's opening data.
