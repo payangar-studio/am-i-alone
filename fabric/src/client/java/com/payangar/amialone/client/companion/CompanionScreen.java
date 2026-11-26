@@ -297,10 +297,14 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
 
-    /** The drawer and its handles are part of the screen: a click there throws nothing. */
+    /**
+     * The drawer and its handles are part of the screen: a click there throws nothing. The tabs' row
+     * beside the tabs is not: a click there throws, as outside the screen.
+     */
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
-        return super.hasClickedOutside(mouseX, mouseY, left, top)
+        boolean besideTabs = mouseY < top + TAB_HEIGHT && tabAt(mouseX, mouseY) == null;
+        return (super.hasClickedOutside(mouseX, mouseY, left, top) || besideTabs)
                 && !overDrawer(mouseX, mouseY)
                 && !onHandle(mouseX, mouseY);
     }
