@@ -4,7 +4,7 @@ What the mod does and why, decided before the code. The code follows these
 documents; this branch does not follow the code.
 
 These Markdown files are the design for agents. The HTML pages next to them are
-the same design as a wiki for developers, built by the `mod-design` skill: this
+the same design as a wiki for developers, built by the `mod-wiki-design` skill: this
 document becomes its home page (`index.html`), each feature a folder whose
 `00-overview.md` becomes its page, and each other document a sub-page. Edit the
 documents, never the pages by hand.
@@ -83,8 +83,8 @@ where possible. Taken from the modpack grimoire-et-sortileges.
 - An issue to open on Ragdoll Deaths (`companion/06-death.md`).
 - Disconnection at server stop, and an owner who never comes back
   (`companion/05-saving.md`).
-- Recruitment: the owner's name when they change it, which way to pay is
-  kept, its own sound (`ownership/01-recruitment.md`).
+- Recruitment: the owner's name when they change it, its own sound
+  (`ownership/01-recruitment.md`).
 - Other conditions to recruit, a price that grows with the equipment, the
   other modes (`ownership/00-overview.md`).
 - The motor (`behaviour/00-overview.md`).

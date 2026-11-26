@@ -40,8 +40,16 @@ a villager: their own prices go up for the killer.
 Decision: the price of a recruitment follows the opinion as a villager's
 offer does, with a coefficient of 0.1, between the villagers' 0.05 (most
 offers) and 0.2 (armour, tools, books): the opinion × 0.1, rounded down,
-comes off the price. At +150 the price drops by 15; a bad opinion raises it,
-by at least 1, as a villager's.
+comes off the price. A bad opinion raises it, by at least 1, as a villager's.
+
+Fact: a companion's good opinion stays small. It learns the good only by word
+of mouth: the major positive rumour of a cure never spreads, and hearing
+several villagers keeps the strongest version of each rumour rather than
+adding them (`GossipContainer.java:161-163`). At best it holds a minor
+positive 20 (from a cured villager) and trading 5: +25, so 2 emeralds off. A
+bad opinion goes down to −700, 70 more. Decision: kept at 0.1: the rumour
+system makes the good spread badly, and that is accepted; Hero of the Village
+gives the larger discounts.
 
 Decision: Hero of the Village lowers it too, as at a villager: by 30 % (level
 I) to 55 % (level V) of the drawn price, at least 1, on top of the opinion.
@@ -70,9 +78,9 @@ Decision: this is accepted.
 
 Decision: the companion is a `ReputationEventHandler`. A villager dying in
 front of it tells it as it tells a villager, with nothing more in the mod.
-Hitting it (`setLastHurtByMob`) and its death tell itself and its witnesses
-(villagers and companions within 16 blocks that see it) through the same
-interface, with vanilla's event types.
+A hit on it (`setLastHurtByMob`) tells itself only, as a villager's; its
+death tells its witnesses (villagers and companions within 16 blocks that see
+it), through the same interface, with vanilla's event types.
 
 Decision: it hears a villager standing within √5 blocks of it, as two villagers
 do (`TradeWithVillager.java:48-50`), while that villager is idle or meeting

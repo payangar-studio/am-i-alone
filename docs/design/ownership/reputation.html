@@ -181,7 +181,9 @@
 </ol>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Killing a companion in front of villagers counts for them as killing a villager: their own prices go up for the killer.</div>
 <h3>The price</h3>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The price of a recruitment follows the opinion as a villager's offer does, with a coefficient of 0.1, between the villagers' 0.05 (most offers) and 0.2 (armour, tools, books): the opinion × 0.1, rounded down, comes off the price. At +150 the price drops by 15; a bad opinion raises it, by at least 1, as a villager's.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The price of a recruitment follows the opinion as a villager's offer does, with a coefficient of 0.1, between the villagers' 0.05 (most offers) and 0.2 (armour, tools, books): the opinion × 0.1, rounded down, comes off the price. A bad opinion raises it, by at least 1, as a villager's.</div>
+<div class="stmt is-fact"><span class="tag fact">Fact</span>A companion's good opinion stays small. It learns the good only by word of mouth: the major positive rumour of a cure never spreads, and hearing several villagers keeps the strongest version of each rumour rather than adding them (<code>GossipContainer.java:161-163</code>). At best it holds a minor positive 20 (from a cured villager) and trading 5: +25, so 2 emeralds off. A bad opinion goes down to −700, 70 more.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Kept at 0.1: the rumour system makes the good spread badly, and that is accepted; Hero of the Village gives the larger discounts.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>Hero of the Village lowers it too, as at a villager: by 30 % (level I) to 55 % (level V) of the drawn price, at least 1, on top of the opinion.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The price never drops below 1, and has no cap (<a href="recruitment.html">Recruitment</a>). It is computed when the recruitment screen opens.</div>
 <p>For example, a companion whose drawn price is 24 emeralds, opened by different players:</p>
@@ -236,7 +238,7 @@
 <rect class="box-core" x="10" y="350" width="30" height="18" rx="3"/><text x="48" y="363" class="small">copied from the villager: a mod that changes the villager's does not reach the companions</text>
 </svg><figcaption>Everything but the client runs on the server.</figcaption></figure>
 <ol class="legend">
-<li>The companion is a <code>ReputationEventHandler</code>, the interface through which a dying villager tells its witnesses (<code>Villager.java:597-606</code>). Hitting the companion (<code>setLastHurtByMob</code>) and its death tell itself and its witnesses (villagers and companions within 16 blocks that see it) through the same interface, with vanilla's event types.</li>
+<li>The companion is a <code>ReputationEventHandler</code>, the interface through which a dying villager tells its witnesses (<code>Villager.java:597-606</code>). A hit on the companion (<code>setLastHurtByMob</code>) tells itself only, as a villager's; its death tells its witnesses (villagers and companions within 16 blocks that see it), through the same interface, with vanilla's event types.</li>
 <li>The rumour an event adds is the villager's rule, copied (<code>Villager.onReputationEventFrom</code>, <code>Villager.java:858-868</code>).</li>
 <li>It hears a villager standing within √5 blocks of it, as two villagers do, while that villager is idle or meeting, at most once a minute, through <code>transferFrom</code>.</li>
 <li><code>decay</code> runs once a day of game time.</li>
@@ -249,7 +251,7 @@
 <div class="stmt is-fact"><span class="tag fact">Fact</span>Two of a villager's rules are private code, and the companion copies them, so a mod changing them does not reach the companions: the rumour an event adds (<code>Villager.<wbr>onReputationEventFrom</code>, <code>Villager.java:858-868</code>) and the price of an offer (<code>Villager.<wbr>updateSpecialPrices</code>, <code>Villager.java:409-424</code>).</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>This is accepted.</div>
 <h3>Events</h3>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion is a <code>ReputationEventHandler</code>. A villager dying in front of it tells it as it tells a villager, with nothing more in the mod. Hitting it (<code>setLastHurtByMob</code>) and its death tell itself and its witnesses (villagers and companions within 16 blocks that see it) through the same interface, with vanilla's event types.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The companion is a <code>ReputationEventHandler</code>. A villager dying in front of it tells it as it tells a villager, with nothing more in the mod. A hit on it (<code>setLastHurtByMob</code>) tells itself only, as a villager's; its death tells its witnesses (villagers and companions within 16 blocks that see it), through the same interface, with vanilla's event types.</div>
 <h3>Hearing a villager</h3>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>It hears a villager standing within √5 blocks of it, as two villagers do (<code>TradeWithVillager.java:48-50</code>), while that villager is idle or meeting (its brain's activity, so a mod changing the villagers' schedule changes when companions hear), at most once a minute (1200 ticks, <code>Villager.java:813-815</code>).</div>
 <div class="stmt is-fact"><span class="tag fact">Fact</span>A companion does not move yet, so it hears only the villagers who come close.</div>

@@ -44,16 +44,13 @@ drawn price struck through in red and the price to pay beside it, as a
 villager's offer does (`MerchantScreen.java:224-238`). Ruled out: a price line
 under the hearts, which did not read as the main information.
 
-Decision: two ways to pay are built, to be tried in game; one is kept, the
-other removed:
+Decision: the player clicks Recruit, and the price is taken from their
+inventory. The button is greyed while they have fewer emeralds than the price,
+with a tooltip that says how many it takes.
 
-| Way | What the player does |
-|---|---|
-| Button | Clicks Recruit; the emeralds are taken from their inventory. The button is greyed while they have fewer than the price. |
-| Payment slot | Puts emeralds in a slot of the screen, as in a beacon; Recruit becomes active once the slot holds the price, and takes exactly the price from it. What is left in the slot goes back to the inventory when the screen closes, or drops if it does not fit or the player is dead or gone, as in a villager's screen. |
-
-Question: which way to pay is kept. A price above 64 would need more than
-one payment slot.
+Ruled out, tried in game: a payment slot, where the player puts the emeralds
+first, as in a beacon, and what is left goes back to the inventory when the
+screen closes. A price above 64 would also have needed more than one slot.
 
 Decision: a player in creative mode pays too, as with villagers.
 
@@ -84,10 +81,6 @@ it to predict a right-click (recruitment screen, companion's screen or
 nothing) and to show the owner on the companion's screen.
 `Companion.isOwner` reads it.
 
-Fact: today no owner is stored: `Companion.isOwner` always answers no
-(`Companion.java:142-148`), and the screen's owner line always says none
-(`CompanionScreen.java:672-675`).
-
 Question: the owner's name when they change it on their account.
 
 ### The price
@@ -108,7 +101,8 @@ code give the equipment (`EntityType.java:312-317`).
 
 Decision: its own container menu (`RecruitMenu`) and screen, opened with
 Fabric's `ExtendedMenuType`. The opening data carry the companion's entity
-id, its price, the way to pay, and a copy of the armor and designated
+id, its drawn price and the price to pay (`02-reputation.md`), and a copy of
+the armor and designated
 weapons: vanilla sends a client the armor of an entity it sees, but not the
 designated weapons, which are inventory slots (`../companion/07-inventory.md`).
 The copy is taken when the screen opens.
@@ -121,11 +115,11 @@ recruitment part of the companion's management screen, which it is not.
 
 Decision: the pieces both screens show are shared rather than copied: the
 3D view, the name heading, the health and armor bars, the drawer and its
-attributes panel, and the server's attributes message, which today runs from
-`CompanionMenu.broadcastChanges` (`CompanionMenu.java:317-347`).
+attributes panel, and the server's attributes message: a base menu
+(`CompanionViewMenu`) and a base screen (`CompanionViewScreen`) hold them.
 
-Decision: the menu's slots are the player's inventory, plus the payment slot
-when that way is tried, which accepts emeralds only. Its validity: the
+Decision: the menu's slots are the player's inventory only; shift-click
+moves nothing. Its validity: the
 companion alive, within 4 blocks as the companion's screen, and still without
 an owner.
 
@@ -135,12 +129,9 @@ The server checks the emeralds again, takes them, sets the owner, then
 opens the companion's screen for the player, which closes the recruitment
 one. The
 client greys the button with the same test, as the enchanting table does
-(`EnchantmentMenu.java:135-148`, `EnchantmentScreen.java:112`). With the
-button, emeralds are counted and taken from the player's 36 inventory slots,
-the ones the menu shows, so that client and server count the same.
-
-Decision: while both ways are tried, the server picks the way from a
-development switch and sends it in the opening data; the client only follows.
+(`EnchantmentMenu.java:135-148`, `EnchantmentScreen.java:112`). Emeralds are
+counted and taken from the player's 36 inventory slots, the ones the menu
+shows, so that client and server count the same.
 
 ### Right-click
 
