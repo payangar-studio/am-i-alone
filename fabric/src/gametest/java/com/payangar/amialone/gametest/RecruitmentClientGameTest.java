@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.gossip.GossipType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -24,7 +25,8 @@ import net.minecraft.world.item.Items;
  * A companion's recruitment seen from a client: its screen with the button, with its drawer out on
  * the attributes, then with the payment slot, each compared with a reference render of
  * src/gametest/resources/templates/ (recruit_screen.png, recruit_screen_attributes.png,
- * recruit_screen_slot.png); then Recruit, after which the companion's screen opens and the client
+ * recruit_screen_slot.png), then with a price the companion's opinion lowered
+ * (recruit_screen_discount.png); then Recruit, after which the companion's screen opens and the client
  * knows its owner and predicts the right-clicks from it.
  */
 public class RecruitmentClientGameTest implements FabricClientGameTest {
@@ -68,13 +70,22 @@ public class RecruitmentClientGameTest implements FabricClientGameTest {
             context.waitFor(client -> !(client.gui.screen() instanceof RecruitScreen));
             waitForServerClose(context, world);
 
-            // Recruit: the companion's screen replaces this one, and the owner reaches the client.
+            // Cured by the player: the companion thinks 100 of them, so 10 off at 0.1; the drawn
+            // price is struck through, the price to pay beside it.
+            world.getServer().runOnServer(server -> {
+                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ((Companion) player.level().getEntity(id)).gossips().add(player.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+            });
             open(context, world, id, Payment.BUTTON);
+            check(context.computeOnClient(client -> screen(client).getMenu().price()) == PRICE - 10, "the lowered price");
+            screenshot(context, compare, "recruit_screen_discount");
+
+            // Recruit: the companion's screen replaces this one, and the owner reaches the client.
             context.runOnClient(client -> screen(client).pressRecruit());
             context.waitForScreen(CompanionScreen.class);
             context.waitFor(client -> Companion.isOwner(client.level.getEntity(id), client.player));
             check(
-                    context.computeOnClient(client -> client.player.getInventory().countItem(Items.EMERALD)) == 30 - PRICE,
+                    context.computeOnClient(client -> client.player.getInventory().countItem(Items.EMERALD)) == 30 - (PRICE - 10),
                     "the client's emeralds after recruiting");
             check(
                     context.computeOnClient(client -> predicted(client, id)) instanceof InteractionResult.Success success

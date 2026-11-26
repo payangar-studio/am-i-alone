@@ -47,11 +47,11 @@ public class RecruitMenu extends CompanionViewMenu {
     public static final int EQUIPMENT_SIZE = CompanionMenu.ARMOR.size() + 2;
 
     /**
-     * What the server sends the client when it opens the screen: the companion's entity id, its
-     * price, the way to pay, and a copy of its armor and designated weapons, which a client does
-     * not otherwise have.
+     * What the server sends the client when it opens the screen: the companion's entity id, the
+     * price to pay and its drawn price, the way to pay, and a copy of its armor and designated
+     * weapons, which a client does not otherwise have.
      */
-    public record Opening(int companionId, int price, Payment payment, List<ItemStack> equipment) {
+    public record Opening(int companionId, int price, int basePrice, Payment payment, List<ItemStack> equipment) {
         private static final StreamCodec<ByteBuf, Payment> PAYMENT_CODEC =
                 ByteBufCodecs.BOOL.map(slot -> slot ? Payment.SLOT : Payment.BUTTON, payment -> payment == Payment.SLOT);
 
@@ -60,6 +60,8 @@ public class RecruitMenu extends CompanionViewMenu {
                 Opening::companionId,
                 ByteBufCodecs.VAR_INT,
                 Opening::price,
+                ByteBufCodecs.VAR_INT,
+                Opening::basePrice,
                 PAYMENT_CODEC,
                 Opening::payment,
                 ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list(EQUIPMENT_SIZE)),
@@ -68,13 +70,14 @@ public class RecruitMenu extends CompanionViewMenu {
     }
 
     private final int price;
+    private final int basePrice;
     private final Payment payment;
     private final List<ItemStack> equipment;
     private final Container paymentSlot = new SimpleContainer(1);
 
-    /** The server's menu, over the companion itself. */
-    public RecruitMenu(int containerId, Inventory playerInventory, Companion companion, Payment payment) {
-        this(containerId, playerInventory, companion, companion.price(), payment, equipmentOf(companion));
+    /** The server's menu, over the companion itself, at {@code price}. */
+    public RecruitMenu(int containerId, Inventory playerInventory, Companion companion, int price, Payment payment) {
+        this(containerId, playerInventory, companion, price, companion.price(), payment, equipmentOf(companion));
     }
 
     /** The client's menu, built from what the server sent. */
@@ -84,6 +87,7 @@ public class RecruitMenu extends CompanionViewMenu {
                 playerInventory,
                 find(playerInventory.player, opening.companionId()),
                 opening.price(),
+                opening.basePrice(),
                 opening.payment(),
                 opening.equipment());
     }
@@ -93,10 +97,12 @@ public class RecruitMenu extends CompanionViewMenu {
             Inventory playerInventory,
             LivingEntity companion,
             int price,
+            int basePrice,
             Payment payment,
             List<ItemStack> equipment) {
         super(Companions.RECRUIT_MENU, containerId, playerInventory, companion);
         this.price = price;
+        this.basePrice = basePrice;
         this.payment = payment;
         this.equipment = List.copyOf(equipment);
         addSlot(new PaymentSlot(paymentSlot, PAYMENT_X, PAYMENT_Y));
@@ -111,12 +117,16 @@ public class RecruitMenu extends CompanionViewMenu {
         open(player, companion, Payment.current());
     }
 
-    /** Opens the recruitment screen with the way to pay {@code payment}: tests try both. */
+    /**
+     * Opens the recruitment screen with the way to pay {@code payment}: tests try both. The price
+     * is the player's, from the companion's opinion of them, when the screen opens.
+     */
     public static void open(ServerPlayer player, Companion companion, Payment payment) {
+        int price = Recruitment.priceFor(companion, player);
         player.openMenu(new ExtendedMenuProvider<Opening>() {
             @Override
             public Opening getScreenOpeningData(ServerPlayer target) {
-                return new Opening(companion.getId(), companion.price(), payment, equipmentOf(companion));
+                return new Opening(companion.getId(), price, companion.price(), payment, equipmentOf(companion));
             }
 
             @Override
@@ -126,7 +136,7 @@ public class RecruitMenu extends CompanionViewMenu {
 
             @Override
             public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player opener) {
-                return new RecruitMenu(containerId, inventory, companion, payment);
+                return new RecruitMenu(containerId, inventory, companion, price, payment);
             }
         });
     }
@@ -142,9 +152,14 @@ public class RecruitMenu extends CompanionViewMenu {
         return equipment;
     }
 
-    /** Its price in emeralds. */
+    /** What the player pays, in emeralds. */
     public int price() {
         return price;
+    }
+
+    /** The companion's drawn price, before its opinion of the player and Hero of the Village. */
+    public int basePrice() {
+        return basePrice;
     }
 
     public Payment payment() {

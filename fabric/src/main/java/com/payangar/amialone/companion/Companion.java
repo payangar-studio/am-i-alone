@@ -24,9 +24,16 @@ import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ReputationEventHandler;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.gossip.GossipContainer;
+import net.minecraft.world.entity.ai.gossip.GossipType;
+import net.minecraft.world.entity.ai.village.ReputationEventType;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -38,6 +45,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import org.jspecify.annotations.Nullable;
@@ -52,9 +60,22 @@ import org.jspecify.annotations.Nullable;
  * <p>It carries a {@link CompanionInventory} and wears armor in vanilla's equipment slots. It is not
  * a vanilla {@code Container}, so hoppers leave it alone. Its primary designated weapon applies its
  * attribute modifiers, as a player's main hand does, while its own main hand is empty.
+ *
+ * <p>It has an opinion of each player made of vanilla's rumours, kept and heard as a villager
+ * does: its own {@link GossipContainer}, the rumours villagers pass on to it, the ones it gets when
+ * hit or when it sees a villager or a companion killed ({@link ReputationEventHandler}), and the
+ * daily forgetting. A mod changing those vanilla pieces changes the companions too.
  */
-public class Companion extends Avatar {
+public class Companion extends Avatar implements ReputationEventHandler {
     private static final String INVENTORY_KEY = CommonEntrypoint.MOD_ID + ":inventory";
+    private static final String GOSSIPS_KEY = CommonEntrypoint.MOD_ID + ":gossips";
+    private static final String GOSSIP_DECAY_KEY = CommonEntrypoint.MOD_ID + ":last_gossip_decay";
+    /** A villager passes rumours on within √5 blocks (vanilla's {@code TradeWithVillager}). */
+    private static final double HEARING_DISTANCE_SQUARED = 5.0;
+    /** At most one exchange of rumours a minute, as a villager ({@code Villager.gossip}). */
+    private static final long GOSSIP_COOLDOWN = 1200L;
+    /** Witnesses of a death, as a villager's: the range of its nearest visible entities. */
+    private static final double WITNESS_RANGE = 16.0;
     private static final byte ALL_LAYERS = (byte) Arrays.stream(PlayerModelPart.values())
             .mapToInt(PlayerModelPart::getMask)
             .reduce(0, (a, b) -> a | b);
@@ -62,6 +83,9 @@ public class Companion extends Avatar {
     private final CompanionInventory inventory = new CompanionInventory();
     /** The primary weapon whose modifiers are applied; empty while none are. */
     private ItemStack appliedPrimaryWeapon = ItemStack.EMPTY;
+    private final GossipContainer gossips = new GossipContainer();
+    private long lastGossipTime;
+    private long lastGossipDecayTime;
 
     public Companion(EntityType<? extends Avatar> type, Level level) {
         super(type, level);
@@ -91,6 +115,85 @@ public class Companion extends Avatar {
 
     public CompanionInventory inventory() {
         return inventory;
+    }
+
+    /** Its rumours about players and other entities, as a villager's. */
+    public GossipContainer gossips() {
+        return gossips;
+    }
+
+    /** Its opinion of {@code player}: the sum of its rumours about them, as a villager's reputation. */
+    public int opinionOf(Player player) {
+        return gossips.getReputation(player.getUUID(), type -> true);
+    }
+
+    /**
+     * The rumour an event adds, as a villager adds it ({@code Villager.onReputationEventFrom}): a hit
+     * on it, or a villager or companion killed in front of it. It does not trade, and is not cured.
+     */
+    @Override
+    public void onReputationEventFrom(ReputationEventType type, Entity source) {
+        if (type == ReputationEventType.VILLAGER_HURT) {
+            gossips.add(source.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+        } else if (type == ReputationEventType.VILLAGER_KILLED) {
+            gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+        }
+    }
+
+    /** Being hurt by an entity is an event for itself, as for a villager ({@code Villager.setLastHurtByMob}). */
+    @Override
+    public void setLastHurtByMob(@Nullable LivingEntity hurtBy) {
+        if (hurtBy != null && level() instanceof ServerLevel level) {
+            level.onReputationEvent(ReputationEventType.VILLAGER_HURT, hurtBy, this);
+        }
+        super.setLastHurtByMob(hurtBy);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level() instanceof ServerLevel level && isAlive()) {
+            maybeDecayGossip(level);
+            if (tickCount % 20 == 0) {
+                listenToVillagers(level);
+            }
+        }
+    }
+
+    /** Forgets a little once a day of game time, as a villager ({@code Villager.maybeDecayGossip}). */
+    private void maybeDecayGossip(ServerLevel level) {
+        long now = level.getGameTime();
+        if (lastGossipDecayTime == 0L) {
+            lastGossipDecayTime = now;
+        } else if (now >= lastGossipDecayTime + 24000L) {
+            gossips.decay();
+            lastGossipDecayTime = now;
+        }
+    }
+
+    /**
+     * Hears a villager close by, as a villager hears another ({@code TradeWithVillager}): one idle
+     * or meeting, so when its schedule lets it talk, within √5 blocks, at most once a minute.
+     */
+    private void listenToVillagers(ServerLevel level) {
+        long now = level.getGameTime();
+        if (lastGossipTime != 0L && now >= lastGossipTime && now < lastGossipTime + GOSSIP_COOLDOWN) {
+            return;
+        }
+        AABB around = getBoundingBox().inflate(Math.sqrt(HEARING_DISTANCE_SQUARED));
+        for (Villager villager : level.getEntitiesOfClass(Villager.class, around, Villager::isAlive)) {
+            if (distanceToSqr(villager) <= HEARING_DISTANCE_SQUARED && talks(villager)) {
+                gossips.transferFrom(villager.getGossips(), random, 10);
+                lastGossipTime = now;
+                return;
+            }
+        }
+    }
+
+    private static boolean talks(Villager villager) {
+        return villager.getBrain().getActiveNonCoreActivity()
+                .filter(activity -> activity == Activity.IDLE || activity == Activity.MEET)
+                .isPresent();
     }
 
     @Override
@@ -274,12 +377,17 @@ public class Companion extends Avatar {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         inventory.save(output.list(INVENTORY_KEY, ItemStackWithSlot.CODEC));
+        output.store(GOSSIPS_KEY, GossipContainer.CODEC, gossips);
+        output.putLong(GOSSIP_DECAY_KEY, lastGossipDecayTime);
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         inventory.load(input.listOrEmpty(INVENTORY_KEY, ItemStackWithSlot.CODEC));
+        gossips.clear();
+        input.read(GOSSIPS_KEY, GossipContainer.CODEC).ifPresent(gossips::putAll);
+        lastGossipDecayTime = input.getLongOr(GOSSIP_DECAY_KEY, 0L);
     }
 
     /**
@@ -317,8 +425,27 @@ public class Companion extends Avatar {
     public void die(DamageSource source) {
         if (!isRemoved() && !dead && level() instanceof ServerLevel level) {
             announceDeath(level);
+            Entity murderer = source.getEntity();
+            if (murderer != null) {
+                tellWitnesses(level, murderer);
+            }
         }
         super.die(source);
+    }
+
+    /**
+     * Tells the villagers and companions that see it die that {@code murderer} killed it, as a dying
+     * villager tells its witnesses: for them it is a villager killed.
+     */
+    private void tellWitnesses(ServerLevel level, Entity murderer) {
+        AABB around = getBoundingBox().inflate(WITNESS_RANGE);
+        for (LivingEntity witness : level.getEntitiesOfClass(LivingEntity.class, around, entity -> entity != this
+                && entity instanceof ReputationEventHandler
+                && entity.isAlive()
+                && distanceToSqr(entity) <= WITNESS_RANGE * WITNESS_RANGE
+                && entity.hasLineOfSight(this))) {
+            level.onReputationEvent(ReputationEventType.VILLAGER_KILLED, murderer, (ReputationEventHandler) witness);
+        }
     }
 
     /**

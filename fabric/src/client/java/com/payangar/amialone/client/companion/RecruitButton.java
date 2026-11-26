@@ -16,15 +16,18 @@ import net.minecraft.world.item.Items;
 
 /**
  * Recruit, in the mod's colours: the screen's main action, filled with the accent, its label on
- * the left and its price on the right, an emerald and a number. A price lowered from {@code
- * basePrice} shows the base struck through in red before it, as a villager's discounted offer; greyed
- * while the player cannot pay.
+ * the left and its price on the right, an emerald with its count as a villager's offer shows it. A
+ * price lowered from {@code basePrice} shows the base struck through in red and the price beside
+ * it, as a villager's discounted offer; greyed while the player cannot pay.
  */
 public class RecruitButton extends AbstractButton {
-    public static final int HEIGHT = 18;
+    /** Room for the emerald and its count, whose shadow ends on the icon's 18th row. */
+    public static final int HEIGHT = 20;
     private static final int MARGIN = 6;
-    private static final int ICON_GAP = 1;
-    private static final int STRUCK_GAP = 3;
+    /** Where an item's count ends, from its icon's left edge: one pixel past the icon. */
+    private static final int COUNT_END = 17;
+    /** Where a villager's offer draws the lowered count, from the icon. */
+    private static final int LOWERED_OFFSET = 14;
     private static final ItemStack EMERALD = new ItemStack(Items.EMERALD);
     /** The red stroke of a villager's discounted offer. */
     private static final Identifier STRIKETHROUGH = Identifier.withDefaultNamespace("container/villager/discount_strikethrough");
@@ -59,21 +62,18 @@ public class RecruitButton extends AbstractButton {
         int textColour = active ? Theme.HEADING : Theme.TEXT_DISABLED;
         Draw.text(graphics, font, label, x + MARGIN, textY, textColour);
 
-        // The price from the right: the number, the base struck through when lowered, the emerald.
-        String count = String.valueOf(price);
-        int right = x + width - MARGIN;
-        int countX = right - font.width(count);
-        graphics.text(font, count, countX, textY, textColour, false);
-        int iconRight = countX - ICON_GAP;
-        if (basePrice != price) {
-            String base = String.valueOf(basePrice);
-            int baseX = countX - STRUCK_GAP - font.width(base);
-            int baseColour = active ? Theme.TEXT : Theme.TEXT_DISABLED;
-            graphics.text(font, base, baseX, textY, baseColour, false);
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, STRIKETHROUGH, baseX - 1, textY + 3, font.width(base) + 1, 2);
-            iconRight = baseX - ICON_GAP;
+        // The price on the right, drawn as a villager's offer does (MerchantScreen): the emerald with
+        // its count over its bottom right corner; when lowered, that count is the base, struck
+        // through, and the price follows, one count further.
+        boolean lowered = basePrice != price;
+        int iconX = x + width - MARGIN - COUNT_END - (lowered ? LOWERED_OFFSET : 0);
+        int iconY = y + 1;
+        graphics.item(EMERALD, iconX, iconY);
+        graphics.itemDecorations(font, EMERALD, iconX, iconY, String.valueOf(basePrice));
+        if (lowered) {
+            graphics.itemDecorations(font, EMERALD, iconX + LOWERED_OFFSET, iconY, String.valueOf(price));
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, STRIKETHROUGH, iconX + 7, iconY + 12, 9, 2);
         }
-        graphics.item(EMERALD, iconRight - 16, y + (height - 16) / 2);
     }
 
     @Override

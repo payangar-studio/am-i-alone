@@ -30,8 +30,8 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
             CompanionMenu.ARMOR_ICONS.get(3),
             CompanionMenu.PRIMARY_WEAPON_ICON,
             InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
-    /** Recruit, level with the payment slot's box, right of it when there is one. */
-    private static final int BUTTON_Y = RecruitMenu.PAYMENT_Y - 1;
+    /** Recruit, centred on the payment slot's box, right of it when there is one. */
+    private static final int BUTTON_Y = RecruitMenu.PAYMENT_Y - 2;
     private static final int BUTTON_GAP = 4;
 
     /** The drawer's panel left open when a recruitment screen last closed, for the session. */
@@ -48,9 +48,8 @@ public class RecruitScreen extends CompanionViewScreen<RecruitMenu> {
     @Override
     protected void init() {
         super.init();
-        // No discount yet: the base price is the price.
         recruit = addRenderableWidget(new RecruitButton(
-                buttonWidth(), Component.translatable(KEY + "recruit"), menu.price(), menu.price(), this::pressRecruit));
+                buttonWidth(), Component.translatable(KEY + "recruit"), menu.price(), menu.basePrice(), this::pressRecruit));
         shownCanPay = null;
         placeRecruit();
     }
