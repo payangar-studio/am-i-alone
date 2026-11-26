@@ -135,6 +135,7 @@ public class CompanionMenu extends AbstractContainerMenu {
     /** On the server, the attribute and computed values last sent; on the client, the ones last received. */
     private List<CompanionAttributeValues.Value> attributeValues = List.of();
     private List<CompanionAttributeValues.Computed> computedValues = List.of();
+    private boolean armed;
     private boolean attributeValuesSent;
     private Tab tab = Tab.COMPANION;
     private @Nullable Panel panel;
@@ -294,11 +295,17 @@ public class CompanionMenu extends AbstractContainerMenu {
                 .collect(Collectors.toUnmodifiableMap(CompanionAttributeValues.Computed::value, Function.identity()));
     }
 
+    /** Whether the companion is armed: on the client, as the server last sent it. */
+    public boolean armed() {
+        return armed;
+    }
+
     /** The client's side: takes the values the server sent for this menu. */
     public void receive(CompanionAttributeValues message) {
         if (message.containerId() == containerId) {
             attributeValues = List.copyOf(message.values());
             computedValues = List.copyOf(message.computed());
+            armed = message.armed();
         }
     }
 
@@ -314,8 +321,8 @@ public class CompanionMenu extends AbstractContainerMenu {
     }
 
     /**
-     * Sends the viewer the companion's attribute and computed values, unless they are the ones it
-     * already has.
+     * Sends the viewer the companion's attribute and computed values and whether it is armed,
+     * unless they are the ones it already has.
      * Without a check of the client's channels: the mod is required on both sides, and the side
      * check refuses a client without it.
      */
@@ -325,13 +332,18 @@ public class CompanionMenu extends AbstractContainerMenu {
         }
         List<CompanionAttributeValues.Value> values = CompanionAttributeValues.of(server);
         List<CompanionAttributeValues.Computed> computed = CompanionAttributeValues.computedOf(server);
-        if (attributeValuesSent && values.equals(attributeValues) && computed.equals(computedValues)) {
+        boolean nowArmed = server.armed();
+        if (attributeValuesSent
+                && values.equals(attributeValues)
+                && computed.equals(computedValues)
+                && nowArmed == armed) {
             return;
         }
         attributeValues = values;
         computedValues = computed;
+        armed = nowArmed;
         attributeValuesSent = true;
-        ServerPlayNetworking.send(viewer, new CompanionAttributeValues(containerId, values, computed));
+        ServerPlayNetworking.send(viewer, new CompanionAttributeValues(containerId, values, computed, nowArmed));
     }
 
     /**

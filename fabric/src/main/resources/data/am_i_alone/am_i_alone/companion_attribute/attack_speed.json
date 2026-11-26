@@ -6,6 +6,6 @@
     "translate": "container.am_i_alone.companion.attributes.label.attack_speed"
   },
   "format": "plain",
-  "shown": "always",
+  "shown": "when_armed",
   "colour_threshold": 1
 }

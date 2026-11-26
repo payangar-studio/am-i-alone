@@ -58,7 +58,7 @@ public class CompanionAttributesServerGameTest {
 
     private static final List<Shipped> SHIPPED = List.of(
             new Shipped("attack_damage", "combat", 10, "plain", "always"),
-            new Shipped("attack_speed", "combat", 20, "plain", "always"),
+            new Shipped("attack_speed", "combat", 20, "plain", "when_armed"),
             new Shipped("max_health", "defence", 10, "plain", "always"),
             new Shipped("armor", "defence", 20, "plain", "always"),
             new Shipped("armor_toughness", "defence", 30, "plain", "always"),
@@ -220,12 +220,14 @@ public class CompanionAttributesServerGameTest {
         assertTone(helper, companion, Attributes.ATTACK_SPEED, CompanionAttribute.Tone.GOOD, "bare-handed speed");
         CompanionAttribute jump = entry(helper, "jump_strength");
         helper.assertFalse(
-                jump.shows(Attributes.JUMP_STRENGTH.value(), value(companion, Attributes.JUMP_STRENGTH)), "jump at its default shown");
+                jump.shows(CompanionAttribute.differsFromDefault(Attributes.JUMP_STRENGTH.value(), value(companion, Attributes.JUMP_STRENGTH)), false),
+                "jump at its default shown");
         companion.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);
         companion.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(0.6);
         assertTone(helper, companion, Attributes.MAX_HEALTH, CompanionAttribute.Tone.GOOD, "max health base 40");
         helper.assertTrue(
-                jump.shows(Attributes.JUMP_STRENGTH.value(), value(companion, Attributes.JUMP_STRENGTH)), "jump base 0.6 hidden");
+                jump.shows(CompanionAttribute.differsFromDefault(Attributes.JUMP_STRENGTH.value(), value(companion, Attributes.JUMP_STRENGTH)), false),
+                "jump base 0.6 hidden");
         helper.startSequence()
                 .thenExecute(() -> primary(companion, new ItemStack(Items.DIAMOND_SWORD)))
                 .thenExecuteAfter(TICKS, () -> assertTone(
@@ -234,6 +236,27 @@ public class CompanionAttributesServerGameTest {
                 .thenExecuteAfter(TICKS, () -> assertTone(
                         helper, companion, Attributes.ATTACK_SPEED, CompanionAttribute.Tone.BAD, "an axe's speed"))
                 .thenSucceed();
+    }
+
+    /**
+     * Attack speed is shown while the companion is armed only: a primary designated weapon, or a
+     * weapon in its main hand; an item in hand that is not a weapon does not count.
+     */
+    @GameTest
+    public void attackSpeedShownWhenArmed(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        CompanionAttribute speed = entry(helper, "attack_speed");
+        helper.assertFalse(speed.shows(false, companion.armed()), "attack speed shown unarmed");
+        primary(companion, new ItemStack(Items.DIAMOND_SWORD));
+        helper.assertTrue(speed.shows(false, companion.armed()), "attack speed hidden with a primary sword");
+        primary(companion, ItemStack.EMPTY);
+        companion.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
+        helper.assertTrue(speed.shows(false, companion.armed()), "attack speed hidden with a sword in hand");
+        companion.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.APPLE));
+        helper.assertFalse(speed.shows(false, companion.armed()), "attack speed shown with an apple in hand");
+        helper.assertTrue(entry(helper, "attack_damage").shows(false, false), "attack damage hidden unarmed");
+        helper.assertTrue(entry(helper, "attack_range").shows(false, false), "attack range hidden unarmed");
+        helper.succeed();
     }
 
     private static void assertRange(GameTestHelper helper, Companion companion, double min, double max, String when) {
@@ -305,6 +328,7 @@ public class CompanionAttributesServerGameTest {
                     opening.getFirst().computed(),
                     List.of(new CompanionAttributeValues.Computed(CompanionComputedValue.ATTACK_RANGE, 0.0, 3.0, 3.0)),
                     "the computed values sent");
+            helper.assertFalse(opening.getFirst().armed(), "the unarmed companion sent as armed");
             helper.assertValueEqual(
                     values.get(Attributes.MAX_HEALTH),
                     new CompanionAttributeValues.Value(Attributes.MAX_HEALTH, 20.0, 20.0),

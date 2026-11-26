@@ -137,14 +137,15 @@ final class AttributesPanel {
         RegistryAccess registries = menu.companion().registryAccess();
         Map<Holder<Attribute>, Value> values = menu.attributeValues();
         Map<CompanionComputedValue, Computed> computed = menu.computedValues();
+        boolean armed = menu.armed();
         Map<ResourceKey<CompanionAttributeGroup>, List<Row>> rowsByGroup = new HashMap<>();
         for (Holder.Reference<CompanionAttribute> holder :
                 sorted(registries.lookupOrThrow(CompanionAttribute.REGISTRY), CompanionAttribute::order)) {
             CompanionAttribute entry = holder.value();
             @Nullable Row row = entry.resolve()
-                    .map(attribute -> attributeRow(entry, attribute, values.get(attribute)))
+                    .map(attribute -> attributeRow(entry, attribute, values.get(attribute), armed))
                     .orElseGet(() -> entry.computed()
-                            .map(value -> computedRow(entry, computed.get(value)))
+                            .map(value -> computedRow(entry, computed.get(value), armed))
                             .orElse(null));
             if (row != null) {
                 rowsByGroup.computeIfAbsent(entry.group().unwrapKey().orElseThrow(), key -> new ArrayList<>()).add(row);
@@ -187,9 +188,10 @@ final class AttributesPanel {
      * An attribute's row, unless the server sent no value or the entry hides it: its value against
      * the attribute's default, its colour against the entry's threshold or that default.
      */
-    private static @Nullable Row attributeRow(CompanionAttribute entry, Holder<Attribute> holder, @Nullable Value value) {
+    private static @Nullable Row attributeRow(
+            CompanionAttribute entry, Holder<Attribute> holder, @Nullable Value value, boolean armed) {
         Attribute attribute = holder.value();
-        if (value == null || !entry.shows(attribute, value.value())) {
+        if (value == null || !entry.shows(CompanionAttribute.differsFromDefault(attribute, value.value()), armed)) {
             return null;
         }
         Component name = Component.translatable(attribute.getDescriptionId());
@@ -207,12 +209,12 @@ final class AttributesPanel {
     }
 
     /** A computed value's row, unless the server sent none or the entry hides it. */
-    private static @Nullable Row computedRow(CompanionAttribute entry, @Nullable Computed value) {
+    private static @Nullable Row computedRow(CompanionAttribute entry, @Nullable Computed value, boolean armed) {
         if (value == null) {
             return null;
         }
         return switch (value.value()) {
-            case ATTACK_RANGE -> attackRangeRow(entry, value);
+            case ATTACK_RANGE -> attackRangeRow(entry, value, armed);
         };
     }
 
@@ -221,9 +223,9 @@ final class AttributesPanel {
      * in the default colour; changed from its default when it is not the bare hand's, up to the
      * interaction range. Its tooltip says how close it cannot hit.
      */
-    private static @Nullable Row attackRangeRow(CompanionAttribute entry, Computed range) {
+    private static @Nullable Row attackRangeRow(CompanionAttribute entry, Computed range, boolean armed) {
         boolean changed = range.min() > 0.0 || Math.abs(range.max() - range.base()) > 1.0E-6;
-        if (entry.shown() == CompanionAttribute.Shown.WHEN_CHANGED && !changed) {
+        if (!entry.shows(changed, armed)) {
             return null;
         }
         String max = format(entry, range.max(), range.base());

@@ -74,9 +74,21 @@ public record CompanionAttribute(
         return source.right().flatMap(CompanionComputedValue::byId);
     }
 
-    /** Whether the panel shows {@code attribute} at {@code value}: always, or when it differs from its default. */
-    public boolean shows(Attribute attribute, double value) {
-        return shown == Shown.ALWAYS || Math.abs(value - attribute.getDefaultValue()) > EPSILON;
+    /**
+     * Whether the panel shows the entry: always, while its value differs from its default ({@code
+     * changed}), or while the companion is armed ({@code armed}).
+     */
+    public boolean shows(boolean changed, boolean armed) {
+        return switch (shown) {
+            case ALWAYS -> true;
+            case WHEN_CHANGED -> changed;
+            case WHEN_ARMED -> armed;
+        };
+    }
+
+    /** Whether {@code value} of {@code attribute} differs from the attribute's default. */
+    public static boolean differsFromDefault(Attribute attribute, double value) {
+        return Math.abs(value - attribute.getDefaultValue()) > EPSILON;
     }
 
     /**
@@ -129,7 +141,9 @@ public record CompanionAttribute(
     public enum Shown implements StringRepresentable {
         ALWAYS("always"),
         /** Only while its value differs from the attribute's default: gear or an effect changes it. */
-        WHEN_CHANGED("when_changed");
+        WHEN_CHANGED("when_changed"),
+        /** Only while the companion is armed ({@link Companion#armed}). */
+        WHEN_ARMED("when_armed");
 
         public static final Codec<Shown> CODEC = StringRepresentable.fromEnum(Shown::values);
 

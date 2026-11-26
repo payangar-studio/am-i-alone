@@ -157,6 +157,15 @@ public class Companion extends Avatar {
     }
 
     /**
+     * Whether it is armed: a primary designated weapon, or a weapon of {@link
+     * CompanionInventory#WEAPONS} in its main hand.
+     */
+    public boolean armed() {
+        return !inventory.getItem(CompanionInventory.PRIMARY_WEAPON).isEmpty()
+                || getMainHandItem().is(CompanionInventory.WEAPONS);
+    }
+
+    /**
      * Vanilla's detection of equipment changes, run each server tick, wrapped to apply the primary
      * designated weapon's attribute modifiers as the main hand's, while the main hand is empty: an
      * item in hand counts instead, through vanilla's own path. Its modifiers often share the

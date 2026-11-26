@@ -23,8 +23,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
  * companion's, and vanilla syncs only some attributes: the panel shows these values only.
  *
  * @param containerId the open menu's id, so that a late message does not reach another screen
+ * @param armed whether the companion is armed ({@link Companion#armed}), for the entries shown
+ *     only then
  */
-public record CompanionAttributeValues(int containerId, List<Value> values, List<Computed> computed)
+public record CompanionAttributeValues(int containerId, List<Value> values, List<Computed> computed, boolean armed)
         implements CustomPacketPayload {
     public static final Type<CompanionAttributeValues> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(CommonEntrypoint.MOD_ID, "companion_attribute_values"));
@@ -36,6 +38,8 @@ public record CompanionAttributeValues(int containerId, List<Value> values, List
             CompanionAttributeValues::values,
             Computed.STREAM_CODEC.apply(ByteBufCodecs.list()),
             CompanionAttributeValues::computed,
+            ByteBufCodecs.BOOL,
+            CompanionAttributeValues::armed,
             CompanionAttributeValues::new);
 
     /** An attribute's current value, modifiers applied, and its base. */
