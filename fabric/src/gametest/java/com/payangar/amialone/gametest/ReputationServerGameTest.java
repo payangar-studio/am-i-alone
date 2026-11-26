@@ -266,4 +266,23 @@ public class ReputationServerGameTest {
         }
         helper.succeed();
     }
+
+    /** A weaker regeneration kept aside behind a stronger one takes no credit: the acting one does. */
+    @GameTest(maxTicks = 200)
+    public void theActingRegenerationGetsTheCredit(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        companion.setHealth(10.0F);
+        ServerPlayer strong = connectPlayer(helper, "strong");
+        ServerPlayer weak = connectPlayer(helper, "weak");
+        companion.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 600, 1), strong);
+        // Without particles: vanilla then reports the weaker one as an update, with its source,
+        // though it keeps it aside (MobEffectInstance.update).
+        companion.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 1800, 0, false, false), weak);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(companion.opinionOf(strong) >= 4, "opinion of the acting healer: " + companion.opinionOf(strong));
+            helper.assertValueEqual(companion.opinionOf(weak), 0, "opinion of the healer kept aside");
+            helper.getLevel().getServer().getPlayerList().remove(strong);
+            helper.getLevel().getServer().getPlayerList().remove(weak);
+        });
+    }
 }

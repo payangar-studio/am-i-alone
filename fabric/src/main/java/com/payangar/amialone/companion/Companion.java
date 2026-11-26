@@ -206,13 +206,30 @@ public class Companion extends Avatar implements ReputationEventHandler {
     }
 
     /**
-     * Remembers who applied a healing effect: the player behind {@code source}, or no one when a
-     * creature or a dispenser did. Vanilla updates effects every so often without a source: that
-     * forgets no one.
+     * Adds an effect as vanilla does, then remembers who applied a healing effect when it is the
+     * one now acting. Vanilla keeps a weaker effect aside, behind the stronger one, and still
+     * reports its source: the player whose effect heals keeps the credit.
+     */
+    @Override
+    public boolean addEffect(MobEffectInstance effect, @Nullable Entity source) {
+        boolean changed = super.addEffect(effect, source);
+        MobEffectInstance active = getEffect(effect.getEffect());
+        if (changed
+                && active != null
+                && active.getAmplifier() == effect.getAmplifier()
+                && active.getDuration() == effect.getDuration()) {
+            rememberHealer(effect, source);
+        }
+        return changed;
+    }
+
+    /**
+     * Remembers who applied the acting healing effect: the player behind {@code source}, or no one
+     * when a creature or a dispenser did.
      */
     private void rememberHealer(MobEffectInstance effect, @Nullable Entity source) {
         Holder<MobEffect> type = effect.getEffect();
-        if (source == null || !(type.is(MobEffects.INSTANT_HEALTH) || type.is(MobEffects.REGENERATION))) {
+        if (!(type.is(MobEffects.INSTANT_HEALTH) || type.is(MobEffects.REGENERATION))) {
             return;
         }
         UUID player = playerBehind(source);
@@ -426,14 +443,12 @@ public class Companion extends Avatar implements ReputationEventHandler {
     @Override
     protected void onEffectAdded(MobEffectInstance effect, @Nullable Entity source) {
         super.onEffectAdded(effect, source);
-        rememberHealer(effect, source);
         sendToTrackingPlayers(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
     }
 
     @Override
     protected void onEffectUpdated(MobEffectInstance effect, boolean doRefreshAttributes, @Nullable Entity source) {
         super.onEffectUpdated(effect, doRefreshAttributes, source);
-        rememberHealer(effect, source);
         sendToTrackingPlayers(new ClientboundUpdateMobEffectPacket(getId(), effect, false));
     }
 
