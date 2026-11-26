@@ -5,6 +5,7 @@ import com.payangar.amialone.companion.Companion;
 import com.payangar.amialone.companion.CompanionIdentity;
 import com.payangar.amialone.companion.CompanionSkin;
 import com.payangar.amialone.companion.Companions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
@@ -70,6 +71,15 @@ public class ClientCompanion extends RemotePlayer {
         return identity == null || identity.fullName().isEmpty()
                 ? super.getName()
                 : Component.literal(identity.fullName());
+    }
+
+    /**
+     * Its name only while the crosshair is on it, as a mob's, even without a name tag; a player's
+     * always shows.
+     */
+    @Override
+    public boolean shouldShowName() {
+        return isCustomNameVisible() || this == Minecraft.getInstance().crosshairPickEntity;
     }
 
     /**
