@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:knockback_resistance",
+  "group": "am_i_alone:defence",
+  "order": 40,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.knockback_resistance"
+  },
+  "format": "times_ten",
+  "shown": "always"
+}

@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:explosion_knockback_resistance",
+  "group": "am_i_alone:hazards",
+  "order": 30,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.explosion_knockback_resistance"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}

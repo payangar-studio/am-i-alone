@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:movement_speed",
+  "group": "am_i_alone:movement",
+  "order": 10,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.movement_speed"
+  },
+  "format": "percent_of_default",
+  "shown": "always"
+}

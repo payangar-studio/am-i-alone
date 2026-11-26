@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:step_height",
+  "group": "am_i_alone:movement",
+  "order": 50,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.step_height"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}

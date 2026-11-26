@@ -3,7 +3,6 @@ package com.payangar.amialone.gametest;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
-import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotComparisonOptions;
 
 /**
  * Example client gametest: a scenario played on a real client, here a new
@@ -12,6 +11,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotCompa
  * the render it took to build/run/clientGameTest/screenshots/: references are
  * renders taken in CI, promoted with `./gradlew :fabric:promoteScreenshots`.
  * A comparison is skipped under a test profile, whose mods change the render.
+ * A failed comparison fails the run at its end ({@link Screenshots}).
  * Its class is a {@code fabric-client-gametest} entrypoint of
  * src/gametest/resources/fabric.mod.json.
  */
@@ -23,8 +23,7 @@ public class ExampleClientGameTest implements FabricClientGameTest {
             // Under a test profile (mod.testProfile), other mods change the
             // render: the references hold the mod alone.
             if (System.getProperty("mod.testProfile") == null) {
-                context.assertScreenshotEquals(
-                        TestScreenshotComparisonOptions.of("example_world").save().disableCounterPrefix());
+                Screenshots.compare(context, "example_world");
             }
         }
     }

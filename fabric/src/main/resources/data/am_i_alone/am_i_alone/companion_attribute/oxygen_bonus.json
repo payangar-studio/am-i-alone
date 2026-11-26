@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:oxygen_bonus",
+  "group": "am_i_alone:hazards",
+  "order": 10,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.oxygen_bonus"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}

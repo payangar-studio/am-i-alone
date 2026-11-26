@@ -43,6 +43,12 @@ public record CompanionIdentity(String firstName, String lastName, Optional<Reso
         return Stream.of(firstName, lastName).filter(part -> !part.isEmpty()).reduce((a, b) -> a + " " + b).orElse("");
     }
 
+    /** The group of its skin, which its first name follows; empty without a skin of the registry. */
+    public Optional<CompanionGroup> group(RegistryAccess registries) {
+        return skin.flatMap(key -> registries.lookupOrThrow(CompanionSkin.REGISTRY).getOptional(key))
+                .map(CompanionSkin::group);
+    }
+
     /** Draws a new identity: a skin, then a first name of its group and a last name. */
     public static CompanionIdentity draw(RegistryAccess registries, RandomSource random) {
         Optional<Holder.Reference<CompanionSkin>> skin =

@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:armor",
+  "group": "am_i_alone:defence",
+  "order": 20,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.armor"
+  },
+  "format": "plain",
+  "shown": "always"
+}

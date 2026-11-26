@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,11 +18,12 @@ import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 
 /**
- * What the companion registers: its entity type, its identity attachment, its inventory menu, its
- * data registries.
+ * What the companion registers: its entity type, its identity and absorption attachments, its
+ * screen's menu and the message of its attribute values, its data registries.
  */
 public final class Companions {
     /**
@@ -53,17 +55,35 @@ public final class Companions {
             builder -> builder.persistent(CompanionIdentity.CODEC)
                     .syncWith(CompanionIdentity.STREAM_CODEC, AttachmentSyncPredicate.all()));
 
-    /** The inventory screen's menu, which sends the companion's entity id to the client. */
-    public static final ExtendedMenuType<CompanionMenu, Integer> MENU = Registry.register(
-            BuiltInRegistries.MENU, id("companion"), new ExtendedMenuType<>(CompanionMenu::new, ByteBufCodecs.VAR_INT));
+    /**
+     * Its absorption, which a client needs for its health bar: vanilla syncs it for players only,
+     * as synched data a companion cannot declare. Not saved here: vanilla saves it with the entity.
+     */
+    public static final AttachmentType<Float> ABSORPTION = AttachmentRegistry.create(
+            id("absorption"), builder -> builder.syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.all()));
+
+    /** The companion's screen's menu, which sends the entity id and the debug flag to the client. */
+    public static final ExtendedMenuType<CompanionMenu, CompanionMenu.Opening> MENU = Registry.register(
+            BuiltInRegistries.MENU,
+            id("companion"),
+            new ExtendedMenuType<>(CompanionMenu::new, CompanionMenu.Opening.STREAM_CODEC));
 
     private Companions() {}
 
     /** Called once when the mod loads. */
     public static void register() {
-        FabricDefaultAttributeRegistry.register(TYPE, LivingEntity.createLivingAttributes());
+        // A player's attack, which vanilla gives no other living entity: its primary weapon's
+        // modifiers apply to it.
+        FabricDefaultAttributeRegistry.register(
+                TYPE,
+                LivingEntity.createLivingAttributes()
+                        .add(Attributes.ATTACK_DAMAGE, 1.0)
+                        .add(Attributes.ATTACK_SPEED));
         DynamicRegistries.registerSynced(CompanionSkin.REGISTRY, CompanionSkin.CODEC);
         DynamicRegistries.register(CompanionNames.REGISTRY, CompanionNames.CODEC);
+        DynamicRegistries.registerSynced(CompanionAttributeGroup.REGISTRY, CompanionAttributeGroup.CODEC);
+        DynamicRegistries.registerSynced(CompanionAttribute.REGISTRY, CompanionAttribute.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(CompanionAttributeValues.TYPE, CompanionAttributeValues.STREAM_CODEC);
     }
 
     private static Avatar create(EntityType<Avatar> type, Level level) {

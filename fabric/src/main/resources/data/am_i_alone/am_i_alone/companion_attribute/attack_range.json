@@ -1,0 +1,10 @@
+{
+  "value": "am_i_alone:attack_range",
+  "group": "am_i_alone:combat",
+  "order": 30,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.attack_range"
+  },
+  "format": "plain",
+  "shown": "always"
+}

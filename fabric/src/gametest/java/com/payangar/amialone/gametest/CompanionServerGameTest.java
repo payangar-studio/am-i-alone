@@ -23,6 +23,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -33,9 +34,10 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 
-/** The companion on the server: its identity, its saving, its name tag, its death. */
+/** The companion on the server: its identity, its saving, its gestures, its death. */
 public class CompanionServerGameTest {
     @GameTest
     public void keepsItsIdentityThroughSaving(GameTestHelper helper) {
@@ -85,19 +87,55 @@ public class CompanionServerGameTest {
         helper.succeed();
     }
 
+    /** Sneak and right-click: the held item acts as on any entity. */
     @GameTest
-    public void isRenamedByANameTag(GameTestHelper helper) {
+    public void isRenamedByANameTagWhenSneaking(GameTestHelper helper) {
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack nameTag = new ItemStack(Items.NAME_TAG);
-        nameTag.set(DataComponents.CUSTOM_NAME, Component.literal("Bob"));
+        ItemStack nameTag = namedTag("Bob");
         player.setItemInHand(InteractionHand.MAIN_HAND, nameTag);
+        player.setShiftKeyDown(true);
 
         player.interactOn(companion, InteractionHand.MAIN_HAND, companion.position());
 
         helper.assertValueEqual(companion.getName().getString(), "Bob", "name");
         helper.assertTrue(nameTag.isEmpty(), "the name tag was not used");
         helper.succeed();
+    }
+
+    /**
+     * A right-click opens the screen for the companion's owner only. No companion has one yet, so
+     * nothing happens: no menu, no swing, and the held item does not act.
+     */
+    @GameTest
+    public void aPlainRightClickDoesNothing(GameTestHelper helper) {
+        Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        String name = companion.getName().getString();
+        ServerPlayer player = CompanionInventoryServerGameTest.connectPlayer(helper, "stranger");
+        ItemStack nameTag = namedTag("Bob");
+        InteractionResult result;
+        boolean opened;
+        try {
+            player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
+            player.setItemInHand(InteractionHand.MAIN_HAND, nameTag);
+            result = player.interactOn(companion, InteractionHand.MAIN_HAND, companion.position());
+            opened = player.containerMenu != player.inventoryMenu;
+        } finally {
+            helper.getLevel().getServer().getPlayerList().remove(player);
+        }
+        helper.assertTrue(!opened, "a right-click opened a menu");
+        helper.assertTrue(
+                result instanceof InteractionResult.Success success && !success.shouldSwing(),
+                "the companion did not take the click without a swing: " + result);
+        helper.assertValueEqual(companion.getName().getString(), name, "name after a right-click with a name tag");
+        helper.assertValueEqual(nameTag.getCount(), 1, "name tags left");
+        helper.succeed();
+    }
+
+    static ItemStack namedTag(String name) {
+        ItemStack nameTag = new ItemStack(Items.NAME_TAG);
+        nameTag.set(DataComponents.CUSTOM_NAME, Component.literal(name));
+        return nameTag;
     }
 
     @GameTest(maxTicks = 100)

@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:water_movement_efficiency",
+  "group": "am_i_alone:movement",
+  "order": 20,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.water_movement_efficiency"
+  },
+  "format": "plain",
+  "shown": "when_changed"
+}

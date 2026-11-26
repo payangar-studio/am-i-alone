@@ -1,0 +1,10 @@
+{
+  "attribute": "minecraft:fall_damage_multiplier",
+  "group": "am_i_alone:hazards",
+  "order": 50,
+  "label": {
+    "translate": "container.am_i_alone.companion.attributes.label.fall_damage_multiplier"
+  },
+  "format": "percent",
+  "shown": "when_changed"
+}

@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * The companion debug stick: scaffolding that tests what has no interaction in the game yet, for
  * operators only (the gamemaster permission, without vanilla's creative requirement). Right-click
- * on a companion opens its inventory screen.
+ * on a companion opens its screen with the Debug tab.
  */
 public class DebugStickItem extends Item {
     public DebugStickItem(Item.Properties properties) {
@@ -23,11 +23,13 @@ public class DebugStickItem extends Item {
     }
 
     /**
-     * Opens the companion's inventory screen on the server, which decides. The client gives the
-     * same answer: it knows its gamemaster permission (the server sends it with the player's
-     * permission level), and knows a companion by its synced identity, since it builds companions
-     * as players. A success stops it from going on to use the stick; anyone else's click passes, as
-     * with a plain stick.
+     * Opens the companion's screen with its Debug tab on the server, which decides. The client
+     * gives the same answer: it knows its gamemaster permission (the server sends it with the
+     * player's permission level), and knows a companion by its synced identity, since it builds
+     * companions as players. A success stops it from going on to use the stick; anyone else's click
+     * passes, as with a plain stick, though a companion takes such a click first unless the player
+     * sneaks. The companion lets an operator's click with the stick reach it ({@code
+     * Companion.letsClickPass}).
      */
     @Override
     public InteractionResult interactLivingEntity(
@@ -37,7 +39,7 @@ public class DebugStickItem extends Item {
             return InteractionResult.PASS;
         }
         if (player instanceof ServerPlayer serverPlayer && target instanceof Companion companion) {
-            CompanionMenu.open(serverPlayer, companion);
+            CompanionMenu.open(serverPlayer, companion, true);
         }
         return InteractionResult.SUCCESS;
     }
