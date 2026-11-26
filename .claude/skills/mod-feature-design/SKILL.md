@@ -1,6 +1,6 @@
 ---
 name: mod-feature-design
-description: Design a feature of this mod with the user, from the idea to the issue of its first brick, before any code. Use when the user has an idea or a need for the mod ("design a feature", "I have an idea for the mod", "how should we build X", "concevoir une fonctionnalité", "j'ai une idée de fonctionnalité"), or when a request needs a design before it can be coded. Not for writing the wiki pages themselves (that is mod-design) and not for coding.
+description: Design a feature of this mod with the user, from the idea to the issue of its first brick, before any code. Use when the user has an idea or a need for the mod ("design a feature", "I have an idea for the mod", "how should we build X", "concevoir une fonctionnalité", "j'ai une idée de fonctionnalité"), or when a request needs a design before it can be coded. Not for building the design wiki from the documents (that is mod-wiki-design) and not for coding.
 ---
 
 # Designing a feature
@@ -11,9 +11,14 @@ It runs as a dialogue in the main conversation: subagents cannot talk to the
 user, so the research goes to them and the decisions stay here.
 
 Keep the main context lean: reading code, files and logs goes to subagents,
-the `mc-research` agent for questions about Minecraft or mods code, several in
-parallel when the questions are independent. What comes back is a conclusion
-with its evidence, which you check before building a decision on it.
+the `mod-research` agent for questions about Minecraft or mods code, several
+in parallel when the questions are independent. What comes back is a
+conclusion with its evidence, which you check before building a decision on
+it.
+
+The design lives on the `design` branch, in the Markdown documents of
+`docs/design/`; the `mod-wiki-design` skill says where to work on that branch
+and how the documents are laid out.
 
 ## 1. The need
 
@@ -28,10 +33,10 @@ brick is named.
 
 ## 2. The mods to keep working
 
-The design home page holds a "Mods to keep working" table: the mods the
-feature must stay compatible with, with no compatibility code where possible.
-When it is missing, ask the user once which modpack or mods matter, and record
-the table there.
+The design home document, `docs/design/00-overview.md`, holds a "Mods to keep
+working" table: the mods the feature must stay compatible with, with no
+compatibility code where possible. When the table is missing or empty, ask the
+user once which modpack or mods matter, and record them there.
 
 Done when every mod the feature touches is listed, with what it does to it.
 
@@ -90,10 +95,11 @@ Done when the risky assumption is confirmed or the option is dropped.
 
 ## 6. Record as it goes
 
-Decisions land in the design documents and wiki as they are taken, through the
-mod-design skill: in game first, then how it is built, each statement tagged
-as a fact, a decision or a question. The design is the reference; the
-conversation is not.
+Decisions land in the design documents as they are taken, laid out as
+`mod-wiki-design` describes: the feature's folder, in game first, then how it
+is built, each statement tagged as a fact, a decision or a question. The
+design is the reference; the conversation is not. Once the documents hold the
+design, build the wiki pages from them with `mod-wiki-design`.
 
 The last step is the issue of the first brick: scope, out of scope, and the
 proof expected (the tests, and what is checked in game). Show it to the user
