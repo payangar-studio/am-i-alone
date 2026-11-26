@@ -151,6 +151,35 @@ next tick (`ServerPlayer.java:589-593`). Each case it covers:
 | Its chunk unloads, or it leaves with its owner | It is saved, then removed: an item taken after would be duplicated |
 | It changes dimension | A copy is made in the new dimension and the old one removed (`Entity.java:3187-3194`): same duplication |
 
+### Its attack
+
+Decision: a companion has the attack damage and attack speed attributes, with a
+player's bases (1 and 4); vanilla gives a living entity neither. Its primary
+designated weapon applies its attribute modifiers to them, as vanilla applies
+the main hand's: a diamond sword gives it 7 attack damage and 1.6 attack
+speed. Only while its main hand is empty: once it holds something, vanilla
+already applies the hand item's modifiers (`LivingEntity.detectEquipmentUpdates`),
+and the designated weapon stops counting, so nothing counts twice when its
+brain takes the weapon in hand. The secondary slot and a shield change nothing: blocking belongs to
+combat, not designed yet. A bow or crossbow carries no attack modifier, its
+damage comes from the arrow: the attack stays bare-handed. Enchantments such
+as Sharpness are not counted, as in vanilla's tooltip: their bonus depends on
+the target.
+
+Decision: its attack range is the range of the weapon that counts (the main
+hand's item, else the primary designated weapon): the item's own
+`attack_range` component when it has one, a spear's 2 to 4.5 blocks (it
+cannot hit closer than 2), otherwise its entity interaction range, 3
+(`AttackRange.defaultFor`, `LivingEntity.java:2212`). The screen shows it as
+"3" or "2–4.5". Fact: vanilla shows no range in an item's tooltip; the
+"Attack Range" seen in game comes from Better Combat, which has its own
+ranges, computed on the fly for players only (`PlayerAttackHelper.java:267-277`)
+and stored nowhere another mod could read. Question: whether a companion
+fights by Better Combat's ranges when it is installed, decided with combat;
+if so, the range goes through one extension point that both combat and the
+screen read, implemented by the Better Combat adapter. Question: vanilla halves a spear's range for
+mobs (`mob_factor`); what applies to a companion is decided with combat.
+
 ### What counts as a weapon
 
 Decision: an item tag of the mod, `am_i_alone:companion_weapons`, decides what

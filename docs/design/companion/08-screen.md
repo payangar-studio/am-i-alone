@@ -52,9 +52,11 @@ Decision: what the panel shows is data, so that another mod or a datapack
 shows its own attributes: two registries filled by data and synced to the
 clients, as the skins are (`04-identity.md`). A group
 (`am_i_alone:companion_attribute_group`) has a heading and an order. An entry
-(`am_i_alone:companion_attribute`) names an attribute, its group, its order in
-the group, its short label (the attribute's own name when absent), its format
-and when it is shown (always, or only when it differs from its default). An
+(`am_i_alone:companion_attribute`) names an attribute, or a value the mod
+computes (attack range is the first), its group, its order in the group, its
+short label (the attribute's own name when absent), its format, when it is
+shown (always, or only when it differs from its default) and, optionally, a
+colour threshold: the value the colour compares to instead of the default. An
 attribute with no entry is not shown. A mod adds an attribute with one file of
 its own; a datapack replaces an entry or a group with a file of the same name.
 
@@ -62,17 +64,23 @@ The mod ships these entries:
 
 | Attributes | Shown |
 |---|---|
-| Max health, armor, armor toughness, knockback resistance, movement speed | Always |
+| Attack damage, attack speed, attack range (`07-inventory.md`), max health, armor, armor toughness, knockback resistance, movement speed | Always |
 | Max absorption, water and ground movement efficiency, jump, step height, oxygen, burning time, explosion knockback resistance, safe fall distance, fall damage multiplier | Only when gear or an effect changes them from their default |
 | Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback | No entry: they mean nothing to a player looking at a companion |
 
-The groups it ships: Defence, Movement, Hazards.
+The groups it ships: Combat, Defence, Movement, Hazards.
 
 Decision: values as vanilla writes them (`#.##`), in one of a few formats an
 entry picks: the plain value, the value ×10 (knockback resistance, as item
 tooltips show it), a percentage of its default (movement speed), a
 percentage (burning time, fall damage). A value that differs from its default takes
-the colour of its effect: green for a gain, red for a loss. Rows that overflow
+the colour of its effect: green for a gain, red for a loss. The default is
+the attribute's own (`Attribute.getDefaultValue`: 20 for max health), not the
+companion's base, so health raised by a command or by data shows green too.
+Attack damage compares to 1, a bare hand's, rather than vanilla's default of
+2; attack speed compares to 1 rather than its base of 4: a sword's 1.6 is green, an axe's 0.9
+red. Apothic Attributes compares to the base, and would show every weapon's
+speed in red. Rows that overflow
 the panel scroll with the wheel.
 
 Tabs above the window, for real changes of page only:
@@ -83,7 +91,14 @@ Tabs above the window, for real changes of page only:
 | Debug | Debug options: its owner, later changing it | An operator holding the companion debug stick (`../debug/00-overview.md`) |
 
 Decision: the drawer belongs to the Companion tab; switching to Debug puts it
-away. The tabs share their border with each other, as the handles do.
+away.
+
+Decision: tabs and handles are drawn as a stack, as vanilla's creative and
+recipe book tabs: the selected one on top, with its full border and relief,
+merged into its panel; the others underneath, tucked under it and under the
+panel, nearer ones in front of farther ones, with a darker face and a dimmer
+border and relief. Their raised relief stays: only what covers them shows
+they are behind.
 
 Decision: when the drawer out does not fit on the screen, the whole screen
 moves left to make room, as vanilla's recipe book moves the inventory; if

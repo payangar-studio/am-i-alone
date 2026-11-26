@@ -14,6 +14,7 @@
     --client: #6b4aa0; --client-bg: #ece5f6;
     --fact: #2f62a8; --decision: #3f7d3a; --question: #a8452f;
     --game: #8a5a12; --build: #4b5563;
+    --tucked: #dedad1;
     color-scheme: light dark;
   }
   @media (prefers-color-scheme: dark) {
@@ -26,6 +27,7 @@
       --client: #b79be6; --client-bg: #261f33;
       --fact: #7aa7ea; --decision: #7cc36f; --question: #ee8a70;
       --game: #e0b064; --build: #b7bec8;
+      --tucked: #10100e;
     }
   }
   * { box-sizing: border-box; }
@@ -114,9 +116,12 @@
 <figure><svg viewBox="0 0 700 690" role="img"><title>The companion's screen: tabs above the window, its equipment and 3D view at the top left, the name column at their right, the player's inventory centred below, and the drawer out on the right with its two handles and its two panels</title><defs><symbol id="heart" viewBox="0 0 12 11"><path d="M6,10.5 L1.2,5.6 C-0.6,3.6 0.6,0.4 3.3,0.4 C4.7,0.4 5.5,1.3 6,2.2 C6.5,1.3 7.3,0.4 8.7,0.4 C11.4,0.4 12.6,3.6 10.8,5.6 Z"/></symbol><symbol id="armor" viewBox="0 0 12 11"><path d="M0.5,0.5 L4,0.5 L6,2.2 L8,0.5 L11.5,0.5 L11.5,4.5 L9.5,4.5 L9.5,10.5 L2.5,10.5 L2.5,4.5 L0.5,4.5 Z"/></symbol>
 <g id="prow"><rect x="0" y="0" width="28" height="28" rx="3"/><rect x="30" y="0" width="28" height="28" rx="3"/><rect x="60" y="0" width="28" height="28" rx="3"/><rect x="90" y="0" width="28" height="28" rx="3"/><rect x="120" y="0" width="28" height="28" rx="3"/><rect x="150" y="0" width="28" height="28" rx="3"/><rect x="180" y="0" width="28" height="28" rx="3"/><rect x="210" y="0" width="28" height="28" rx="3"/><rect x="240" y="0" width="28" height="28" rx="3"/></g>
 <g id="srow"><rect x="0" y="0" width="28" height="28" rx="3"/><rect x="30" y="0" width="28" height="28" rx="3"/><rect x="60" y="0" width="28" height="28" rx="3"/><rect x="90" y="0" width="28" height="28" rx="3"/></g></defs>
-<!-- tabs: the Debug tab sits behind the window, the open Companion tab merges into it -->
-<rect x="130" y="24" width="76" height="27" rx="3" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/><text x="168" y="42" text-anchor="middle" class="small">Debug</text>
+<!-- tabs, drawn as a stack: the Debug tab tucked under the open Companion tab and the window, the open one merged into the window -->
+<rect x="122" y="24" width="80" height="30" rx="3" style="fill: var(--tucked); stroke: var(--rule); stroke-width: 1"/><text x="164" y="42" text-anchor="middle" class="small">Debug</text>
 <text x="214" y="42" class="small">Debug: only when opened with the debug stick</text>
+<!-- the closed panel's handle, tucked under the drawer and under the open handle -->
+<rect x="514" y="94" width="44" height="40" rx="2" style="fill: var(--tucked); stroke: var(--rule); stroke-width: 1"/>
+<g style="fill: var(--fg)"><rect x="532" y="117" width="4" height="7"/><rect x="538" y="113" width="4" height="11"/><rect x="544" y="108" width="4" height="16"/></g>
 <!-- drawer, out from under the window -->
 <rect class="box-plain" x="370" y="50" width="152" height="292" rx="4"/>
 <!-- window -->
@@ -155,35 +160,37 @@
 <path d="M522,62 L561,62 L561,98 L522,98" style="fill: var(--panel); stroke: var(--rule); stroke-width: 1.5"/><rect x="519" y="63" width="5" height="34" style="fill: var(--panel)"/>
 <g style="fill: none; stroke: var(--fg); stroke-width: 1.4"><rect x="534" y="68" width="16" height="12" rx="1"/><path d="M534,73 L550,73"/></g><rect x="540" y="71" width="4" height="5" style="fill: var(--fg)"/>
 <path d="M538,90 L545,86 L545,94 Z" style="fill: var(--fg)"/>
-<rect x="522" y="98" width="36" height="36" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
-<g style="fill: var(--fg)"><rect x="532" y="117" width="4" height="7"/><rect x="538" y="113" width="4" height="11"/><rect x="544" y="108" width="4" height="16"/></g>
 <circle class="dot" cx="578" cy="46" r="9"/><text x="578" y="50" text-anchor="middle" class="mark">8</text><text x="592" y="50" class="small">the handles</text>
 <text x="570" y="72" class="small">open panel: drawer's</text><text x="570" y="86" class="small">colour, 2 px further</text><text x="570" y="100" class="small">out; ◂ puts it away</text>
 <text x="570" y="120" class="small">the other panel:</text><text x="570" y="134" class="small">shows it at once</text>
 <!-- the same drawer on its attributes panel -->
 <text x="380" y="374" class="small">the same drawer, on its attributes panel:</text>
+<rect x="514" y="396" width="44" height="40" rx="2" style="fill: var(--tucked); stroke: var(--rule); stroke-width: 1"/>
+<g style="fill: none; stroke: var(--fg); stroke-width: 1.4"><rect x="532" y="408" width="16" height="12" rx="1"/><path d="M532,413 L548,413"/></g><rect x="538" y="411" width="4" height="5" style="fill: var(--fg)"/>
 <rect class="box-plain" x="370" y="384" width="152" height="292" rx="4"/>
 <path class="lifeline" d="M370,384 L370,676"/>
-<rect x="522" y="396" width="36" height="36" style="fill: var(--bg); stroke: var(--rule); stroke-width: 1.5"/>
-<g style="fill: none; stroke: var(--fg); stroke-width: 1.4"><rect x="532" y="408" width="16" height="12" rx="1"/><path d="M532,413 L548,413"/></g><rect x="538" y="411" width="4" height="5" style="fill: var(--fg)"/>
 <path d="M522,432 L561,432 L561,468 L522,468" style="fill: var(--panel); stroke: var(--rule); stroke-width: 1.5"/><rect x="519" y="433" width="5" height="34" style="fill: var(--panel)"/>
 <g style="fill: var(--fg)"><rect x="534" y="447" width="4" height="7"/><rect x="540" y="443" width="4" height="11"/><rect x="546" y="438" width="4" height="16"/></g>
 <path d="M538,461 L545,457 L545,465 Z" style="fill: var(--fg)"/>
-<g style="font-size: 12px"><text x="382" y="410" style="font-weight: 700">Defence</text>
-<text x="382" y="428" style="fill: var(--muted)">Health</text><text x="510" y="428" text-anchor="end">20</text>
-<text x="382" y="445" style="fill: var(--muted)">Armor</text><text x="510" y="445" text-anchor="end" style="fill: var(--anchored)">15</text>
-<text x="382" y="462" style="fill: var(--muted)">Toughness</text><text x="510" y="462" text-anchor="end">0</text>
-<text x="382" y="479" style="fill: var(--muted)">Knockback</text><text x="510" y="479" text-anchor="end" style="fill: var(--anchored)">4</text>
-<text x="382" y="503" style="font-weight: 700">Movement</text>
-<text x="382" y="521" style="fill: var(--muted)">Speed</text><text x="510" y="521" text-anchor="end" style="fill: var(--anchored)">140%</text>
-<text x="382" y="545" style="font-weight: 700">Hazards</text>
-<text x="382" y="563" style="fill: var(--muted)">Oxygen</text><text x="510" y="563" text-anchor="end" style="fill: var(--anchored)">1</text>
-<text x="382" y="580" style="fill: var(--muted)">Safe fall</text><text x="510" y="580" text-anchor="end" style="fill: var(--question)">2</text></g>
-<text x="382" y="644" class="small">rows that overflow</text><text x="382" y="658" class="small">scroll with the wheel</text>
+<g style="font-size: 12px"><text x="382" y="410" style="font-weight: 700">Combat</text>
+<text x="382" y="428" style="fill: var(--muted)">Attack</text><text x="510" y="428" text-anchor="end" style="fill: var(--anchored)">7</text>
+<text x="382" y="445" style="fill: var(--muted)">Atk speed</text><text x="510" y="445" text-anchor="end" style="fill: var(--anchored)">1.6</text>
+<text x="382" y="462" style="fill: var(--muted)">Range</text><text x="510" y="462" text-anchor="end">3</text>
+<text x="382" y="486" style="font-weight: 700">Defence</text>
+<text x="382" y="504" style="fill: var(--muted)">Health</text><text x="510" y="504" text-anchor="end">20</text>
+<text x="382" y="521" style="fill: var(--muted)">Armor</text><text x="510" y="521" text-anchor="end" style="fill: var(--anchored)">15</text>
+<text x="382" y="538" style="fill: var(--muted)">Toughness</text><text x="510" y="538" text-anchor="end">0</text>
+<text x="382" y="555" style="fill: var(--muted)">Knockback</text><text x="510" y="555" text-anchor="end" style="fill: var(--anchored)">4</text>
+<text x="382" y="579" style="font-weight: 700">Movement</text>
+<text x="382" y="597" style="fill: var(--muted)">Speed</text><text x="510" y="597" text-anchor="end" style="fill: var(--anchored)">140%</text>
+<text x="382" y="621" style="font-weight: 700">Hazards</text>
+<text x="382" y="639" style="fill: var(--muted)">Oxygen</text><text x="510" y="639" text-anchor="end" style="fill: var(--anchored)">1</text>
+<text x="382" y="656" style="fill: var(--muted)">Safe fall</text><text x="510" y="656" text-anchor="end" style="fill: var(--question)">2</text></g>
 <circle class="dot" cx="578" cy="490" r="9"/><text x="578" y="494" text-anchor="middle" class="mark">9</text>
-<text x="592" y="494" class="small">its attributes,</text><text x="592" y="508" class="small">in three groups</text>
+<text x="592" y="494" class="small">its attributes,</text><text x="592" y="508" class="small">in four groups</text>
 <text x="570" y="532" class="small" style="fill: var(--anchored)">green: a gain</text><text x="570" y="546" class="small" style="fill: var(--question)">red: a loss</text><text x="570" y="560" class="small">plain: its default</text>
 <text x="570" y="584" class="small">hover: full name,</text><text x="570" y="598" class="small">value and base</text>
+<text x="570" y="622" class="small">rows that overflow</text><text x="570" y="636" class="small">scroll with the wheel</text>
 <!-- the Debug tab -->
 <text x="10" y="374" class="small">the same window, on the Debug tab:</text>
 <rect x="10" y="384" width="330" height="96" rx="6" style="fill: var(--bg); stroke: var(--accent); stroke-width: 2"/>
@@ -199,30 +206,31 @@
 <rect x="20" y="622" width="30" height="18" rx="3" style="fill: var(--bg); stroke: var(--muted); stroke-width: 1.2"/><text x="58" y="635" class="small">the player's inventory</text>
 </svg><figcaption>The Companion tab with the drawer out on its storage panel; below, the drawer on its attributes panel, and what the Debug tab puts under the hearts.</figcaption></figure>
 <ol class="legend">
-<li>The tabs, above the window, sharing their border: Companion for whoever opens the screen; Debug only when an operator opened it with the companion debug stick.</li>
+<li>The tabs, above the window, drawn as a stack: the open one on top, merged into the window; the other tucked under it and under the window, with a darker face. Companion for whoever opens the screen; Debug only when an operator opened it with the companion debug stick.</li>
 <li>Its four armor slots, head to feet (<a href="inventory.html">Inventory</a>).</li>
 <li>Its view in 3D. The armor slots, the view and the weapon slots have the same sizes as in the first inventory screen.</li>
 <li>Its two designated weapon slots.</li>
 <li>The name column. Its name as the main heading, with an icon of its group: pink for a woman, blue for a man; a name too long for the column ends with "…". Right under the name, its armor and health bars; under the last row of hearts, the content of the tab: on the Companion tab its owner, and its mode once the modes exist.</li>
 <li>The inventory of the player who opened the screen, centred below.</li>
 <li>The drawer, sliding out from under the window on the right, as tall as the window. Its storage panel is the player's inventory turned on its side: 4 columns of 9 rows.</li>
-<li>The handles, one per panel, stacked on the drawer's edge and sharing their border: a monochrome icon (a chest, bars), an arrow that points where the drawer will go, and a tooltip.</li>
-<li>The attributes panel: three groups (Defence, Movement, Hazards), the headings in white, each row a short label and its value aligned right.</li>
+<li>The handles, one per panel, stacked on the drawer's edge and sharing their border: a monochrome icon (a chest, bars), an arrow that points where the drawer will go, and a tooltip. Drawn as the tabs are: the open panel's handle on top, merged into the drawer; the other tucked under it and under the drawer, with a darker face.</li>
+<li>The attributes panel: four groups (Combat, Defence, Movement, Hazards), the headings in white, each row a short label and its value aligned right. Here with a diamond sword as primary designated weapon: attack 7 and attack speed 1.6 are green, compared to a bare hand's 1.</li>
 </ol>
 <h3>The drawer</h3>
 <div class="table"><table><tr><th>Click</th><th>What happens</th></tr><tr><td>A handle, drawer in</td><td>The drawer slides out on that panel</td></tr><tr><td>The open panel's handle</td><td>The drawer slides back in</td></tr><tr><td>The other handle, drawer out</td><td>The drawer shows that panel at once, without going in</td></tr></table></div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The open panel's handle takes the drawer's colour and stands 2 pixels further out, merged into the drawer; the tooltip names the panel, or the action ("Put its inventory away") on the open one. Drawer in, both handles show an arrow pointing out; drawer out, only the open panel's handle does, pointing back. The handles are buttons: they take the keyboard focus and are read by the narrator. The drawer remembers its panel: the screen opens again with the drawer out on it. When the drawer covers the window (a narrow screen), Escape puts it away first.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The storage panel is the player's inventory turned on its side: 4 columns of 9 rows.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The attributes panel lists its attributes in groups, the headings in white, each row a short label and its value aligned right; hovering a row shows the attribute's full name, its current value and its base. Not "statistics": that is vanilla's screen of the player's counters.</div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>What the panel shows is data, so that another mod or a datapack shows its own attributes: two registries filled by data and synced to the clients, as the skins are (<a href="identity.html">Identity, names and skins</a>). A group (<code>am_i_alone:<wbr>companion_attribute_group</code>) has a heading and an order. An entry (<code>am_i_alone:<wbr>companion_attribute</code>) names an attribute, its group, its order in the group, its short label (the attribute's own name when absent), its format and when it is shown (always, or only when it differs from its default). An attribute with no entry is not shown. A mod adds an attribute with one file of its own; a datapack replaces an entry or a group with a file of the same name.</div>
-<p>The mod ships these entries, in three groups (Defence, Movement, Hazards):</p>
-<div class="table"><table><tr><th>Attributes</th><th>Shown</th></tr><tr><td>Max health, armor, armor toughness, knockback resistance, movement speed</td><td>Always</td></tr><tr><td>Max absorption, water and ground movement efficiency, jump, step height, oxygen, burning time, explosion knockback resistance, safe fall distance, fall damage multiplier</td><td>Only when gear or an effect changes them from their default</td></tr><tr><td>Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback</td><td>No entry: they mean nothing to a player looking at a companion</td></tr></table></div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>Values as vanilla writes them (<code>#.##</code>), in one of a few formats an entry picks: the plain value, the value ×10 (knockback resistance, as item tooltips show it), a percentage of its default (movement speed), a percentage (burning time, fall damage). A value that differs from its default takes the colour of its effect: green for a gain, red for a loss. Rows that overflow the panel scroll with the wheel.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>What the panel shows is data, so that another mod or a datapack shows its own attributes: two registries filled by data and synced to the clients, as the skins are (<a href="identity.html">Identity, names and skins</a>). A group (<code>am_i_alone:<wbr>companion_attribute_group</code>) has a heading and an order. An entry (<code>am_i_alone:<wbr>companion_attribute</code>) names an attribute, or a value the mod computes (attack range is the first), its group, its order in the group, its short label (the attribute's own name when absent), its format, when it is shown (always, or only when it differs from its default) and, optionally, a colour threshold: the value the colour compares to instead of the default. An attribute with no entry is not shown. A mod adds an attribute with one file of its own; a datapack replaces an entry or a group with a file of the same name.</div>
+<p>The mod ships these entries, in four groups (Combat, Defence, Movement, Hazards):</p>
+<div class="table"><table><tr><th>Attributes</th><th>Shown</th></tr><tr><td>Attack damage, attack speed, attack range (<a href="inventory.html#attack">Inventory</a>), max health, armor, armor toughness, knockback resistance, movement speed</td><td>Always</td></tr><tr><td>Max absorption, water and ground movement efficiency, jump, step height, oxygen, burning time, explosion knockback resistance, safe fall distance, fall damage multiplier</td><td>Only when gear or an effect changes them from their default</td></tr><tr><td>Camera distance, name tag distances, waypoint range, gravity, scale, air drag, friction, bounciness, interaction range, attack knockback</td><td>No entry: they mean nothing to a player looking at a companion</td></tr></table></div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Values as vanilla writes them (<code>#.##</code>), in one of a few formats an entry picks: the plain value, the value ×10 (knockback resistance, as item tooltips show it), a percentage of its default (movement speed), a percentage (burning time, fall damage). A value that differs from its default takes the colour of its effect: green for a gain, red for a loss. The default is the attribute's own (<code>Attribute.<wbr>getDefaultValue</code>: 20 for max health), not the companion's base, so health raised by a command or by data shows green too. Attack damage compares to 1, a bare hand's, rather than vanilla's default of 2; attack speed compares to 1 rather than its base of 4: a sword's 1.6 is green, an axe's 0.9 red. Apothic Attributes compares to the base, and would show every weapon's speed in red. Rows that overflow the panel scroll with the wheel.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>When the drawer out does not fit on the screen, the whole screen moves left to make room, as vanilla's recipe book moves the inventory; if even that is not enough, the drawer covers part of the window.</div>
 <h3>Tabs</h3>
 <p>Tabs above the window, for real changes of page only:</p>
 <div class="table"><table><tr><th>Tab</th><th>The content on the right shows</th><th>Who sees it</th></tr><tr><td>Companion</td><td>Its owner, and its mode (a list to pick from) once the modes exist</td><td>Whoever opens the screen</td></tr><tr><td>Debug</td><td>Debug options: its owner, later changing it</td><td>An operator holding the companion debug stick (<a href="../debug/index.html">Companion debug stick</a>)</td></tr></table></div>
-<div class="stmt is-decision"><span class="tag decision">Decision</span>The drawer belongs to the Companion tab; switching to Debug puts it away. The tabs share their border with each other, as the handles do.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>The drawer belongs to the Companion tab; switching to Debug puts it away.</div>
+<div class="stmt is-decision"><span class="tag decision">Decision</span>Tabs and handles are drawn as a stack, as vanilla's creative and recipe book tabs: the selected one on top, with its full border and relief, merged into its panel; the others underneath, tucked under it and under the panel, nearer ones in front of farther ones, with a darker face and a dimmer border and relief. Their raised relief stays: only what covers them shows they are behind.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The screen shows only what works. Until the modes exist, the Companion tab has no mode list; until the owner can be changed, the Debug tab only shows the current owner.</div>
 <div class="stmt is-decision"><span class="tag decision">Decision</span>The mode is a list: a click opens the possible modes, one is picked (<a href="../ownership/index.html">Ownership and modes</a>). The modes themselves are not designed yet.</div>
 <h3>Gestures</h3>
