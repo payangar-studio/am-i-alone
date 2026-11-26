@@ -7,3 +7,6 @@ runs/
 /*/run/
 .source/
 # mod:end
+
+# Logs the unit tests write in the loader subproject.
+/*/logs/
