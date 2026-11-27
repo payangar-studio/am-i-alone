@@ -2,6 +2,7 @@ package com.payangar.amialone.gametest;
 
 import com.mojang.authlib.GameProfile;
 import com.payangar.amialone.companion.Companion;
+import com.payangar.amialone.companion.CompanionOwner;
 import com.payangar.amialone.companion.CompanionIdentity;
 import com.payangar.amialone.companion.CompanionNames;
 import com.payangar.amialone.companion.CompanionSkin;
@@ -104,12 +105,13 @@ public class CompanionServerGameTest {
     }
 
     /**
-     * A right-click opens the screen for the companion's owner only. No companion has one yet, so
-     * nothing happens: no menu, no swing, and the held item does not act.
+     * A right-click on another player's companion does nothing: no menu, no swing, and the held
+     * item does not act.
      */
     @GameTest
-    public void aPlainRightClickDoesNothing(GameTestHelper helper) {
+    public void aRightClickOnAnotherPlayersCompanionDoesNothing(GameTestHelper helper) {
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        companion.setAttached(Companions.OWNER, new CompanionOwner(UUID.randomUUID(), "someone_else"));
         String name = companion.getName().getString();
         ServerPlayer player = CompanionInventoryServerGameTest.connectPlayer(helper, "stranger");
         ItemStack nameTag = namedTag("Bob");

@@ -1,5 +1,6 @@
 package com.payangar.amialone.companion;
 
+import com.mojang.serialization.Codec;
 import com.payangar.amialone.CommonEntrypoint;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
@@ -22,8 +23,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 
 /**
- * What the companion registers: its entity type, its identity and absorption attachments, its
- * screen's menu and the message of its attribute values, its data registries.
+ * What the companion registers: its entity type, its identity, absorption, owner and price
+ * attachments, its screen's and its recruitment screen's menus and the message of its attribute
+ * values, its data registries.
  */
 public final class Companions {
     /**
@@ -62,11 +64,27 @@ public final class Companions {
     public static final AttachmentType<Float> ABSORPTION = AttachmentRegistry.create(
             id("absorption"), builder -> builder.syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.all()));
 
+    /** The player it belongs to, which clients need to answer a right-click and show it; none until recruited. */
+    public static final AttachmentType<CompanionOwner> OWNER = AttachmentRegistry.create(
+            id("owner"),
+            builder -> builder.persistent(CompanionOwner.CODEC)
+                    .syncWith(CompanionOwner.STREAM_CODEC, AttachmentSyncPredicate.all()));
+
+    /** Its price in emeralds, drawn once; the recruitment screen sends it to its client. */
+    public static final AttachmentType<Integer> PRICE =
+            AttachmentRegistry.create(id("price"), builder -> builder.persistent(Codec.INT));
+
     /** The companion's screen's menu, which sends the entity id and the debug flag to the client. */
     public static final ExtendedMenuType<CompanionMenu, CompanionMenu.Opening> MENU = Registry.register(
             BuiltInRegistries.MENU,
             id("companion"),
             new ExtendedMenuType<>(CompanionMenu::new, CompanionMenu.Opening.STREAM_CODEC));
+
+    /** The recruitment screen's menu, which sends the companion, its price and its equipment to the client. */
+    public static final ExtendedMenuType<RecruitMenu, RecruitMenu.Opening> RECRUIT_MENU = Registry.register(
+            BuiltInRegistries.MENU,
+            id("recruit"),
+            new ExtendedMenuType<>(RecruitMenu::new, RecruitMenu.Opening.STREAM_CODEC));
 
     private Companions() {}
 

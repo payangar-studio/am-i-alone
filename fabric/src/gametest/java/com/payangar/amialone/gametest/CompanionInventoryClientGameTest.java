@@ -74,7 +74,7 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
                 Screenshots.compare(context, "companion_armor");
             }
 
-            // Only the debug stick opens the screen until companions have owners.
+            // This companion has no owner: the debug stick opens its screen.
             world.getServer().runOnServer(server -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 CompanionMenu.open(player, (Companion) player.level().getEntity(id), true);
@@ -216,7 +216,7 @@ public class CompanionInventoryClientGameTest implements FabricClientGameTest {
      * A companion three blocks in front of the player, facing them, with a fixed identity, 15
      * health, iron armor, a sword and a shield as designated weapons, and some storage.
      */
-    private static UUID summonEquipped(ServerPlayer player) {
+    static UUID summonEquipped(ServerPlayer player) {
         ServerLevel level = player.level();
         player.connection.teleport(player.getX(), player.getY(), player.getZ(), 0.0F, 0.0F);
         Companion companion = (Companion) Companions.TYPE.create(level, EntitySpawnReason.COMMAND);

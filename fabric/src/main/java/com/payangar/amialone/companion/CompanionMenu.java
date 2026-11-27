@@ -2,12 +2,7 @@ package com.payangar.amialone.companion;
 
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,11 +11,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ArmorSlot;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -37,12 +32,9 @@ import org.jspecify.annotations.Nullable;
  * {@link Panel#INVENTORY} panel only; otherwise the storage takes and gives nothing, whatever a
  * client sends. The drawer opens on the {@link Tab#COMPANION} tab only.
  *
- * <p>The server's menu also sends the client the companion's attribute values ({@link
- * CompanionAttributeValues}) at its opening and whenever one changes.
- *
  * <p>Its slots are not highlightable: the screen draws its own highlight, not vanilla's sprite.
  */
-public class CompanionMenu extends AbstractContainerMenu {
+public class CompanionMenu extends CompanionViewMenu {
     public static final int ARMOR_START = 0;
     public static final int WEAPONS_START = 4;
     public static final int STORAGE_START = 6;
@@ -85,14 +77,14 @@ public class CompanionMenu extends AbstractContainerMenu {
     public static final int STORAGE_X = PANEL_WIDTH - 1 + PADDING + 1;
     public static final int STORAGE_Y = DRAWER_Y + PADDING + 1;
 
-    private static final List<EquipmentSlot> ARMOR =
+    static final List<EquipmentSlot> ARMOR =
             List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
-    private static final List<Identifier> ARMOR_ICONS = List.of(
+    public static final List<Identifier> ARMOR_ICONS = List.of(
             InventoryMenu.EMPTY_ARMOR_SLOT_HELMET,
             InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE,
             InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS,
             InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS);
-    private static final Identifier PRIMARY_WEAPON_ICON = Identifier.withDefaultNamespace("container/slot/sword");
+    public static final Identifier PRIMARY_WEAPON_ICON = Identifier.withDefaultNamespace("container/slot/sword");
 
     /** The drawer's panels, in the order of their handles. */
     public enum Panel {
@@ -128,15 +120,9 @@ public class CompanionMenu extends AbstractContainerMenu {
                 ByteBufCodecs.VAR_INT, Opening::companionId, ByteBufCodecs.BOOL, Opening::debug, Opening::new);
     }
 
-    private final LivingEntity companion;
     private final boolean debug;
-    /** On the server, the player it sends the attribute values to; none on the client. */
-    private final @Nullable ServerPlayer viewer;
-    /** On the server, the attribute and computed values last sent; on the client, the ones last received. */
-    private List<CompanionAttributeValues.Value> attributeValues = List.of();
-    private List<CompanionAttributeValues.Computed> computedValues = List.of();
-    private boolean armed;
-    private boolean attributeValuesSent;
+    /** On the Debug tab, the companion's opinion of the player who opened it, synced each tick. */
+    private final DataSlot opinion = DataSlot.standalone();
     private Tab tab = Tab.COMPANION;
     private @Nullable Panel panel;
 
@@ -161,10 +147,8 @@ public class CompanionMenu extends AbstractContainerMenu {
             LivingEntity companion,
             Container inventory,
             boolean debug) {
-        super(Companions.MENU, containerId);
-        this.companion = companion;
+        super(Companions.MENU, containerId, playerInventory, companion);
         this.debug = debug;
-        this.viewer = playerInventory.player instanceof ServerPlayer player ? player : null;
         for (int i = 0; i < ARMOR.size(); i++) {
             EquipmentSlot slot = ARMOR.get(i);
             addSlot(new ArmorSlot(equipment(companion, slot), companion, slot, 0, ARMOR_X, COMPANION_Y + i * 18, ARMOR_ICONS.get(i)) {
@@ -184,12 +168,9 @@ public class CompanionMenu extends AbstractContainerMenu {
         for (int i = 0; i < CompanionInventory.STORAGE_SIZE; i++) {
             addSlot(new StorageSlot(inventory, i, STORAGE_X + i % STORAGE_COLUMNS * 18, STORAGE_Y + i / STORAGE_COLUMNS * 18));
         }
-        // The player's inventory as vanilla lays it out: its three rows, then its hotbar.
-        for (int i = 9; i < 36; i++) {
-            addSlot(new PlainSlot(playerInventory, i, PLAYER_X + i % 9 * 18, PLAYER_Y + (i / 9 - 1) * 18));
-        }
-        for (int i = 0; i < 9; i++) {
-            addSlot(new PlainSlot(playerInventory, i, PLAYER_X + i * 18, HOTBAR_Y));
+        addPlayerInventory(playerInventory);
+        if (debug) {
+            addDataSlot(opinion);
         }
     }
 
@@ -216,13 +197,6 @@ public class CompanionMenu extends AbstractContainerMenu {
         });
     }
 
-    private static LivingEntity find(Player player, int id) {
-        if (player.level().getEntity(id) instanceof LivingEntity entity) {
-            return entity;
-        }
-        throw new IllegalStateException("The companion " + id + " of an opened screen is not on the client");
-    }
-
     /** One equipment slot of {@code entity} as a container, for vanilla's {@link ArmorSlot}. */
     private static Container equipment(LivingEntity entity, EquipmentSlot slot) {
         return new ContainerSingleItem() {
@@ -246,8 +220,21 @@ public class CompanionMenu extends AbstractContainerMenu {
         };
     }
 
-    public LivingEntity companion() {
-        return companion;
+    /**
+     * The companion's opinion of the player who opened the screen, for the Debug tab: on the
+     * client, as the server last synced it; 0 without the debug stick.
+     */
+    public int opinion() {
+        return opinion.get();
+    }
+
+    /** Before vanilla's sync, the opinion the Debug tab shows, which changes as the companion hears or is healed. */
+    @Override
+    public void broadcastChanges() {
+        if (debug && viewer() != null && companion() instanceof Companion companion) {
+            opinion.set(companion.opinionOf(viewer()));
+        }
+        super.broadcastChanges();
     }
 
     /** Whether the server opened it with the debug stick, which gives it the {@link Tab#DEBUG} tab. */
@@ -275,75 +262,6 @@ public class CompanionMenu extends AbstractContainerMenu {
      */
     public boolean storageOpen() {
         return panel == Panel.INVENTORY;
-    }
-
-    /**
-     * The values of the companion's attributes that have an entry: on the client, as the server
-     * last sent them; empty until the first message.
-     */
-    public Map<Holder<Attribute>, CompanionAttributeValues.Value> attributeValues() {
-        return attributeValues.stream()
-                .collect(Collectors.toUnmodifiableMap(CompanionAttributeValues.Value::attribute, Function.identity()));
-    }
-
-    /**
-     * The companion's computed values that an entry names: on the client, as the server last sent
-     * them; empty until the first message.
-     */
-    public Map<CompanionComputedValue, CompanionAttributeValues.Computed> computedValues() {
-        return computedValues.stream()
-                .collect(Collectors.toUnmodifiableMap(CompanionAttributeValues.Computed::value, Function.identity()));
-    }
-
-    /** Whether the companion is armed: on the client, as the server last sent it. */
-    public boolean armed() {
-        return armed;
-    }
-
-    /** The client's side: takes the values the server sent for this menu. */
-    public void receive(CompanionAttributeValues message) {
-        if (message.containerId() == containerId) {
-            attributeValues = List.copyOf(message.values());
-            computedValues = List.copyOf(message.computed());
-            armed = message.armed();
-        }
-    }
-
-    /**
-     * The server's per-tick sync, then the attribute values if they changed. The first one, when
-     * the player opens the screen (vanilla calls it as it adds the player's listener), sends them
-     * all.
-     */
-    @Override
-    public void broadcastChanges() {
-        super.broadcastChanges();
-        sendAttributeValues();
-    }
-
-    /**
-     * Sends the viewer the companion's attribute and computed values and whether it is armed,
-     * unless they are the ones it already has.
-     * Without a check of the client's channels: the mod is required on both sides, and the side
-     * check refuses a client without it.
-     */
-    private void sendAttributeValues() {
-        if (viewer == null || !(companion instanceof Companion server)) {
-            return;
-        }
-        List<CompanionAttributeValues.Value> values = CompanionAttributeValues.of(server);
-        List<CompanionAttributeValues.Computed> computed = CompanionAttributeValues.computedOf(server);
-        boolean nowArmed = server.armed();
-        if (attributeValuesSent
-                && values.equals(attributeValues)
-                && computed.equals(computedValues)
-                && nowArmed == armed) {
-            return;
-        }
-        attributeValues = values;
-        computedValues = computed;
-        armed = nowArmed;
-        attributeValuesSent = true;
-        ServerPlayNetworking.send(viewer, new CompanionAttributeValues(containerId, values, computed, nowArmed));
     }
 
     /**
@@ -380,9 +298,7 @@ public class CompanionMenu extends AbstractContainerMenu {
      */
     @Override
     public boolean stillValid(Player player) {
-        return companion.isAlive()
-                && player.isWithinEntityInteractionRange(companion, 4.0)
-                && (debug || Companion.isOwner(companion, player));
+        return companionInReach(player) && (debug || Companion.isOwner(companion(), player));
     }
 
     /**
@@ -418,7 +334,7 @@ public class CompanionMenu extends AbstractContainerMenu {
     }
 
     private boolean moveToCompanion(ItemStack stack) {
-        int armor = ARMOR.indexOf(companion.getEquipmentSlotForItem(stack));
+        int armor = ARMOR.indexOf(companion().getEquipmentSlotForItem(stack));
         if (armor >= 0 && moveItemStackTo(stack, ARMOR_START + armor, ARMOR_START + armor + 1, false)) {
             return true;
         }
@@ -427,17 +343,6 @@ public class CompanionMenu extends AbstractContainerMenu {
         }
         // Checked here too: moveItemStackTo merges into a matching stack without asking the slot.
         return storageOpen() && moveItemStackTo(stack, STORAGE_START, PLAYER_START, false);
-    }
-
-    private static class PlainSlot extends Slot {
-        PlainSlot(Container container, int slot, int x, int y) {
-            super(container, slot, x, y);
-        }
-
-        @Override
-        public boolean isHighlightable() {
-            return false;
-        }
     }
 
     /**

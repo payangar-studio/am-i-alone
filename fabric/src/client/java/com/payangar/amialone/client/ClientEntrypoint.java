@@ -3,6 +3,7 @@ package com.payangar.amialone.client;
 import com.payangar.amialone.CommonEntrypoint;
 import com.payangar.amialone.client.companion.ClientCompanion;
 import com.payangar.amialone.client.companion.CompanionScreen;
+import com.payangar.amialone.client.companion.RecruitScreen;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.vendor.config.ClientSettings;
 import com.payangar.amialone.vendor.gui.screen.ConfigScreens;
@@ -23,6 +24,7 @@ public final class ClientEntrypoint {
     public static void init() {
         ClientCompanion.register();
         MenuScreens.register(Companions.MENU, CompanionScreen::new);
+        MenuScreens.register(Companions.RECRUIT_MENU, RecruitScreen::new);
         // The screen Mod Menu (Fabric) and the mod list (NeoForge) open. A screen of the mod's
         // own replaces it: ConfigScreens.register(CommonEntrypoint.SCHEMA, parent -> ...).
         ConfigScreens.register(CommonEntrypoint.SCHEMA, SETTINGS);

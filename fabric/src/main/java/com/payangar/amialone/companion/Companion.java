@@ -4,8 +4,11 @@ import com.payangar.amialone.CommonEntrypoint;
 import com.payangar.amialone.debug.Debug;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -19,14 +22,24 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ReputationEventHandler;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.gossip.GossipContainer;
+import net.minecraft.world.entity.ai.gossip.GossipType;
+import net.minecraft.world.entity.ai.village.ReputationEventType;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -38,6 +51,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import org.jspecify.annotations.Nullable;
@@ -52,9 +66,23 @@ import org.jspecify.annotations.Nullable;
  * <p>It carries a {@link CompanionInventory} and wears armor in vanilla's equipment slots. It is not
  * a vanilla {@code Container}, so hoppers leave it alone. Its primary designated weapon applies its
  * attribute modifiers, as a player's main hand does, while its own main hand is empty.
+ *
+ * <p>It has an opinion of each player made of vanilla's rumours, kept and heard as a villager
+ * does: its own {@link GossipContainer}, the rumours villagers pass on to it, the ones it gets when
+ * hit or when it sees a villager or a companion killed ({@link ReputationEventHandler}), and the
+ * daily forgetting. A mod changing those vanilla pieces changes the companions too. One event is
+ * its own: a player who heals it gets a minor positive rumour, +1 for each half heart restored.
  */
-public class Companion extends Avatar {
+public class Companion extends Avatar implements ReputationEventHandler {
     private static final String INVENTORY_KEY = CommonEntrypoint.MOD_ID + ":inventory";
+    private static final String GOSSIPS_KEY = CommonEntrypoint.MOD_ID + ":gossips";
+    private static final String GOSSIP_DECAY_KEY = CommonEntrypoint.MOD_ID + ":last_gossip_decay";
+    /** A villager passes rumours on within √5 blocks (vanilla's {@code TradeWithVillager}). */
+    private static final double HEARING_DISTANCE_SQUARED = 5.0;
+    /** At most one exchange of rumours a minute, as a villager ({@code Villager.gossip}). */
+    private static final long GOSSIP_COOLDOWN = 1200L;
+    /** Witnesses of a death, as a villager's: the range of its nearest visible entities. */
+    private static final double WITNESS_RANGE = 16.0;
     private static final byte ALL_LAYERS = (byte) Arrays.stream(PlayerModelPart.values())
             .mapToInt(PlayerModelPart::getMask)
             .reduce(0, (a, b) -> a | b);
@@ -62,6 +90,16 @@ public class Companion extends Avatar {
     private final CompanionInventory inventory = new CompanionInventory();
     /** The primary weapon whose modifiers are applied; empty while none are. */
     private ItemStack appliedPrimaryWeapon = ItemStack.EMPTY;
+    private final GossipContainer gossips = new GossipContainer();
+    private long lastGossipTime;
+    private long lastGossipDecayTime;
+    /** The player who applied each of its healing effects, the ones a heal is credited to. */
+    private final Map<Holder<MobEffect>, UUID> healers = new HashMap<>();
+    /** While a thrown potion heals it at once: whether, and the player who threw it, if one did. */
+    private boolean healingAtOnce;
+    private @Nullable UUID healingAtOnceBy;
+    /** The health each player restored that is not yet a rumour: a fraction, or a first half heart alone. */
+    private final Map<UUID, Float> healthRestored = new HashMap<>();
 
     public Companion(EntityType<? extends Avatar> type, Level level) {
         super(type, level);
@@ -71,6 +109,7 @@ public class Companion extends Avatar {
         // companion loaded from its chunk then replaces it with its saved one.
         if (!level.isClientSide()) {
             identity();
+            price();
         }
     }
 
@@ -79,8 +118,193 @@ public class Companion extends Avatar {
         return getAttachedOrCreate(Companions.IDENTITY, () -> CompanionIdentity.draw(registryAccess(), random));
     }
 
+    /**
+     * Its price in emeralds, drawn the first time it is asked for, then kept with the entity: in
+     * the constructor for a new companion, at its first recruitment screen for one saved before
+     * prices existed.
+     */
+    public int price() {
+        return getAttachedOrCreate(Companions.PRICE, () -> Recruitment.drawPrice(random));
+    }
+
     public CompanionInventory inventory() {
         return inventory;
+    }
+
+    /** Its rumours about players and other entities, as a villager's. */
+    public GossipContainer gossips() {
+        return gossips;
+    }
+
+    /** Its opinion of {@code player}: the sum of its rumours about them, as a villager's reputation. */
+    public int opinionOf(Player player) {
+        return gossips.getReputation(player.getUUID(), type -> true);
+    }
+
+    /**
+     * The rumour an event adds, as a villager adds it ({@code Villager.onReputationEventFrom}): a hit
+     * on it, or a villager or companion killed in front of it. It does not trade, and is not cured.
+     */
+    @Override
+    public void onReputationEventFrom(ReputationEventType type, Entity source) {
+        if (type == ReputationEventType.VILLAGER_HURT) {
+            gossips.add(source.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+        } else if (type == ReputationEventType.VILLAGER_KILLED) {
+            gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+        }
+    }
+
+    /**
+     * Instant health from a thrown or lingering potion is about to heal it: vanilla gives it the
+     * thrower nowhere else ({@code HealOrHarmMobEffect.applyInstantaneousEffect}, through the mod's
+     * mixin). {@code thrower} is the potion's owner, or the potion when it has none.
+     */
+    public void beginHealingAtOnce(@Nullable Entity thrower) {
+        healingAtOnce = true;
+        healingAtOnceBy = playerBehind(thrower);
+    }
+
+    public void endHealingAtOnce() {
+        healingAtOnce = false;
+        healingAtOnceBy = null;
+    }
+
+    /**
+     * Heals it, and credits the health actually restored to the player behind the heal: the one who
+     * threw the potion healing it at once, otherwise the one who applied its instant health (a
+     * tipped arrow) or its regeneration. Every point of health, a half heart, is a minor positive
+     * rumour of +1.
+     */
+    @Override
+    public void heal(float amount) {
+        float before = getHealth();
+        super.heal(amount);
+        float restored = getHealth() - before;
+        if (restored <= 0 || level().isClientSide()) {
+            return;
+        }
+        UUID healer = healingAtOnce ? healingAtOnceBy : effectHealer();
+        if (healer != null) {
+            float total = healthRestored.getOrDefault(healer, 0.0F) + restored;
+            int halfHearts = (int) total;
+            // Vanilla drops a rumour worth less than 2: the first half heart waits for the second.
+            int known = gossips.getReputation(healer, type -> type == GossipType.MINOR_POSITIVE);
+            if (halfHearts > 0 && known + halfHearts >= GossipContainer.DISCARD_THRESHOLD) {
+                gossips.add(healer, GossipType.MINOR_POSITIVE, halfHearts);
+                total -= halfHearts;
+            }
+            healthRestored.put(healer, total);
+        }
+    }
+
+    /** The player behind a heal over time: its instant health from an arrow first, else its regeneration. */
+    private @Nullable UUID effectHealer() {
+        if (hasEffect(MobEffects.INSTANT_HEALTH)) {
+            return healers.get(MobEffects.INSTANT_HEALTH);
+        }
+        return hasEffect(MobEffects.REGENERATION) ? healers.get(MobEffects.REGENERATION) : null;
+    }
+
+    /**
+     * Adds an effect as vanilla does, then remembers who applied a healing effect when it is the
+     * one now acting. Vanilla keeps a weaker effect aside, behind the stronger one, and still
+     * reports its source: the player whose effect heals keeps the credit.
+     */
+    @Override
+    public boolean addEffect(MobEffectInstance effect, @Nullable Entity source) {
+        boolean changed = super.addEffect(effect, source);
+        MobEffectInstance active = getEffect(effect.getEffect());
+        if (changed
+                && active != null
+                && active.getAmplifier() == effect.getAmplifier()
+                && active.getDuration() == effect.getDuration()) {
+            rememberHealer(effect, source);
+        }
+        return changed;
+    }
+
+    /**
+     * Remembers who applied the acting healing effect: the player behind {@code source}, or no one
+     * when a creature or a dispenser did.
+     */
+    private void rememberHealer(MobEffectInstance effect, @Nullable Entity source) {
+        Holder<MobEffect> type = effect.getEffect();
+        if (!(type.is(MobEffects.INSTANT_HEALTH) || type.is(MobEffects.REGENERATION))) {
+            return;
+        }
+        UUID player = playerBehind(source);
+        if (player != null) {
+            healers.put(type, player);
+        } else {
+            healers.remove(type);
+        }
+    }
+
+    /** The player behind {@code source}: the player itself, or the owner of a potion, an arrow or a cloud. */
+    private static @Nullable UUID playerBehind(@Nullable Entity source) {
+        if (source instanceof Player player) {
+            return player.getUUID();
+        }
+        if (source instanceof TraceableEntity traceable && traceable.getOwner() instanceof Player owner) {
+            return owner.getUUID();
+        }
+        return null;
+    }
+
+    /** Being hurt by an entity is an event for itself, as for a villager ({@code Villager.setLastHurtByMob}). */
+    @Override
+    public void setLastHurtByMob(@Nullable LivingEntity hurtBy) {
+        if (hurtBy != null && level() instanceof ServerLevel level) {
+            level.onReputationEvent(ReputationEventType.VILLAGER_HURT, hurtBy, this);
+        }
+        super.setLastHurtByMob(hurtBy);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level() instanceof ServerLevel level && isAlive()) {
+            maybeDecayGossip(level);
+            if (tickCount % 20 == 0) {
+                listenToVillagers(level);
+            }
+        }
+    }
+
+    /** Forgets a little once a day of game time, as a villager ({@code Villager.maybeDecayGossip}). */
+    private void maybeDecayGossip(ServerLevel level) {
+        long now = level.getGameTime();
+        if (lastGossipDecayTime == 0L) {
+            lastGossipDecayTime = now;
+        } else if (now >= lastGossipDecayTime + 24000L) {
+            gossips.decay();
+            lastGossipDecayTime = now;
+        }
+    }
+
+    /**
+     * Hears a villager close by, as a villager hears another ({@code TradeWithVillager}): one idle
+     * or meeting, so when its schedule lets it talk, within √5 blocks, at most once a minute.
+     */
+    private void listenToVillagers(ServerLevel level) {
+        long now = level.getGameTime();
+        if (lastGossipTime != 0L && now >= lastGossipTime && now < lastGossipTime + GOSSIP_COOLDOWN) {
+            return;
+        }
+        AABB around = getBoundingBox().inflate(Math.sqrt(HEARING_DISTANCE_SQUARED));
+        for (Villager villager : level.getEntitiesOfClass(Villager.class, around, Villager::isAlive)) {
+            if (distanceToSqr(villager) <= HEARING_DISTANCE_SQUARED && talks(villager)) {
+                gossips.transferFrom(villager.getGossips(), random, 10);
+                lastGossipTime = now;
+                return;
+            }
+        }
+    }
+
+    private static boolean talks(Villager villager) {
+        return villager.getBrain().getActiveNonCoreActivity()
+                .filter(activity -> activity == Activity.IDLE || activity == Activity.MEET)
+                .isPresent();
     }
 
     @Override
@@ -107,22 +331,28 @@ public class Companion extends Avatar {
     }
 
     /**
-     * A right-click: it opens its screen for its owner. For anyone else nothing happens, and the
-     * held item does not act either: a consumed click goes no further, and {@code CONSUME} swings
-     * no hand. The click passes on to the held item, as on any entity, when the player sneaks, or
-     * holds the debug stick with the gamemaster permission (the stick then opens the screen). The
-     * client's {@code ClientCompanion} answers the same, so it predicts no swing and no item use.
+     * A right-click: it opens its recruitment screen while it has no owner, its screen for its
+     * owner. For anyone else nothing happens, and the held item does not act either: a consumed
+     * click goes no further, and {@code CONSUME} swings no hand. The click passes on to the held
+     * item, as on any entity, when the player sneaks, or holds the debug stick with the gamemaster
+     * permission (the stick then opens the screen). The client's {@code ClientCompanion} answers
+     * the same from the synced owner, so it predicts no swing and no item use.
      */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
         if (letsClickPass(player, hand)) {
             return super.interact(player, hand, location);
         }
-        if (!isOwner(this, player)) {
+        boolean owned = hasOwner(this);
+        if (owned && !isOwner(this, player)) {
             return InteractionResult.CONSUME.withoutItem();
         }
         if (player instanceof ServerPlayer serverPlayer) {
-            CompanionMenu.open(serverPlayer, this, false);
+            if (owned) {
+                CompanionMenu.open(serverPlayer, this, false);
+            } else {
+                RecruitMenu.open(serverPlayer, this);
+            }
         }
         return InteractionResult.SUCCESS.withoutItem();
     }
@@ -139,12 +369,15 @@ public class Companion extends Avatar {
                         && player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
-    /**
-     * Whether {@code player} owns {@code companion}. No companion has an owner until the ownership
-     * feature exists, so no one does: until then, only the debug stick opens a companion's screen.
-     */
+    /** Whether {@code player} owns {@code companion}; on a client, from the synced owner. */
     public static boolean isOwner(Entity companion, Player player) {
-        return false;
+        CompanionOwner owner = companion.getAttached(Companions.OWNER);
+        return owner != null && owner.is(player);
+    }
+
+    /** Whether {@code companion} has an owner: a player recruited it. */
+    public static boolean hasOwner(Entity companion) {
+        return companion.hasAttached(Companions.OWNER);
     }
 
     /**
@@ -223,6 +456,7 @@ public class Companion extends Avatar {
     protected void onEffectsRemoved(Collection<MobEffectInstance> effects) {
         super.onEffectsRemoved(effects);
         for (MobEffectInstance effect : effects) {
+            healers.remove(effect.getEffect());
             sendToTrackingPlayers(new ClientboundRemoveMobEffectPacket(getId(), effect.getEffect()));
         }
     }
@@ -255,12 +489,17 @@ public class Companion extends Avatar {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         inventory.save(output.list(INVENTORY_KEY, ItemStackWithSlot.CODEC));
+        output.store(GOSSIPS_KEY, GossipContainer.CODEC, gossips);
+        output.putLong(GOSSIP_DECAY_KEY, lastGossipDecayTime);
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         inventory.load(input.listOrEmpty(INVENTORY_KEY, ItemStackWithSlot.CODEC));
+        gossips.clear();
+        input.read(GOSSIPS_KEY, GossipContainer.CODEC).ifPresent(gossips::putAll);
+        lastGossipDecayTime = input.getLongOr(GOSSIP_DECAY_KEY, 0L);
     }
 
     /**
@@ -298,8 +537,27 @@ public class Companion extends Avatar {
     public void die(DamageSource source) {
         if (!isRemoved() && !dead && level() instanceof ServerLevel level) {
             announceDeath(level);
+            Entity murderer = source.getEntity();
+            if (murderer != null) {
+                tellWitnesses(level, murderer);
+            }
         }
         super.die(source);
+    }
+
+    /**
+     * Tells the villagers and companions that see it die that {@code murderer} killed it, as a dying
+     * villager tells its witnesses: for them it is a villager killed.
+     */
+    private void tellWitnesses(ServerLevel level, Entity murderer) {
+        AABB around = getBoundingBox().inflate(WITNESS_RANGE);
+        for (LivingEntity witness : level.getEntitiesOfClass(LivingEntity.class, around, entity -> entity != this
+                && entity instanceof ReputationEventHandler
+                && entity.isAlive()
+                && distanceToSqr(entity) <= WITNESS_RANGE * WITNESS_RANGE
+                && entity.hasLineOfSight(this))) {
+            level.onReputationEvent(ReputationEventType.VILLAGER_KILLED, murderer, (ReputationEventHandler) witness);
+        }
     }
 
     /**

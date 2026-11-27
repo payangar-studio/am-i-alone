@@ -1,10 +1,12 @@
 package com.payangar.amialone.gametest;
 
 import com.payangar.amialone.companion.Companion;
+import com.payangar.amialone.companion.CompanionOwner;
 import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.companion.Companions;
 import com.payangar.amialone.debug.Debug;
 import java.util.Optional;
+import java.util.UUID;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,6 +23,8 @@ public class DebugStickServerGameTest {
     public void opensTheDebugTabForAnOperatorOnly(GameTestHelper helper) {
         PlayerList players = helper.getLevel().getServer().getPlayerList();
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        // Owned by someone else: a plain right-click by these players opens nothing.
+        companion.setAttached(Companions.OWNER, new CompanionOwner(UUID.randomUUID(), "someone_else"));
         ServerPlayer operator = CompanionInventoryServerGameTest.connectPlayer(helper, "operator");
         ServerPlayer player = CompanionInventoryServerGameTest.connectPlayer(helper, "player");
         // The test server gives operators no permission by default.
@@ -59,6 +63,8 @@ public class DebugStickServerGameTest {
     public void actsOnlyInTheClickingHand(GameTestHelper helper) {
         PlayerList players = helper.getLevel().getServer().getPlayerList();
         Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+        // Owned by someone else: a plain right-click by these players opens nothing.
+        companion.setAttached(Companions.OWNER, new CompanionOwner(UUID.randomUUID(), "someone_else"));
         String name = companion.getName().getString();
         ServerPlayer operator = CompanionInventoryServerGameTest.connectPlayer(helper, "operator");
         players.op(operator.nameAndId(), Optional.of(LevelBasedPermissionSet.GAMEMASTER), Optional.empty());

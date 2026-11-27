@@ -10,12 +10,15 @@
       "com.payangar.amialone.gametest.CompanionServerGameTest",
       "com.payangar.amialone.gametest.CompanionInventoryServerGameTest",
       "com.payangar.amialone.gametest.DebugStickServerGameTest",
-      "com.payangar.amialone.gametest.CompanionAttributesServerGameTest"
+      "com.payangar.amialone.gametest.CompanionAttributesServerGameTest",
+      "com.payangar.amialone.gametest.RecruitmentServerGameTest",
+      "com.payangar.amialone.gametest.ReputationServerGameTest"
     ],
     "fabric-client-gametest": [
       "com.payangar.amialone.gametest.ExampleClientGameTest",
       "com.payangar.amialone.gametest.CompanionClientGameTest",
       "com.payangar.amialone.gametest.CompanionInventoryClientGameTest",
+      "com.payangar.amialone.gametest.RecruitmentClientGameTest",
       "com.payangar.amialone.gametest.ScreenshotsClientGameTest"
     ]
   },

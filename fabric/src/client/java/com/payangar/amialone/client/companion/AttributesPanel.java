@@ -5,7 +5,7 @@ import com.payangar.amialone.companion.CompanionAttributeGroup;
 import com.payangar.amialone.companion.CompanionAttributeValues.Computed;
 import com.payangar.amialone.companion.CompanionAttributeValues.Value;
 import com.payangar.amialone.companion.CompanionComputedValue;
-import com.payangar.amialone.companion.CompanionMenu;
+import com.payangar.amialone.companion.CompanionViewMenu;
 import com.payangar.amialone.vendor.gui.Draw;
 import com.payangar.amialone.vendor.gui.Theme;
 import java.text.DecimalFormat;
@@ -73,7 +73,7 @@ final class AttributesPanel {
     void extract(
             GuiGraphicsExtractor graphics,
             Font font,
-            CompanionMenu menu,
+            CompanionViewMenu menu,
             int x,
             int y,
             int width,
@@ -120,7 +120,7 @@ final class AttributesPanel {
     }
 
     /** Scrolls the rows by the wheel's {@code amount}; false when they fit and do not scroll. */
-    boolean scroll(CompanionMenu menu, int height, double amount) {
+    boolean scroll(CompanionViewMenu menu, int height, double amount) {
         int max = contentHeight(lines(menu)) - height;
         if (max <= 0) {
             return false;
@@ -133,7 +133,7 @@ final class AttributesPanel {
      * The lines to draw, from the top of the content: each group's header, then its shown rows;
      * groups and rows in their order, then by id.
      */
-    private static List<Line> lines(CompanionMenu menu) {
+    private static List<Line> lines(CompanionViewMenu menu) {
         RegistryAccess registries = menu.companion().registryAccess();
         Map<Holder<Attribute>, Value> values = menu.attributeValues();
         Map<CompanionComputedValue, Computed> computed = menu.computedValues();

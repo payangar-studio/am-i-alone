@@ -6,6 +6,7 @@ import com.payangar.amialone.companion.CompanionInventory;
 import com.payangar.amialone.companion.CompanionMenu;
 import com.payangar.amialone.companion.CompanionMenu.Panel;
 import com.payangar.amialone.companion.CompanionMenu.Tab;
+import com.payangar.amialone.companion.CompanionOwner;
 import com.payangar.amialone.companion.Companions;
 import io.netty.channel.embedded.EmbeddedChannel;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.SlotRanges;
 import net.minecraft.world.item.Item;
@@ -334,24 +336,29 @@ public class CompanionInventoryServerGameTest {
     }
 
     /** A menu button as a client sends it (a tab, the storage), through the server's packet handler. */
-    private static void pressButton(ServerPlayer player, CompanionMenu menu, int button) {
+    static void pressButton(ServerPlayer player, AbstractContainerMenu menu, int button) {
         player.connection.handleContainerButtonClick(new ServerboundContainerButtonClickPacket(menu.containerId, button));
     }
 
     @GameTest
     public void menuOpenedWithoutTheStickIsValidForTheOwnerOnly(GameTestHelper helper) {
         ServerPlayer player = connectPlayer(helper, "not_owner");
-        boolean valid;
+        boolean validForAnother;
+        boolean validForTheOwner;
         try {
             Companion companion = (Companion) helper.spawn(Companions.TYPE, 1, 2, 1);
+            companion.setAttached(Companions.OWNER, new CompanionOwner(UUID.randomUUID(), "someone_else"));
             player.snapTo(helper.absoluteVec(new Vec3(1.5, 2.0, 3.5)));
             CompanionMenu.open(player, companion, false);
-            valid = player.containerMenu.stillValid(player);
+            validForAnother = player.containerMenu.stillValid(player);
+            companion.setAttached(Companions.OWNER, CompanionOwner.of(player));
+            validForTheOwner = player.containerMenu.stillValid(player);
         } finally {
             helper.getLevel().getServer().getPlayerList().remove(player);
         }
-        // No companion has an owner until ownership exists.
-        helper.assertTrue(!valid, "a menu opened without the stick is valid for a player who does not own the companion");
+        helper.assertTrue(
+                !validForAnother, "a menu opened without the stick is valid for a player who does not own the companion");
+        helper.assertTrue(validForTheOwner, "a menu opened without the stick is not valid for the companion's owner");
         helper.succeed();
     }
 
@@ -403,7 +410,7 @@ public class CompanionInventoryServerGameTest {
     }
 
     /** A left click as a client sends it, through the server's packet handler. */
-    private static void click(ServerPlayer player, CompanionMenu menu, int slot, ContainerInput input) {
+    static void click(ServerPlayer player, AbstractContainerMenu menu, int slot, ContainerInput input) {
         player.connection.handleContainerClick(new ServerboundContainerClickPacket(
                 menu.containerId,
                 menu.getStateId(),

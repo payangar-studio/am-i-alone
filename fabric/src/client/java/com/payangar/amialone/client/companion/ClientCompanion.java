@@ -91,7 +91,7 @@ public class ClientCompanion extends RemotePlayer {
         if (Companion.letsClickPass(player, hand)) {
             return super.interact(player, hand, location);
         }
-        return Companion.isOwner(this, player)
+        return !Companion.hasOwner(this) || Companion.isOwner(this, player)
                 ? InteractionResult.SUCCESS.withoutItem()
                 : InteractionResult.CONSUME.withoutItem();
     }
