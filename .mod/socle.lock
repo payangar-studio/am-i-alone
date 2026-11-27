@@ -17,7 +17,7 @@ kind = "file"
 
 [[files]]
 path = ".claude/skills/mod-feature-design/SKILL.md"
-sha256 = "ff8fb3294030826e01aa4caa0656fecf34b5651edec77b3d3b522fb8bdd54a89"
+sha256 = "a4ee5415c8665ed076732cece0d0e2eb8598df5ef9b37b4a81c8447d41dec276"
 kind = "file"
 
 [[files]]
@@ -42,7 +42,7 @@ kind = "file"
 
 [[files]]
 path = ".github/workflows/mod-publish.yml"
-sha256 = "44e409e433c9bb8fcdf9633221a2bd88461e75fa56746e9ea7b833342ddcd3f0"
+sha256 = "2d632bacd2a8c8112d35810ae305a578a10adb117ea78580687cbcf17cf4ec7a"
 kind = "file"
 
 [[files]]
@@ -72,7 +72,7 @@ kind = "file"
 
 [[files]]
 path = "AGENTS.md"
-sha256 = "02da0968b400b4c2d338a1221869f428ab5000189d323bce641c40da861537da"
+sha256 = "4abc6c89e7032a2f26604a07b197d1d6af6581ec6709a54ca70301a2185446da"
 kind = "block"
 
 [[files]]
